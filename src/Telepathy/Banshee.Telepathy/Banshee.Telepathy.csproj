@@ -44,34 +44,27 @@
       <Package>notify-sharp</Package>
     </Reference>
     <Reference Include="Hyena, Version=1.5.0.0, Culture=neutral">
-      <Package>banshee-hyena</Package>
       <SpecificVersion>False</SpecificVersion>
     </Reference>
     <Reference Include="Banshee.Core, Version=1.5.0.0, Culture=neutral">
-      <Package>banshee-core</Package>
       <SpecificVersion>False</SpecificVersion>
     </Reference>
     <Reference Include="Banshee.Services, Version=1.5.0.0, Culture=neutral">
-      <Package>banshee-services</Package>
       <SpecificVersion>False</SpecificVersion>
     </Reference>
     <Reference Include="Mono.Addins, Version=0.4.0.0, Culture=neutral, PublicKeyToken=0738eb9f132ed756">
       <Package>mono-addins</Package>
     </Reference>
     <Reference Include="Hyena.Gui, Version=1.5.0.0, Culture=neutral">
-      <Package>banshee-hyena-gui</Package>
       <SpecificVersion>False</SpecificVersion>
     </Reference>
     <Reference Include="Banshee.ThickClient, Version=1.5.0.0, Culture=neutral">
-      <Package>banshee-thickclient</Package>
       <SpecificVersion>False</SpecificVersion>
     </Reference>
     <Reference Include="Banshee.Widgets, Version=1.5.0.0, Culture=neutral">
-      <Package>banshee-thickclient</Package>
       <SpecificVersion>False</SpecificVersion>
     </Reference>
     <Reference Include="Hyena.Data.Sqlite, Version=1.7.0.0, Culture=neutral">
-      <Package>banshee-hyena-data-sqlite</Package>
     </Reference>
   </ItemGroup>
   <ItemGroup>

@@ -4,10 +4,10 @@
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProductVersion>8.0.50727</ProductVersion>
-    <ProjectGuid>{C00E6610-4E5D-40D2-9C38-54EADBFDC88A}</ProjectGuid>
+    <ProjectGuid>{46625EE8-9A57-48AD-9A49-B67AD0D9A775}</ProjectGuid>
     <OutputType>Library</OutputType>
     <UseParentDirectoryAsNamespace>true</UseParentDirectoryAsNamespace>
-    <AssemblyName>Banshee.LastfmFingerprint</AssemblyName>
+    <AssemblyName>Banshee.Foo</AssemblyName>
     <SchemaVersion>2.0</SchemaVersion>
     <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
     <Optimize>true</Optimize>
@@ -28,6 +28,7 @@
     </CustomCommands>
     <WarningLevel>4</WarningLevel>
     <Optimize>false</Optimize>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Windows|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -36,8 +37,15 @@
     <PlatformTarget>x86</PlatformTarget>
     <WarningLevel>4</WarningLevel>
     <Optimize>false</Optimize>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="clutter-sharp, Version=1.0.0.0, Culture=neutral, PublicKeyToken=87b7d16e3a31768b">
+      <Package>/usr/lib/clutter-sharp/clutter-sharp.dll</Package>
+    </Reference>
+    <Reference Include="clutter-gtk-sharp, Version=1.0.0.0, Culture=neutral, PublicKeyToken=87b7d16e3a31768b">
+      <Package>/usr/lib/clutter-sharp/clutter-gtk-sharp.dll</Package>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="gtk-sharp, Version=2.12.0.0, Culture=neutral, PublicKeyToken=35e10195dab3c99f">
       <Package>gtk-sharp-2.0</Package>
@@ -54,23 +62,50 @@
       <Package>mono-addins</Package>
     </Reference>
     <Reference Include="System.Core" />
-    <Reference Include="System.Xml" />
-    <Reference Include="Lastfm.Gui, Version=1.9.0.0, Culture=neutral">
+    <Reference Include="Banshee.Core, Version=2.0.0.0, Culture=neutral, PublicKeyToken=null">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\banshee\bin\Banshee.Core.dll</HintPath>
     </Reference>
-    <Reference Include="Banshee.Core, Version=1.9.0.0, Culture=neutral">
+    <Reference Include="Banshee.Services, Version=2.0.0.0, Culture=neutral, PublicKeyToken=null">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\banshee\bin\Banshee.Services.dll</HintPath>
     </Reference>
-    <Reference Include="Banshee.Services, Version=1.9.0.0, Culture=neutral">
+    <Reference Include="Banshee.ThickClient, Version=2.0.0.0, Culture=neutral, PublicKeyToken=null">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\banshee\bin\Banshee.ThickClient.dll</HintPath>
     </Reference>
-    <Reference Include="Banshee.ThickClient, Version=1.9.0.0, Culture=neutral">
+    <Reference Include="Hyena.Data.Sqlite, Version=2.0.0.0, Culture=neutral, PublicKeyToken=null">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\banshee\bin\Hyena.Data.Sqlite.dll</HintPath>
     </Reference>
-    <Reference Include="Banshee.Widgets, Version=1.9.0.0, Culture=neutral">
+    <Reference Include="Hyena, Version=2.0.0.0, Culture=neutral, PublicKeyToken=null">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\banshee\bin\Hyena.dll</HintPath>
     </Reference>
-    <Reference Include="Hyena, Version=1.9.0.0, Culture=neutral">
+    <Reference Include="Hyena.Gui, Version=2.0.0.0, Culture=neutral, PublicKeyToken=null">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\banshee\bin\Hyena.Gui.dll</HintPath>
     </Reference>
-    <Reference Include="Hyena.Gui, Version=1.9.0.0, Culture=neutral">
+    <Reference Include="Banshee.Widgets, Version=2.0.0.0, Culture=neutral, PublicKeyToken=null">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\banshee\bin\Banshee.Widgets.dll</HintPath>
     </Reference>
-    <Reference Include="Lastfm, Version=1.9.0.0, Culture=neutral">
+    <Reference Include="glib-sharp, Version=2.12.0.0, Culture=neutral, PublicKeyToken=35e10195dab3c99f">
+      <Package>glib-sharp-2.0</Package>
     </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Foo.addin.xml">
+      <LogicalName>Foo.addin.xml</LogicalName>
+    </EmbeddedResource>
+    <EmbeddedResource Include="gtk-gui\gui.stetic">
+      <LogicalName>gui.stetic</LogicalName>
+    </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Banshee.Foo\FooSource.cs" />
+    <Compile Include="gtk-gui\generated.cs" />
+    <Compile Include="Banshee.Foo\MyWidget.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ProjectExtensions>
@@ -88,21 +123,4 @@
       </Properties>
     </MonoDevelop>
   </ProjectExtensions>
-  <ItemGroup>
-    <Compile Include="AudioDecoder.cs" />
-    <Compile Include="LastfmFingerprintService.cs" />
-    <Compile Include="FingerprintRequest.cs" />
-    <Compile Include="LastfmAccount.cs" />
-    <Compile Include="LoginDialog.cs" />
-    <Compile Include="LoginForm.cs" />
-    <Compile Include="VerifyUserRequest.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource Include="Resources\GlobalUI.xml">
-      <LogicalName>GlobalUI.xml</LogicalName>
-    </EmbeddedResource>
-    <EmbeddedResource Include="LastfmFingerprint.addin.xml">
-      <LogicalName>LastfmFingerprint.addin.xml</LogicalName>
-    </EmbeddedResource>
-  </ItemGroup>
 </Project>

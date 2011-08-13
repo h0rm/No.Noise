@@ -57,25 +57,18 @@
       <Package>mono-addins</Package>
     </Reference>
     <Reference Include="Banshee.Core, Version=1.7.0.0, Culture=neutral">
-      <Package>banshee-core</Package>
     </Reference>
     <Reference Include="Banshee.Services, Version=1.7.0.0, Culture=neutral">
-      <Package>banshee-services</Package>
     </Reference>
     <Reference Include="Banshee.ThickClient, Version=1.7.0.0, Culture=neutral">
-      <Package>banshee-thickclient</Package>
     </Reference>
     <Reference Include="Banshee.Widgets, Version=1.7.0.0, Culture=neutral">
-      <Package>banshee-thickclient</Package>
     </Reference>
     <Reference Include="Hyena, Version=1.7.0.0, Culture=neutral">
-      <Package>banshee-hyena</Package>
     </Reference>
     <Reference Include="Hyena.Data.Sqlite, Version=1.7.0.0, Culture=neutral">
-      <Package>banshee-hyena-data-sqlite</Package>
     </Reference>
     <Reference Include="Hyena.Gui, Version=1.7.0.0, Culture=neutral">
-      <Package>banshee-hyena-gui</Package>
     </Reference>
     <Reference Include="System.Core" />
   </ItemGroup>

@@ -65,19 +65,15 @@
     </Reference>
     <Reference Include="Mono.Posix" />
     <Reference Include="Banshee.Core, Version=1.7.0.0, Culture=neutral">
-      <Package>banshee-core</Package>
       <SpecificVersion>False</SpecificVersion>
     </Reference>
     <Reference Include="Banshee.Services, Version=1.7.0.0, Culture=neutral">
-      <Package>banshee-services</Package>
       <SpecificVersion>False</SpecificVersion>
     </Reference>
     <Reference Include="Banshee.ThickClient, Version=1.7.0.0, Culture=neutral">
-      <Package>banshee-thickclient</Package>
       <SpecificVersion>False</SpecificVersion>
     </Reference>
     <Reference Include="Hyena, Version=1.7.0.0, Culture=neutral">
-      <Package>banshee-hyena</Package>
       <SpecificVersion>False</SpecificVersion>
     </Reference>
   </ItemGroup>

@@ -49,15 +49,12 @@
       <Package>gtk-sharp-2.0</Package>
     </Reference>
     <Reference Include="Banshee.Core, Version=1.5.0.0, Culture=neutral">
-      <Package>banshee-core</Package>
       <SpecificVersion>False</SpecificVersion>
     </Reference>
     <Reference Include="Banshee.Services, Version=1.5.0.0, Culture=neutral">
-      <Package>banshee-services</Package>
       <SpecificVersion>False</SpecificVersion>
     </Reference>
     <Reference Include="Banshee.ThickClient, Version=1.5.0.0, Culture=neutral">
-      <Package>banshee-thickclient</Package>
       <SpecificVersion>False</SpecificVersion>
     </Reference>
     <Reference Include="Mono.Addins, Version=0.4.0.0, Culture=neutral, PublicKeyToken=0738eb9f132ed756">
@@ -65,11 +62,9 @@
     </Reference>
     <Reference Include="System.Data" />
     <Reference Include="Banshee.Widgets, Version=1.5.0.0, Culture=neutral">
-      <Package>banshee-thickclient</Package>
       <SpecificVersion>False</SpecificVersion>
     </Reference>
     <Reference Include="Hyena, Version=1.5.0.0, Culture=neutral">
-      <Package>banshee-hyena</Package>
       <SpecificVersion>False</SpecificVersion>
     </Reference>
     <Reference Include="System.Core" />
