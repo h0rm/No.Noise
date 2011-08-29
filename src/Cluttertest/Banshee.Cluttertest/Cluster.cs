@@ -156,15 +156,17 @@ namespace Banshee.Cluttertest
 
         #endregion
 
-        private Point first_point;
+        //private Point first_point;
         private CairoTexture prototype;
+        private Point first_point;
         private List<Cluster> children;
+        private List<Point> positions;  //save old cluster positions
 
         public Cluster (uint x, uint y):base ()
         {
             this.SetPosition (x,y);
-            first_point = new Point (x,y);
             children = new List<Cluster> ();
+            positions = new List<Point> ();
         }
         public CairoTexture Prototype
         {
@@ -254,16 +256,43 @@ namespace Banshee.Cluttertest
         /// </param>
         public void MergeWithCluster (Cluster other)
         {
-            if (children.Count == 0)        //save original position
+            if (children.Count == 0)    //save original position
                 first_point = this.XY;
+            else
+                positions.Add (this.XY);
 
             Point merged = this.XY;
             merged.Add (other.XY);
             merged.Normalize (2);   //new merged coordinates
 
             children.Add (other);
-            other.Hide ();          //hide merged cluster
-            this.SetPosition (merged.X, merged.Y);
+
+            /*
+            Point pos = other.XY;
+
+            other.Animatev ((ulong)AnimationMode.EaseOutCubic,
+                           5000,new String[]{"x"},new GLib.Value (merged.X));
+
+            other.Animatev ((ulong)AnimationMode.EaseOutCubic,
+                           5000,new String[]{"y"},new GLib.Value (merged.Y));
+            */
+            other.Animatev ((ulong)AnimationMode.EaseOutCubic,
+                           5000,new String[]{"opacity"},new GLib.Value (0));
+
+
+            other.Animation.Completed += delegate {
+                other.Hide ();
+                //other.SetPosition (pos.X,pos.Y);
+                Hyena.Log.Debug ("Hidden");
+            };
+            //other.Hide ();          //hide merged cluster
+            //this.SetPosition (merged.X, merged.Y);
+
+            this.Animatev ((ulong)AnimationMode.EaseOutCubic,
+                           5000,new String[]{"x"},new GLib.Value (merged.X));
+
+            this.Animatev ((ulong)AnimationMode.EaseOutCubic,
+                           5000,new String[]{"y"},new GLib.Value (merged.Y));
         }
 
         //Dont call this function if less than one child is in list
@@ -271,19 +300,42 @@ namespace Banshee.Cluttertest
         {
             Cluster ret = children[children.Count-1];   //last cluster in list
 
-            if (children.Count == 1){   //only one left
-                this.SetPosition (first_point.X, first_point.Y);
-                children = new List<Cluster> ();
-            }
+            Point pos;
+
+            if (children.Count == 1)
+                pos = first_point;
             else
             {
-                Point pos = this.XY;    //recalculate position without last cluster
+                /*pos = this.XY;    //recalculate position without last cluster
                 pos.Multiply (2);
-                pos.Subtract (ret.XY);
-                this.SetPosition (pos.X, pos.Y);
-                children.RemoveAt (children.Count-1);   //remove last cluster
+                pos.Subtract (ret.XY);*/
+                pos = positions[positions.Count-1];
+                positions.RemoveAt (positions.Count-1);
             }
-            ret.Show();     //show removed cluster
+
+                this.SetPosition (pos.X, pos.Y);
+
+            //Point oldPos = ret.XY;
+            //ret.SetPosition (this.X, this.Y);
+            ret.Show();
+            ret.Opacity = 0;
+            ret.Animatev ((ulong)AnimationMode.EaseOutCubic,
+                          1000,new String[]{"opacity"},new GLib.Value (255));
+            /*
+            ret.Animatev ((ulong)AnimationMode.EaseOutCubic,
+                           1000,new String[]{"x"},new GLib.Value (oldPos.X));
+
+            ret.Animatev ((ulong)AnimationMode.EaseOutCubic,
+                           1000,new String[]{"y"},new GLib.Value (oldPos.Y));
+
+            this.Animatev ((ulong)AnimationMode.EaseOutCubic,
+                           1000,new String[]{"x"},new GLib.Value (pos.X));
+
+            this.Animatev ((ulong)AnimationMode.EaseOutCubic,
+                           1000,new String[]{"y"},new GLib.Value (pos.Y));
+            */
+            children.RemoveAt (children.Count-1);   //remove last cluster
+
             return ret;
         }
     }

@@ -318,10 +318,16 @@ namespace Banshee.Cluttertest
         public void ClusterOneStep (bool inwards)
         {
             if (inwards)
+            {
                 //Cluster.HierarchicalNewCalculateStep (this);
-                Cluster.ClusterOneStep ();
-            else
+                ZoomOnCenter (true);
                 Cluster.RefineOneStep ();
+            }
+            else
+            {
+               // ZoomOnCenter (false);
+                Cluster.ClusterOneStep ();
+            }
         }
 
 
