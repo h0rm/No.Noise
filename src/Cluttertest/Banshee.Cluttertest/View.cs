@@ -55,9 +55,12 @@ namespace Banshee.Cluttertest
             //Event Handler to handle zoom
             gui.ZoomChangedEvent += HandleGuiZoomChangedEvent;
 
-            gui.DebugButtonPressedEvent += delegate(object source, Gui.DebugEventArgs args) {
-                Hyena.Log.Information ("Debug Button pressed");
-            };
+            gui.DebugButtonPressedEvent += HandleGuiDebugButtonPressedEvent;
+        }
+
+        void HandleGuiDebugButtonPressedEvent (object source, Gui.DebugEventArgs args)
+        {
+            point_group.ClusterOneStep (args.Value == 1);
         }
 
         void HandleGuiZoomChangedEvent (object source, Gui.ZoomLevelArgs args)

@@ -307,6 +307,27 @@ namespace Banshee.Cluttertest
 //            info_group.Show();
         }
 
+        /// <summary>
+        /// This function is used cluster or decluster the data. Every time the function is
+        /// called one clustering step is perfomed.
+        /// </summary>
+        /// <param name="inwards">
+        /// A <see cref="System.Boolean"/> specifies if clustering (true) or declustering (false)
+        /// should be perfomed.
+        /// </param>
+        public void ClusterOneStep (bool inwards)
+        {
+            if (inwards)
+                Cluster.HierarchicalNewCalculateStep (this);
+        }
+
+
+        /// <summary>
+        /// This function is used to zoom in or out.
+        /// </summary>
+        /// <param name="inwards">
+        /// A <see cref="System.Boolean"/> specifies the zooming direction.
+        /// </param>
         public void ZoomOnCenter (bool inwards)
         {
             ZoomOnPosition (inwards, Stage.Width/2.0f, Stage.Height/2.0f);
