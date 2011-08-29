@@ -157,7 +157,7 @@ namespace Banshee.Cluttertest
 
             }
 
-            Cluster.KMeansInit (4, Width, Height);
+//            Cluster.KMeansInit (4, Width, Height);
             Cluster.HierarchicalInit (cluster_list);
         }
         /// <summary>
@@ -181,7 +181,7 @@ namespace Banshee.Cluttertest
             for (int i=0; i<count; i++)
                 AddCircle ((float)(r.NextDouble ()*width), (float)(r.NextDouble ()*height),"");
 
-            Cluster.KMeansInit (4, Width, Height);
+//            Cluster.KMeansInit (4, Width, Height);
             Cluster.HierarchicalInit (cluster_list);
             //CalculateClusters (4);
         }
@@ -318,7 +318,10 @@ namespace Banshee.Cluttertest
         public void ClusterOneStep (bool inwards)
         {
             if (inwards)
-                Cluster.HierarchicalNewCalculateStep (this);
+                //Cluster.HierarchicalNewCalculateStep (this);
+                Cluster.ClusterOneStep ();
+            else
+                Cluster.RefineOneStep ();
         }
 
 
@@ -550,7 +553,7 @@ namespace Banshee.Cluttertest
                 //RefineClusters ();
                 //Cluster.KMeansRefineStep (cluster_list);
                 //Cluster.HierarchicalCalculateStep (this);
-                Cluster.HierarchicalNewCalculateStep (this);
+                //Cluster.HierarchicalNewCalculateStep (this);
                 return;
             }
             EventHelper.GetCoords (args.Event, out mouse_old_x, out mouse_old_y);

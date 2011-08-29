@@ -107,6 +107,7 @@
     <Compile Include="Banshee.Cluttertest\Cluster.cs" />
     <Compile Include="Banshee.Cluttertest\Point.cs" />
     <Compile Include="Banshee.Cluttertest\Gui.cs" />
+    <Compile Include="Banshee.Cluttertest\ClusteringManager.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ProjectExtensions>

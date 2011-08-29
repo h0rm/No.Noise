@@ -1,5 +1,5 @@
 // 
-// Cluster.cs
+// HCluster.cs
 // 
 // Author:
 //   horm <${AuthorEmail}>
@@ -23,6 +23,7 @@
 // LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
+
 using System;
 using Clutter;
 using System.Collections.Generic;
@@ -33,26 +34,17 @@ namespace Banshee.Cluttertest
 {
     public class Cluster : Clutter.Texture
     {
+        #region Static Functions
 
-
+        static private Cluster root;
         static private int max_prototypes = 4;
-        static private List<CairoTexture> prototype_list = new List<CairoTexture> ();
-        static private List<CairoTexture> indicator_prototypes = new List<CairoTexture> ();
-        static private int max_indicators = 10;
         static private uint circle_size = 50;
-
-        static private List<Point> center_list;
-
-        static private int hierarchical_step;
-        static private List<Cluster> marked_clusters;
-        static private List<Cluster> clusters;
-
-        #region static
+        static private List<CairoTexture> prototype_list = new List<CairoTexture> ();
 
         static public void Init ()
         {
             GeneratePrototypes ();
-            GenerateIndicatorPrototypes ();
+            root = new Cluster (0,0);
         }
 
         static private void GeneratePrototypes ()
@@ -91,27 +83,6 @@ namespace Banshee.Cluttertest
                 UpdateCirclePrototype (actor,1.0, 1.0, 1.0);
                 break;
             }
-        }
-
-        static private void GenerateIndicatorPrototypes ()
-        {
-            indicator_prototypes.Clear ();
-
-            for (int i=0; i < max_indicators; i++)
-            {
-                CairoTexture texture = new CairoTexture (circle_size,circle_size);
-                indicator_prototypes.Add (texture);
-                UpdateCirclePrototype (texture, 1,1,1,0.8,(double)(i+1)*10.0,0,1,0);
-            }
-        }
-
-        static CairoTexture GetIndicatorPrototype (double percentage)
-        {
-
-            percentage = percentage > 100.0 ? 100.0 : percentage;
-            Hyena.Log.Debug ("Indicator Prototype " + percentage);
-
-            return indicator_prototypes[(int)(percentage/((double)max_indicators+0.01))];
         }
 
         static private void UpdateCirclePrototype (CairoTexture actor, double r, double g, double b)
@@ -167,228 +138,34 @@ namespace Banshee.Cluttertest
             ((IDisposable) context).Dispose ();
         }
 
-        #endregion
-
-        #region K-Means
-
-        static public void KMeansInit (int k, float width, float height)
-        {
-            Hyena.Log.Debug ("Calculate Clusters");
-
-            Debug.Assert(k <= 4);       //gibt noch nicht mehr farben
-
-            center_list = new List<Point>();
-
-            Random r = new Random ();
-
-            for (int i=0; i<k; i++)
-            {
-                center_list.Add (new Point ((float)r.NextDouble () * width,
-                                                (float)r.NextDouble () * height));
-
-                Hyena.Log.Debug ("Center "+i+": "+center_list[i].X +" " + center_list[i].Y);
-            }
-        }
-
-
-
-        static public void KMeansRefineStep (List<Cluster> clusters)
-        {
-            int [] count = new int[center_list.Count];
-            Point [] sum = new Point[center_list.Count];
-
-            for (int i= 0; i < center_list.Count; i++)
-                sum[i] = new Point (0.0f,0.0f);
-
-            foreach (Cluster circle in clusters)
-            {
-                double min = 1000000;
-                int min_index = 2;
-
-                for (int i=0; i < center_list.Count; i++)
-                {
-                    double dist = center_list[i].DistanceTo (new Point (circle.X, circle.Y) );
-                    if (dist < min )
-                    {
-                        min_index = i;
-                        min = dist;
-                    }
-                }
-
-                //circle.CoglTexture = prototype_list[min_index].CoglTexture;
-                circle.SetPrototypeByNumber (min_index);
-                count[min_index] ++;
-                sum[min_index].Add (circle.X, circle.Y);
-            }
-
-            for (int i= 0; i < center_list.Count; i++)
-            {
-                sum[i].Normalize (count[i]);
-                center_list[i] = sum[i];
-
-                Hyena.Log.Debug ("Center "+i+": "+center_list[i].X +" " + center_list[i].Y);
-            }
-        }
-        #endregion
-
-        #region Hierarchical clustering
-
         static public void HierarchicalInit (List<Cluster> points)
         {
             Hyena.Log.Debug ("Hierarchical Clustering Init");
-            hierarchical_step = 0;
-            marked_clusters = new List<Cluster> ();
-            clusters = new List<Cluster> ();
-            clusters.AddRange (points);
+            root.AddChildren (points);
         }
 
-        static private bool compute = true;
-
-        static public bool HierarchicalCalculateStep (Group actor)
+        static public void RefineOneStep ()
         {
-
-            if (compute)
-            {
-                if (clusters.Count == 0 || hierarchical_step >= clusters.Count)
-                    return true;
-
-                marked_clusters = new List<Cluster> ();
-
-                marked_clusters.Add (clusters[hierarchical_step]);
-                clusters[hierarchical_step].SetPrototypeByNumber (1);
-
-                Hyena.Log.Debug ("cluster zugegriffen");
-
-                for (int i=hierarchical_step+1; i < clusters.Count; i++)
-                {
-                    if (clusters[i].IsVisible)
-                    {
-                        Point new_point = new Point (clusters[i].X, clusters[i].Y); //current point
-                        int n = 0;
-    
-                        foreach (Cluster c_m in marked_clusters)
-                        {
-                            //int m = marked_clusters[j];     //current marked cluster
-
-                            Point c_i = new Point (c_m.X, c_m.Y);
-                            double distance = c_i.DistanceTo (new_point);
-    
-    
-                            if (distance < 500)
-                                n++;
-                        }
-    
-                        if (n == marked_clusters.Count)
-                        {
-                            clusters[i].SetPrototypeByNumber (1);
-                            marked_clusters.Add (clusters[i]);
-                        }
-                    }
-                }
-
-                //clusters[hierarchical_step].SetPosition (c.X, c.Y);
-                hierarchical_step++;
-            }
-            else
-            {
-
-                //int c = marked_clusters[0];
-                Point sum = new Point (0,0);
-
-                foreach (Cluster m in marked_clusters)
-                {
-                    sum.Add (m.X, m.Y);
-                    Hyena.Log.Debug ("Marked cluster "+m.Name);
-                }
-
-                foreach (Cluster m in marked_clusters)
-                {
-                    if (marked_clusters.IndexOf(m) != 0)
-                    {
-                        Hyena.Log.Debug ("Removed marked cluster "+m);
-                        m.Hide ();
-                        clusters.Remove (m);
-                    }
-                }
-
-                sum.Normalize (marked_clusters.Count);
-
-                if (marked_clusters.Count > 1)
-                {
-                    //Random r = new Random ();
-
-                    marked_clusters[0].Prototype = GetIndicatorPrototype (marked_clusters.Count/3);
-                    //marked_clusters[0].Prototype = GetIndicatorPrototype (r.Next(90));
-                }
-                else
-                {
-                    marked_clusters[0].SetPrototypeByNumber (3);
-
-                }
-
-                marked_clusters[0].SetPosition (sum.X, sum.Y);
-
-            }
-
-
-            compute = !compute;
-            if(clusters.Count == 0)
-                return true;    //finished
-            else
-                return false;   //not yet finished
-
+            root.RefineChildren ();
         }
 
-        static public bool HierarchicalNewCalculateStep (Group actor)
+        static public void ClusterOneStep ()
         {
-            if (clusters.Count < 4)
-                return true;
-
-            for (int i=0; i < clusters.Count; i++)
-            {
-                double min_distance = double.MaxValue;
-                Cluster cluster_current = clusters[i];
-
-                Cluster cluster_found = clusters[i];
-
-                Point point_found = new Point (cluster_current.X,cluster_current.Y);
-                Point current = new Point (cluster_current.X,cluster_current.Y);
-
-                for (int j=i+1; j < clusters.Count; j++)        //nähesten suchen
-                {
-                    Point new_point = new Point (clusters[j].X, clusters[j].Y);
-                    double dist = current.DistanceTo (new_point);
-
-                    if (dist < min_distance)
-                    {
-                        min_distance = dist;
-                        point_found = new_point;
-                        cluster_found = clusters[j];
-                    }
-                }
-
-                if (min_distance != double.MaxValue)
-                {
-                    current.Add (point_found);
-                    current.Normalize (2);
-                    clusters.Remove (cluster_found);
-                    cluster_current.SetPosition (current.X,current.Y);
-                    cluster_found.Hide ();
-                }
-            }
-
-            return false;
+            root.ClusterChildren ();
         }
 
         #endregion
 
+        private Point first_point;
         private CairoTexture prototype;
+        private List<Cluster> children;
 
         public Cluster (uint x, uint y):base ()
         {
             this.SetPosition (x,y);
+            first_point = new Point (x,y);
+            children = new List<Cluster> ();
         }
-
         public CairoTexture Prototype
         {
             set
@@ -400,11 +177,114 @@ namespace Banshee.Cluttertest
             get { return prototype; }
         }
 
+        public Point XY {
+            get {return new Point (this.X, this.Y);}
+        }
+
+        public void AddChildren (List<Cluster> children)
+        {
+            this.children.AddRange (children);
+        }
+
         public void SetPrototypeByNumber (int num)
         {
             Debug.Assert (num < prototype_list.Count);
 
             Prototype = prototype_list[num];
+        }
+
+        /// <summary>
+        /// This function is used to undo one clustering step to show more detail
+        /// </summary>
+        public void RefineChildren ()
+        {
+            Hyena.Log.Debug ("Refine Children, Count: "+children.Count);
+            List<Cluster> new_cluster = new List<Cluster> ();
+
+            foreach (Cluster c in children)
+            {
+                if (c.children.Count > 0)
+                    new_cluster.Add (c.DemergeSimpleCluster ());
+            }
+            children.AddRange (new_cluster);
+        }
+
+        /// <summary>
+        /// This function merges each child with another one, i.e. the number of
+        /// clusters is devided by two.
+        /// </summary>
+        public void ClusterChildren ()
+        {
+            Hyena.Log.Debug ("Cluster Children, Count: "+children.Count);
+            if (children.Count < 2)
+                return;
+
+            //for each cluster the closest cluster is found and merged
+            for (int i=0; i < children.Count; i++)
+            {
+                double min_distance = double.MaxValue;
+
+                Cluster current = children[i];
+                Cluster found = children[i];
+
+                for (int j=i+1; j < children.Count; j++)
+                {
+                    double dist = current.XY.DistanceTo (children[j].XY);
+
+                    if (dist < min_distance)
+                    {
+                        min_distance = dist;
+                        found = children[j];
+                    }
+                }
+
+                if (min_distance < double.MaxValue )
+                {
+                    current.MergeWithCluster (found);
+                    children.Remove (found);
+                }
+            }
+        }
+
+        /// <summary>
+        /// This function merges a cluster into this cluster.
+        /// </summary>
+        /// <param name="other">
+        /// A <see cref="Cluster"/>
+        /// </param>
+        public void MergeWithCluster (Cluster other)
+        {
+            if (children.Count == 0)        //save original position
+                first_point = this.XY;
+
+            Point merged = this.XY;
+            merged.Add (other.XY);
+            merged.Normalize (2);   //new merged coordinates
+
+            children.Add (other);
+            other.Hide ();          //hide merged cluster
+            this.SetPosition (merged.X, merged.Y);
+        }
+
+        //Dont call this function if less than one child is in list
+        public Cluster DemergeSimpleCluster ()
+        {
+            Cluster ret = children[children.Count-1];   //last cluster in list
+
+            if (children.Count == 1){   //only one left
+                this.SetPosition (first_point.X, first_point.Y);
+                children = new List<Cluster> ();
+            }
+            else
+            {
+                Point pos = this.XY;    //recalculate position without last cluster
+                pos.Multiply (2);
+                pos.Subtract (ret.XY);
+                this.SetPosition (pos.X, pos.Y);
+                children.RemoveAt (children.Count-1);   //remove last cluster
+            }
+            ret.Show();     //show removed cluster
+            return ret;
         }
     }
 }

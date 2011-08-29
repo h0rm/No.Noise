@@ -54,6 +54,13 @@ namespace Banshee.Cluttertest
             this.x += p.X;
             this.y += p.Y;
         }
+
+        public void Subtract (Point p)
+        {
+            this.x -= p.X;
+            this.y -= p.Y;
+        }
+
         public void Add (float x, float y)
         {
             this.x += x;
