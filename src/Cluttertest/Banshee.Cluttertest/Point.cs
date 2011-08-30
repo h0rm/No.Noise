@@ -39,6 +39,12 @@ namespace Banshee.Cluttertest
            // this.color = color;
         }
 
+        public Point (double x, double y)
+        {
+            this.x = x;
+            this.y = y;
+        }
+        
         public float X {
             get { return (float)x; }
             set { x = value; }
