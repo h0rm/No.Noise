@@ -34,7 +34,7 @@ PRE_UNINSTALL = :
 POST_UNINSTALL = :
 build_triplet = i686-pc-linux-gnu
 host_triplet = i686-pc-linux-gnu
-DIST_COMMON = $(srcdir)/Makefile.am $(srcdir)/Makefile.in \
+DIST_COMMON = README $(srcdir)/Makefile.am $(srcdir)/Makefile.in \
 	$(top_srcdir)/build/build.environment.mk \
 	$(top_srcdir)/build/build.mk \
 	$(top_srcdir)/build/build.rules.mk
@@ -328,6 +328,7 @@ SOURCES = \
 	Banshee.Foo1/Foo1Source.cs \
 	Banshee.Foo1/Foo1SourceContents.cs \
 	Bpm/BpmDetectJob.cs \
+	Data/DataHandler.cs \
 	lastfm-sharp/Lib.cs \
 	lastfm-sharp/RequestParameters.cs \
 	lastfm-sharp/Scrobbling/AuthenticationFailureException.cs \

@@ -31,6 +31,8 @@ using Hyena;
 using MathNet.Numerics;
 using MathNet.Numerics.LinearAlgebra;
 
+using Banshee.NoNoise.Data;
+
 namespace Banshee.Foo1.PCA
 {
     public class PCAnalyzer
@@ -44,6 +46,7 @@ namespace Banshee.Foo1.PCA
         private int num_columns = 0;
         private Vector base1;
         private Vector base2;
+        private List<DataEntry> coords = null;
 
         /// <summary>
         /// Standard constructor
@@ -239,22 +242,59 @@ namespace Banshee.Foo1.PCA
 
             base1 = eigenVectors.GetColumnVector(maxInds[0]).Normalize();
             base2 = eigenVectors.GetColumnVector(maxInds[1]).Normalize();
+
+            ComputeCoordinates ();
         }
 
         /// <summary>
-        /// Returns a string containing the coordinates of all entries computed
-        /// with the eigenvectors as basis vectors.
+        /// Computes the normalized 2D coordinates of all entries using the
+        /// eigenvectors as basis vectors and stores the result in
+        /// <value>coords</value>.
         /// </summary>
-        /// <returns>
-        /// A <see cref="System.String"/> with the coordinates
-        /// </returns>
-        public string GetCoordinates ()
+        private void ComputeCoordinates ()
         {
-            string ret = "";
+            coords = new List<DataEntry>(num_columns);
+
+            // compute 2D coordinates
             for (int i = 0; i < vectors.Count; i++) {
-                ret += GetCoordinate (i) + "\n";
+                coords.Add (GetCoordinate (i));
             }
-            return ret;
+
+            double[] maxVals = new double[2];
+            maxVals[0] = maxVals[1] = double.NegativeInfinity;
+            double[] minVals = new double[2];
+            minVals[0] = minVals[1] = double.PositiveInfinity;
+
+            // find min and max
+            foreach (DataEntry de in coords) {
+                double x = de.X;
+                if (x > maxVals[0]) {
+                    maxVals[0] = x;
+                }
+                if (x < minVals[0]) {
+                    minVals[0] = x;
+                }
+
+                double y = de.Y;
+                if (y > maxVals[1]) {
+                    maxVals[1] = y;
+                }
+                if (y < minVals[1]) {
+                    minVals[1] = y;
+                }
+            }
+
+            // normalize
+            double[] diff = new double[] {maxVals[0] - minVals[0], maxVals[1] - minVals[1]};
+            foreach (DataEntry de in coords) {
+                // shift
+                de.X -= minVals[0];
+                de.Y -= minVals[1];
+
+                // scale
+                de.X /= diff[0];
+                de.Y /= diff[1];
+            }
         }
 
         /// <summary>
@@ -265,12 +305,10 @@ namespace Banshee.Foo1.PCA
         /// The index of the entry
         /// </param>
         /// <returns>
-        /// A <see cref="System.String"/> with the coordinates
+        /// A <see cref="DataEntry"/> with the coordinates
         /// </returns>
-        public string GetCoordinate (int i)
+        public DataEntry GetCoordinate (int i)
         {
-            string ret = "";
-
             Matrix m = new Matrix(2, num_params);
             m.SetRowVector(base1, 0);
             m.SetRowVector(base2, 1);
@@ -279,8 +317,22 @@ namespace Banshee.Foo1.PCA
 
             Debug.Assert(coord.RowCount == 2 && coord.ColumnCount == 1);
 
-            ret += "(" + coord[0,0] + ";" + coord[1,0] + ")";
+            return new DataEntry (i, coord[0,0], coord[1,0], null);
+        }
 
+        /// <summary>
+        /// Returns a string containing the normalized coordinates of all
+        /// entries computed with the eigenvectors as basis vectors.
+        /// </summary>
+        /// <returns>
+        /// A <see cref="System.String"/> with the normalized coordinates
+        /// </returns>
+        public string GetCoordinates ()
+        {
+            string ret = "";
+            foreach (DataEntry de in coords) {
+                ret += de + "\n";
+            }
             return ret;
         }
     }

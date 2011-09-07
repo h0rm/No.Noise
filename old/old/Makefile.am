@@ -5,6 +5,7 @@ SOURCES =  \
 	Banshee.Foo1/Foo1Source.cs \
 	Banshee.Foo1/Foo1SourceContents.cs \
 	Bpm/BpmDetectJob.cs \
+	Data/DataHandler.cs \
 	lastfm-sharp/Lib.cs \
 	lastfm-sharp/RequestParameters.cs \
 	lastfm-sharp/Scrobbling/AuthenticationFailureException.cs \

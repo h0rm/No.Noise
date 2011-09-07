@@ -196,6 +196,7 @@
     <Compile Include="Mirage\ScmsConfiguration.cs" />
     <Compile Include="Mirage\Vector.cs" />
     <Compile Include="PCA\PCAnalyzer.cs" />
+    <Compile Include="Data\DataHandler.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ProjectExtensions>
