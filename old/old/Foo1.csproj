@@ -1,0 +1,228 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003" ToolsVersion="3.5">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProductVersion>8.0.50727</ProductVersion>
+    <ProjectGuid>{C005D646-6591-4873-B075-1FB68BE7DDB9}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <UseParentDirectoryAsNamespace>true</UseParentDirectoryAsNamespace>
+    <AssemblyName>Banshee.Foo1</AssemblyName>
+    <SchemaVersion>2.0</SchemaVersion>
+    <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
+    <Optimize>true</Optimize>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <CheckForOverflowUnderflow>true</CheckForOverflowUnderflow>
+    <RootNamespace>Foo</RootNamespace>
+    <AssemblyOriginatorKeyFile>.</AssemblyOriginatorKeyFile>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <OutputPath>..\..\..\bin</OutputPath>
+    <CustomCommands>
+      <CustomCommands>
+        <Command type="Execute" command="make run" workingdir="${SolutionDir}" />
+      </CustomCommands>
+    </CustomCommands>
+    <WarningLevel>4</WarningLevel>
+    <Optimize>false</Optimize>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Windows|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <OutputPath>..\..\..\bin</OutputPath>
+    <PlatformTarget>x86</PlatformTarget>
+    <WarningLevel>4</WarningLevel>
+    <Optimize>false</Optimize>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="System" />
+    <Reference Include="gtk-sharp, Version=2.12.0.0, Culture=neutral, PublicKeyToken=35e10195dab3c99f">
+      <Package>gtk-sharp-2.0</Package>
+    </Reference>
+    <Reference Include="Mono.Posix" />
+    <Reference Include="gdk-sharp, Version=2.12.0.0, Culture=neutral, PublicKeyToken=35e10195dab3c99f">
+      <Package>gtk-sharp-2.0</Package>
+    </Reference>
+    <Reference Include="Mono.Cairo">
+      <SpecificVersion>False</SpecificVersion>
+    </Reference>
+    <Reference Include="Mono.Addins">
+      <SpecificVersion>False</SpecificVersion>
+      <Package>mono-addins</Package>
+    </Reference>
+    <Reference Include="Banshee.Core, Version=1.7.0.0, Culture=neutral">
+      <Package>banshee-core</Package>
+    </Reference>
+    <Reference Include="Banshee.Services, Version=1.7.0.0, Culture=neutral">
+      <Package>banshee-services</Package>
+    </Reference>
+    <Reference Include="Banshee.ThickClient, Version=1.7.0.0, Culture=neutral">
+      <Package>banshee-thickclient</Package>
+    </Reference>
+    <Reference Include="Banshee.Widgets, Version=1.7.0.0, Culture=neutral">
+      <Package>banshee-thickclient</Package>
+    </Reference>
+    <Reference Include="Hyena, Version=1.7.0.0, Culture=neutral">
+      <Package>banshee-hyena</Package>
+    </Reference>
+    <Reference Include="Hyena.Data.Sqlite, Version=1.7.0.0, Culture=neutral">
+      <Package>banshee-hyena-data-sqlite</Package>
+    </Reference>
+    <Reference Include="Hyena.Gui, Version=1.7.0.0, Culture=neutral">
+      <Package>banshee-hyena-gui</Package>
+    </Reference>
+    <Reference Include="System.Core" />
+    <Reference Include="MathNet.Iridium, Version=2008.8.16.470, Culture=neutral, PublicKeyToken=c061a3ec32cc0c6f">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\NoNoise\MathNet.Iridium-2008.8.16.470\ForRedistribution\MathNet.Iridium.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Foo1.addin.xml">
+      <LogicalName>Foo1.addin.xml</LogicalName>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Mirage\Resources\dct.filter">
+      <LogicalName>dct.filter</LogicalName>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Mirage\Resources\filterweights.filter">
+      <LogicalName>filterweights.filter</LogicalName>
+    </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Banshee.Foo1\Foo1Source.cs" />
+    <Compile Include="lastfm-sharp\Lib.cs" />
+    <Compile Include="lastfm-sharp\RequestParameters.cs" />
+    <Compile Include="lastfm-sharp\Utilities.cs" />
+    <Compile Include="lastfm-sharp\Scrobbling\AuthenticationFailureException.cs" />
+    <Compile Include="lastfm-sharp\Scrobbling\BadAuthenticationDetailsException.cs" />
+    <Compile Include="lastfm-sharp\Scrobbling\BadSessionException.cs" />
+    <Compile Include="lastfm-sharp\Scrobbling\BannedClientException.cs" />
+    <Compile Include="lastfm-sharp\Scrobbling\Connection.cs" />
+    <Compile Include="lastfm-sharp\Scrobbling\Entry.cs" />
+    <Compile Include="lastfm-sharp\Scrobbling\NowplayingTrack.cs" />
+    <Compile Include="lastfm-sharp\Scrobbling\PlaybackSource.cs" />
+    <Compile Include="lastfm-sharp\Scrobbling\Request.cs" />
+    <Compile Include="lastfm-sharp\Scrobbling\ScrobbleManager.cs" />
+    <Compile Include="lastfm-sharp\Scrobbling\ScrobbleMode.cs" />
+    <Compile Include="lastfm-sharp\Scrobbling\ScrobblingException.cs" />
+    <Compile Include="lastfm-sharp\Scrobbling\WrongTimeException.cs" />
+    <Compile Include="lastfm-sharp\Services\Album.cs" />
+    <Compile Include="lastfm-sharp\Services\AlbumImageSize.cs" />
+    <Compile Include="lastfm-sharp\Services\AlbumSearch.cs" />
+    <Compile Include="lastfm-sharp\Services\AlbumWiki.cs" />
+    <Compile Include="lastfm-sharp\Services\Artist.cs" />
+    <Compile Include="lastfm-sharp\Services\ArtistBio.cs" />
+    <Compile Include="lastfm-sharp\Services\ArtistSearch.cs" />
+    <Compile Include="lastfm-sharp\Services\AuthenticatedUser.cs" />
+    <Compile Include="lastfm-sharp\Services\AuthenticationRequiredException.cs" />
+    <Compile Include="lastfm-sharp\Services\Base.cs" />
+    <Compile Include="lastfm-sharp\Services\Country.cs" />
+    <Compile Include="lastfm-sharp\Services\Event.cs" />
+    <Compile Include="lastfm-sharp\Services\EventAttendance.cs" />
+    <Compile Include="lastfm-sharp\Services\Gender.cs" />
+    <Compile Include="lastfm-sharp\Services\Global.cs" />
+    <Compile Include="lastfm-sharp\Services\Group.cs" />
+    <Compile Include="lastfm-sharp\Services\GroupMembers.cs" />
+    <Compile Include="lastfm-sharp\Services\IHasImage.cs" />
+    <Compile Include="lastfm-sharp\Services\IHasURL.cs" />
+    <Compile Include="lastfm-sharp\Services\IHasWeeklyAlbumCharts.cs" />
+    <Compile Include="lastfm-sharp\Services\IHasWeeklyArtistCharts.cs" />
+    <Compile Include="lastfm-sharp\Services\IHasWeeklyTrackCharts.cs" />
+    <Compile Include="lastfm-sharp\Services\ImageSize.cs" />
+    <Compile Include="lastfm-sharp\Services\InvalidPageException.cs" />
+    <Compile Include="lastfm-sharp\Services\IShareable.cs" />
+    <Compile Include="lastfm-sharp\Services\ITaggable.cs" />
+    <Compile Include="lastfm-sharp\Services\Library.cs" />
+    <Compile Include="lastfm-sharp\Services\LibraryAlbum.cs" />
+    <Compile Include="lastfm-sharp\Services\LibraryAlbums.cs" />
+    <Compile Include="lastfm-sharp\Services\LibraryArtist.cs" />
+    <Compile Include="lastfm-sharp\Services\LibraryArtists.cs" />
+    <Compile Include="lastfm-sharp\Services\LibraryItem.cs" />
+    <Compile Include="lastfm-sharp\Services\LibraryTrack.cs" />
+    <Compile Include="lastfm-sharp\Services\LibraryTracks.cs" />
+    <Compile Include="lastfm-sharp\Services\Pages.cs" />
+    <Compile Include="lastfm-sharp\Services\PastEvents.cs" />
+    <Compile Include="lastfm-sharp\Services\Period.cs" />
+    <Compile Include="lastfm-sharp\Services\Playlist.cs" />
+    <Compile Include="lastfm-sharp\Services\Recipients.cs" />
+    <Compile Include="lastfm-sharp\Services\RecommendedArtists.cs" />
+    <Compile Include="lastfm-sharp\Services\RecommendedEvents.cs" />
+    <Compile Include="lastfm-sharp\Services\Request.cs" />
+    <Compile Include="lastfm-sharp\Services\Search.cs" />
+    <Compile Include="lastfm-sharp\Services\ServiceException.cs" />
+    <Compile Include="lastfm-sharp\Services\Session.cs" />
+    <Compile Include="lastfm-sharp\Services\SiteLanguage.cs" />
+    <Compile Include="lastfm-sharp\Services\Tag.cs" />
+    <Compile Include="lastfm-sharp\Services\TagCollection.cs" />
+    <Compile Include="lastfm-sharp\Services\TagSearch.cs" />
+    <Compile Include="lastfm-sharp\Services\Tasteometer.cs" />
+    <Compile Include="lastfm-sharp\Services\TopAlbum.cs" />
+    <Compile Include="lastfm-sharp\Services\TopArtist.cs" />
+    <Compile Include="lastfm-sharp\Services\TopFan.cs" />
+    <Compile Include="lastfm-sharp\Services\TopItem.cs" />
+    <Compile Include="lastfm-sharp\Services\TopTag.cs" />
+    <Compile Include="lastfm-sharp\Services\TopTrack.cs" />
+    <Compile Include="lastfm-sharp\Services\Track.cs" />
+    <Compile Include="lastfm-sharp\Services\TrackSearch.cs" />
+    <Compile Include="lastfm-sharp\Services\TrackWiki.cs" />
+    <Compile Include="lastfm-sharp\Services\User.cs" />
+    <Compile Include="lastfm-sharp\Services\Venue.cs" />
+    <Compile Include="lastfm-sharp\Services\VenuePastEvents.cs" />
+    <Compile Include="lastfm-sharp\Services\VenueSearch.cs" />
+    <Compile Include="lastfm-sharp\Services\WeeklyAlbumChart.cs" />
+    <Compile Include="lastfm-sharp\Services\WeeklyAlbumChartItem.cs" />
+    <Compile Include="lastfm-sharp\Services\WeeklyArtistChart.cs" />
+    <Compile Include="lastfm-sharp\Services\WeeklyArtistChartItem.cs" />
+    <Compile Include="lastfm-sharp\Services\WeeklyChart.cs" />
+    <Compile Include="lastfm-sharp\Services\WeeklyChartItem.cs" />
+    <Compile Include="lastfm-sharp\Services\WeeklyChartTimeSpan.cs" />
+    <Compile Include="lastfm-sharp\Services\WeeklyTrackChart.cs" />
+    <Compile Include="lastfm-sharp\Services\WeeklyTrackChartItem.cs" />
+    <Compile Include="lastfm-sharp\Services\Wiki.cs" />
+    <Compile Include="lastfm-sharp\Services\XSPF.cs" />
+    <Compile Include="Banshee.Foo1\Foo1SourceContents.cs" />
+    <Compile Include="Bpm\BpmDetectJob.cs" />
+    <Compile Include="Mirage\Analyzer.cs" />
+    <Compile Include="Mirage\AudioDecoder.cs" />
+    <Compile Include="Mirage\Dbg.cs" />
+    <Compile Include="Mirage\Matrix.cs" />
+    <Compile Include="Mirage\Mfcc.cs" />
+    <Compile Include="Mirage\Scms.cs" />
+    <Compile Include="Mirage\ScmsConfiguration.cs" />
+    <Compile Include="Mirage\Vector.cs" />
+    <Compile Include="PCA\PCAnalyzer.cs" />
+  </ItemGroup>
+  <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
+  <ProjectExtensions>
+    <MonoDevelop>
+      <Properties>
+        <MonoDevelop.Autotools.MakefileInfo IntegrationEnabled="true" RelativeMakefileName="Makefile.am">
+          <BuildFilesVar Sync="true" Name="SOURCES" />
+          <DeployFilesVar />
+          <ResourcesVar Sync="true" Name="RESOURCES" />
+          <OthersVar />
+          <GacRefVar />
+          <AsmRefVar />
+          <ProjectRefVar />
+        </MonoDevelop.Autotools.MakefileInfo>
+      </Properties>
+    </MonoDevelop>
+  </ProjectExtensions>
+  <ItemGroup>
+    <ProjectReference Include="..\Mirage\libmirageaudio\libmirageaudio.cproj">
+      <Project>{D8618AEA-5F05-48DE-86BB-0A1F601AE5DC}</Project>
+      <Name>libmirageaudio</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Mirage\Resources\writefilters.m" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="PCA\" />
+  </ItemGroup>
+</Project>
