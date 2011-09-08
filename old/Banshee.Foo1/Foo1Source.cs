@@ -97,10 +97,11 @@ namespace Banshee.Foo1
             Gtk.ThreadNotify ready;
 
             private bool painintheassdummy = false;
-            private bool dopca = true;
+            private bool dopca = false;
             private bool doprintlib = false;
             private bool doprintselection = false;
 
+            private Banshee.NoNoise.Data.NoNoiseDBHandler db;
             private IBpmDetector detector;
             private int Bpm;
 
@@ -111,6 +112,13 @@ namespace Banshee.Foo1
             public CustomView() {
                 Hyena.Log.Debug("Foo1 - CustomView constructor");
                 session = new Session(API_KEY, API_SECRET);
+
+                db = new Banshee.NoNoise.Data.NoNoiseDBHandler ();
+                try {
+                    db.Test1 ();
+                } catch (Exception e) {
+                    Hyena.Log.Exception("DB Exception", e);
+                }
 
 //                try {
 ////                    Analyzer.Init();

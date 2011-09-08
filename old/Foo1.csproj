@@ -81,6 +81,8 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\..\NoNoise\MathNet.Iridium-2008.8.16.470\ForRedistribution\MathNet.Iridium.dll</HintPath>
     </Reference>
+    <Reference Include="System.Data" />
+    <Reference Include="Mono.Data.SqliteClient" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Foo1.addin.xml">
@@ -197,6 +199,7 @@
     <Compile Include="Mirage\Vector.cs" />
     <Compile Include="PCA\PCAnalyzer.cs" />
     <Compile Include="Data\DataHandler.cs" />
+    <Compile Include="Data\NoNoiseDBHandler.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ProjectExtensions>

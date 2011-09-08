@@ -120,7 +120,7 @@ BANSHEE_EXTDIR = /usr/lib/banshee/Extensions
 BANSHEE_LASTFM_CFLAGS =  
 BANSHEE_LASTFM_LIBS = -r:System -r:Mono.Posix -r:ICSharpCode.SharpZipLib -r:/usr/lib/banshee/Lastfm.dll -r:/usr/lib/banshee/Mono.Media.dll -r:/usr/lib/banshee/Hyena.dll  
 BANSHEE_LIBDIR = /usr/lib/banshee
-BANSHEE_LIBS = -r:/usr/lib/banshee/Banshee.Widgets.dll -r:/usr/lib/banshee/Banshee.ThickClient.dll -r:/usr/lib/banshee/Banshee.Services.dll -r:Mono.Cairo -r:/usr/lib/banshee/Hyena.Gui.dll -r:/usr/lib/banshee/Banshee.Core.dll -r:System -r:/usr/lib/banshee/Mono.Media.dll -r:/usr/lib/cli/NDesk.DBus-1.0/NDesk.DBus.dll -r:/usr/lib/cli/NDesk.DBus.GLib-1.0/NDesk.DBus.GLib.dll -r:/usr/lib/pkgconfig/../../lib/cli/glib-sharp-2.0/glib-sharp.dll -r:/usr/lib/cli/Mono.Addins-0.2/Mono.Addins.dll -r:Mono.Posix -r:/usr/lib/banshee/Hyena.dll -r:/usr/lib/banshee/Hyena.Data.Sqlite.dll -r:/usr/lib/banshee/MusicBrainz.dll -r:/usr/lib/pkgconfig/../../lib/cli/pango-sharp-2.0/pango-sharp.dll -r:/usr/lib/pkgconfig/../../lib/cli/atk-sharp-2.0/atk-sharp.dll -r:/usr/lib/pkgconfig/../../lib/cli/gdk-sharp-2.0/gdk-sharp.dll -r:/usr/lib/pkgconfig/../../lib/cli/gtk-sharp-2.0/gtk-sharp.dll -r:/usr/lib/cli/taglib-sharp-2.0/taglib-sharp.dll  
+BANSHEE_LIBS = -r:/usr/lib/banshee/Banshee.Widgets.dll -r:/usr/lib/banshee/Banshee.ThickClient.dll -r:/usr/lib/banshee/Banshee.Services.dll -r:Mono.Cairo -r:/usr/lib/banshee/Hyena.Gui.dll -r:/usr/lib/banshee/Banshee.Core.dll -r:System -r:/usr/lib/banshee/Mono.Media.dll -r:/usr/lib/cli/NDesk.DBus-1.0/NDesk.DBus.dll -r:/usr/lib/cli/NDesk.DBus.GLib-1.0/NDesk.DBus.GLib.dll -r:/usr/lib/pkgconfig/../../lib/cli/glib-sharp-2.0/glib-sharp.dll -r:/usr/lib/cli/Mono.Addins-0.2/Mono.Addins.dll -r:Mono.Posix -r:/usr/lib/banshee/Hyena.dll -r:/usr/lib/banshee/Hyena.Data.Sqlite.dll -r:/usr/lib/banshee/MusicBrainz.dll -r:/usr/lib/pkgconfig/../../lib/cli/pango-sharp-2.0/pango-sharp.dll -r:/usr/lib/pkgconfig/../../lib/cli/atk-sharp-2.0/atk-sharp.dll -r:/usr/lib/pkgconfig/../../lib/cli/gdk-sharp-2.0/gdk-sharp.dll -r:/usr/lib/pkgconfig/../../lib/cli/gtk-sharp-2.0/gtk-sharp.dll -r:/usr/lib/cli/taglib-sharp-2.0/taglib-sharp.dll -r:System.Data -r:Mono.Data.SqliteClient  
 BANSHEE_NOWPLAYING_CFLAGS =  
 BANSHEE_NOWPLAYING_LIBS = -r:/usr/lib/banshee/Extensions/Banshee.NowPlaying.dll  
 BANSHEE_WEBBROWSER_CFLAGS = -I:/usr/lib/pkgconfig/../../share/gapi-2.0/glib-api.xml -I:/usr/lib/pkgconfig/../../share/gapi-2.0/pango-api.xml -I:/usr/lib/pkgconfig/../../share/gapi-2.0/atk-api.xml -I:/usr/lib/pkgconfig/../../share/gapi-2.0/gdk-api.xml -I:/usr/lib/pkgconfig/../../share/gapi-2.0/gtk-api.xml  
@@ -329,6 +329,7 @@ SOURCES = \
 	Banshee.Foo1/Foo1SourceContents.cs \
 	Bpm/BpmDetectJob.cs \
 	Data/DataHandler.cs \
+	Data/NoNoiseDBHandler.cs \
 	lastfm-sharp/Lib.cs \
 	lastfm-sharp/RequestParameters.cs \
 	lastfm-sharp/Scrobbling/AuthenticationFailureException.cs \
