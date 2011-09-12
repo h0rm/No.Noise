@@ -66,6 +66,45 @@ namespace Banshee.NoNoise.Data
             return true;
         }
 
+        public bool InsertMatrix (Matrix m, int id)
+        {
+            IDbCommand dbcmd = null;
+            try {
+                dbcon = (IDbConnection) new SqliteConnection(connectionString);
+                dbcon.Open();
+                dbcmd = dbcon.CreateCommand();
+
+                dbcmd.CommandText = string.Format ("SELECT ID FROM MIRData WHERE ID = '{0}'", id);
+//                System.Data.IDataReader reader = dbcmd.ExecuteReader ();
+                if (dbcmd.ExecuteScalar () != null)
+                    return UpdateMatrix (m, id, dbcmd);
+
+                dbcmd.CommandText = string.Format("INSERT INTO MIRData (Data, ID) VALUES ('{0}', '{1}')", m.ToString (), id);
+                dbcmd.ExecuteNonQuery ();
+            } catch (Exception e) {
+                Log.Exception("Foo1/DB - Matrix insert failed for id: " + id, e);
+                return false;
+            } finally {
+                if (dbcmd != null)
+                    dbcmd.Dispose();
+                dbcmd = null;
+                if (dbcon != null)
+                    dbcon.Close();
+                dbcon = null;
+            }
+
+            return true;
+        }
+
+        private bool UpdateMatrix (Matrix m, int id, IDbCommand dbcmd)
+        {
+            Log.Debug("Foo1/DB - Updating id " + id);
+            dbcmd.CommandText = string.Format("UPDATE MIRData SET Data = '{0}' WHERE ID == '{1}'", m.ToString (), id);
+            dbcmd.ExecuteNonQuery ();
+
+            return true;
+        }
+
         public void Test1 ()
         {
             Matrix m = new Matrix (2, 3);
