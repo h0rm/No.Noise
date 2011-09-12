@@ -27,6 +27,7 @@
 //
 
 using System;
+using System.Collections.Generic;
 using System.Threading;
 
 using Mono.Addins;
@@ -97,7 +98,8 @@ namespace Banshee.Foo1
             Gtk.ThreadNotify ready;
 
             private bool painintheassdummy = false;
-            private bool dopca = false;
+            private bool gatherMIRdata = false;
+            private bool dopca = true;
             private bool doprintlib = false;
             private bool doprintselection = false;
 
@@ -114,14 +116,24 @@ namespace Banshee.Foo1
                 session = new Session(API_KEY, API_SECRET);
 
                 db = new Banshee.NoNoise.Data.NoNoiseDBHandler ();
-                try {
-                    if (db.InsertMatrix (new MathNet.Numerics.LinearAlgebra.Matrix(2,2)))
-                        Hyena.Log.Debug("Foo1 - insert succeeded");
-                    else
-                        Hyena.Log.Debug("Foo1 - insert failed");
-                } catch (Exception e) {
-                    Hyena.Log.Exception("DB Exception", e);
-                }
+
+                // PCA
+                if (dopca)
+                    PcaForMusicLibrary ();
+
+//                try {
+////                    if (db.InsertMatrix (new MathNet.Numerics.LinearAlgebra.Matrix(2,2)))
+////                        Hyena.Log.Debug("Foo1 - insert succeeded");
+////                    else
+////                        Hyena.Log.Debug("Foo1 - insert failed");
+//
+//                    List<MathNet.Numerics.LinearAlgebra.Matrix> mats = db.GetMatrices ();
+//                    foreach (MathNet.Numerics.LinearAlgebra.Matrix m in mats) {
+//                        Hyena.Log.Debug(m.ToString ());
+//                    }
+//                } catch (Exception e) {
+//                    Hyena.Log.Exception("DB Exception", e);
+//                }
 
 //                try {
 ////                    Analyzer.Init();
@@ -137,10 +149,6 @@ namespace Banshee.Foo1
 //                } catch (Exception e) {
 //                    Hyena.Log.Exception("MFCC Problem", e);
 //                }
-
-                // PCA
-                if (dopca)
-                    PcaForMusicLibrary ();
 
                 // BPM detector
                 detector = BpmDetectJob.GetDetector ();
@@ -188,19 +196,37 @@ namespace Banshee.Foo1
 
             private void PcaForMusicLibrary ()
             {
-                Banshee.Library.MusicLibrarySource ml = ServiceManager.SourceManager.MusicLibrary;
                 PCAnalyzer ana = new PCAnalyzer();
-                Matrix mfcc;
 
-                for (int i = 0; i < ml.TrackModel.Count; i++) {
-                    try {
-                        TrackInfo ti = ml.TrackModel[i];
-                        string absPath = ti.Uri.AbsolutePath;
-                        mfcc = Analyzer.AnalyzeMFCC(absPath);
-                        if (!ana.AddEntry(ConvertMfccMean(mfcc.Mean())))
-                            throw new Exception("AddEntry failed!");
-                    } catch (Exception e) {
-                        Hyena.Log.Exception("MFCC Problem", e);
+                if (gatherMIRdata) {
+                    Banshee.Library.MusicLibrarySource ml = ServiceManager.SourceManager.MusicLibrary;
+                    Matrix mfcc;
+
+                    for (int i = 0; i < ml.TrackModel.Count; i++) {
+                        try {
+                            TrackInfo ti = ml.TrackModel[i];
+                            string absPath = ti.Uri.AbsolutePath;
+                            mfcc = Analyzer.AnalyzeMFCC(absPath);
+
+                            if (!db.InsertMatrix (mfcc))
+                                Hyena.Log.Debug ("Foo1 - Matrix insert failed");
+
+                            if (!ana.AddEntry(ConvertMfccMean(mfcc.Mean())))
+                                throw new Exception("AddEntry failed!");
+                        } catch (Exception e) {
+                            Hyena.Log.Exception("Foo1 - MFCC Problem", e);
+                        }
+                    }
+                } else {
+                    List<Matrix> mfccs = db.GetMirageMatrices ();
+
+                    foreach (Matrix m in mfccs) {
+                        try {
+                            if (!ana.AddEntry (ConvertMfccMean (m.Mean ())))
+                                throw new Exception ("AddEntry failed!");
+                        } catch (Exception e) {
+                            Hyena.Log.Exception ("Foo1 - PCA Problem", e);
+                        }
                     }
                 }
                 try {

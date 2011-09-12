@@ -24,7 +24,9 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 using System;
+using System.Collections.Generic;
 using System.Data;
+using System.Text;
 using Mono.Data.SqliteClient;
 using MathNet.Numerics.LinearAlgebra;
 using Hyena.Data.Sqlite;
@@ -41,6 +43,61 @@ namespace Banshee.NoNoise.Data
         {
         }
 
+        public bool InsertMatrix (Mirage.Matrix m)
+        {
+            IDbCommand dbcmd = null;
+            try {
+                dbcon = (IDbConnection) new SqliteConnection(connectionString);
+                dbcon.Open();
+                dbcmd = dbcon.CreateCommand();
+
+                dbcmd.CommandText = string.Format("INSERT INTO MIRData (Data) VALUES ('{0}')", MirageMatrixToString(m));
+                dbcmd.ExecuteNonQuery ();
+            } catch (Exception e) {
+                Log.Exception("Foo1/DB - Matrix insert failed", e);
+                return false;
+            } finally {
+                if (dbcmd != null)
+                    dbcmd.Dispose();
+                dbcmd = null;
+                if (dbcon != null)
+                    dbcon.Close();
+                dbcon = null;
+            }
+
+            return true;
+        }
+
+        private string MirageMatrixToString (Mirage.Matrix m)
+        {
+            StringBuilder sb = new StringBuilder();
+
+            int i = 0;
+            while (i < m.rows) {
+                if (i == 0) {
+                    sb.Append("[[");
+                } else {
+                    sb.Append(" [");
+                }
+
+                int j = 0;
+                while (j < m.columns) {
+                    if (j != 0) {
+                        sb.Append(";");
+                    }
+                    sb.Append(m.d[i,j]);
+                    j++;
+                }
+                if (i == (m.rows - 1)) {
+                    sb.Append("]]");
+                    break;
+                }
+                sb.AppendLine("]");
+                i++;
+            }
+            return sb.ToString();
+        }
+
         public bool InsertMatrix (Matrix m)
         {
             IDbCommand dbcmd = null;
@@ -49,7 +106,7 @@ namespace Banshee.NoNoise.Data
                 dbcon.Open();
                 dbcmd = dbcon.CreateCommand();
 
-                dbcmd.CommandText = string.Format("INSERT INTO MIRData (Data) VALUES ('{0}')", m.ToString ());
+                dbcmd.CommandText = string.Format("INSERT INTO MIRData (Data) VALUES ('{0}')", MatrixToString (m));
                 dbcmd.ExecuteNonQuery ();
             } catch (Exception e) {
                 Log.Exception("Foo1/DB - Matrix insert failed", e);
@@ -75,11 +132,10 @@ namespace Banshee.NoNoise.Data
                 dbcmd = dbcon.CreateCommand();
 
                 dbcmd.CommandText = string.Format ("SELECT ID FROM MIRData WHERE ID = '{0}'", id);
-//                System.Data.IDataReader reader = dbcmd.ExecuteReader ();
                 if (dbcmd.ExecuteScalar () != null)
                     return UpdateMatrix (m, id, dbcmd);
 
-                dbcmd.CommandText = string.Format("INSERT INTO MIRData (Data, ID) VALUES ('{0}', '{1}')", m.ToString (), id);
+                dbcmd.CommandText = string.Format("INSERT INTO MIRData (Data, ID) VALUES ('{0}', '{1}')", MatrixToString (m), id);
                 dbcmd.ExecuteNonQuery ();
             } catch (Exception e) {
                 Log.Exception("Foo1/DB - Matrix insert failed for id: " + id, e);
@@ -99,13 +155,119 @@ namespace Banshee.NoNoise.Data
         private bool UpdateMatrix (Matrix m, int id, IDbCommand dbcmd)
         {
             Log.Debug("Foo1/DB - Updating id " + id);
-            dbcmd.CommandText = string.Format("UPDATE MIRData SET Data = '{0}' WHERE ID == '{1}'", m.ToString (), id);
+            dbcmd.CommandText = string.Format("UPDATE MIRData SET Data = '{0}' WHERE ID == '{1}'", MatrixToString (m), id);
             dbcmd.ExecuteNonQuery ();
 
             return true;
         }
 
-        public void Test1 ()
+        private string MatrixToString (Matrix m)
+        {
+            StringBuilder sb = new StringBuilder();
+
+            int i = 0;
+            while (i < m.RowCount) {
+                if (i == 0) {
+                    sb.Append("[[");
+                } else {
+                    sb.Append(" [");
+                }
+
+                int j = 0;
+                while (j < m.ColumnCount) {
+                    if (j != 0) {
+                        sb.Append(";");
+                    }
+                    sb.Append(m[i,j]);
+                    j++;
+                }
+                if (i == (m.RowCount - 1)) {
+                    sb.Append("]]");
+                    break;
+                }
+                sb.AppendLine("]");
+                i++;
+            }
+            return sb.ToString();
+        }
+
+        public List<Matrix> GetMatrices ()
+        {
+            List<Matrix> ret = new List<Matrix> ();
+
+            IDbCommand dbcmd = null;
+            try {
+                dbcon = (IDbConnection) new SqliteConnection(connectionString);
+                dbcon.Open();
+                dbcmd = dbcon.CreateCommand();
+
+                dbcmd.CommandText = "SELECT Data FROM MIRData";
+                System.Data.IDataReader reader = dbcmd.ExecuteReader();
+                while(reader.Read()) {
+                    ret.Add (ParseMatrix (reader.GetString (0)));
+                }
+
+                return ret;
+            } catch (Exception e) {
+                Log.Exception("Foo1/DB - Matrix read failed", e);
+                return null;
+            } finally {
+                if (dbcmd != null)
+                    dbcmd.Dispose();
+                dbcmd = null;
+                if (dbcon != null)
+                    dbcon.Close();
+                dbcon = null;
+            }
+        }
+
+        public List<Mirage.Matrix> GetMirageMatrices ()
+        {
+            List<Mirage.Matrix> ret = new List<Mirage.Matrix> ();
+
+            IDbCommand dbcmd = null;
+            try {
+                dbcon = (IDbConnection) new SqliteConnection(connectionString);
+                dbcon.Open();
+                dbcmd = dbcon.CreateCommand();
+
+                dbcmd.CommandText = "SELECT Data, ID FROM MIRData";
+                System.Data.IDataReader reader = dbcmd.ExecuteReader();
+                while(reader.Read()) {
+                    Mirage.Matrix mat = ParseMirageMatrix (reader.GetString (0));
+                    if (mat != null)
+                        ret.Add (mat);
+                    else {
+                        Log.Warning ("Foo1/DBNull - Matrix with id " + reader.GetInt32 (1) + " is null!");
+                        Log.Debug (reader.GetString (0));
+                        CheckMatrix (reader.GetString (0));
+                    }
+                }
+
+                return ret;
+            } catch (Exception e) {
+                Log.Exception("Foo1/DB - Mirage.Matrix read failed", e);
+                return null;
+            } finally {
+                if (dbcmd != null)
+                    dbcmd.Dispose();
+                dbcmd = null;
+                if (dbcon != null)
+                    dbcon.Close();
+                dbcon = null;
+            }
+        }
+
+        private void CheckMatrix (string matrix)
+        {
+            string[] rows;
+            Log.Debug ("MatrixRows: " + (rows = matrix.Split ('\n')).Length);
+            foreach (string r in rows) {
+                Log.Debug ("MatrixCols: " + r.Split (',').Length);
+            }
+        }
+
+/*        public void Test1 ()
         {
             Matrix m = new Matrix (2, 3);
             m[0,0] = 1;
@@ -144,7 +306,7 @@ namespace Banshee.NoNoise.Data
            dbcmd = null;
            dbcon.Close();
            dbcon = null;
-        }
+        }*/
 
         public Matrix ParseMatrix (string input)
         {
@@ -168,6 +330,31 @@ namespace Banshee.NoNoise.Data
                 Log.Exception("Foo1/DB - Matrix parse exception", e);
             }
             return new Matrix (d);
+        }
+
+        public Mirage.Matrix ParseMirageMatrix (string input)
+        {
+            string[] rows = input.Split('\n');
+            Mirage.Matrix m = null;
+
+            try {
+                for (int i = 0; i < rows.Length; i++) {
+                    string r = rows[i];
+                    int start;
+                    r = r.Substring (start = (r.LastIndexOf("[") + 1), r.IndexOf("]") - start);
+                    string[] cols = r.Split(';');
+                    if (i == 0)
+                        m = new Mirage.Matrix (rows.Length, cols.Length);
+                    for (int j = 0; j < cols.Length; j++) {
+//                        Log.Debug(cols[j]);
+                        m.d[i,j] = float.Parse(cols[j]);
+                    }
+                }
+            } catch (Exception e) {
+                Log.Exception("Foo1/DB - Mirage.Matrix parse exception", e);
+                return null;
+            }
+            return m;
         }
     }
 }
