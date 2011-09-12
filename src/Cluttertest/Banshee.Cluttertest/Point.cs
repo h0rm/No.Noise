@@ -33,25 +33,33 @@ namespace Banshee.Cluttertest
         double x;
         double y;
 
-        public Point (float x, float y) {
+        /*public Point (float x, float y) {
             this.x = x;
             this.y = y;
            // this.color = color;
-        }
+        }*/
 
         public Point (double x, double y)
         {
             this.x = x;
             this.y = y;
         }
-        
-        public float X {
+
+        public float FloatX {
             get { return (float)x; }
+        }
+
+        public float FloatY {
+            get { return (float)y; }
+        }
+
+        public double X {
+            get { return x; }
             set { x = value; }
         }
 
-        public float Y {
-            get { return (float)y; }
+        public double Y {
+            get { return y; }
             set { y = value; }
         }
 
@@ -67,16 +75,16 @@ namespace Banshee.Cluttertest
             this.y -= p.Y;
         }
 
-        public void Add (float x, float y)
+        public void Add (double x, double y)
         {
             this.x += x;
             this.y += y;
         }
 
-        public void Multiply (float factor)
+        public void Multiply (double factor)
         {
-            this.x *= (double)factor;
-            this.y *= (double)factor;
+            this.x *= factor;
+            this.y *= factor;
         }
 
         public void AddWithNormalization (Point p, int factor)
@@ -98,6 +106,11 @@ namespace Banshee.Cluttertest
             return Math.Sqrt ((p.X - this.X) * (p.X - this.X) + (p.Y - this.Y) * (p.Y - this.Y));
         }
 
+
+        override public String ToString ()
+        {
+            return "("+X+","+Y+")";
+        }
     };
 }
 

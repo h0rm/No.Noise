@@ -81,7 +81,7 @@ namespace Banshee.Cluttertest
         private double zoom_level = 1.0;
 
         private List<Cluster> cluster_list;
-
+        private List<Rectangle> debug_quad_rectangles;
 
         private Alpha animation_alpha;
         private Behaviour animation_behave;
@@ -132,7 +132,7 @@ namespace Banshee.Cluttertest
             shader.Compile ();
         }
 
-        public void ParseTextFile (string filename)
+        public void ParseTextFile (string filename, int count)
         {
             cluster_list = new List<Cluster> ();
 
@@ -141,7 +141,7 @@ namespace Banshee.Cluttertest
                 string line;
 
 
-                for(int i=0; i < 2000; i++)
+                for(int i=0; i < count; i++)
                 {
                     if((line = sr.ReadLine()) == null)
                         break;
@@ -149,16 +149,33 @@ namespace Banshee.Cluttertest
                     char[] delimiters = new char[] { '\t' };
                     string[] parts = line.Split(delimiters, StringSplitOptions.RemoveEmptyEntries);
 
-                    AddCircle (Math.Abs(float.Parse(parts[1], System.Globalization.CultureInfo.InvariantCulture))*20.0f,
-                               Math.Abs(float.Parse(parts[2], System.Globalization.CultureInfo.InvariantCulture))*20.0f,parts[0]);
+                    double x = Math.Abs(float.Parse(parts[1], System.Globalization.CultureInfo.InvariantCulture))*20.0f;
+                    double y = Math.Abs(float.Parse(parts[2], System.Globalization.CultureInfo.InvariantCulture))*20.0f;
 
+                    if ( x != 0 && y != 0)
+                        AddCircle ((float)x,(float)y,parts[0]);
 
                 }
 
             }
 
 //            Cluster.KMeansInit (4, Width, Height);
-            Cluster.HierarchicalInit (cluster_list);
+            List<QRectangle> list = Cluster.HierarchicalInit (cluster_list, Width, Height);
+
+            Hyena.Log.Debug ("Num of rectangles : " + list.Count);
+
+            debug_quad_rectangles = new List<Rectangle> ();
+            
+            foreach (QRectangle r in list) {
+                Rectangle rect = new Rectangle (new Color (1,0,0,0.1));
+                rect.SetPosition ((float)r.X, (float)r.Y);
+                rect.SetSize ((float)r.Width, (float)r.Height);
+                this.Add (rect);
+
+                debug_quad_rectangles.Add (rect);
+            }
+
+            //Hyena.Log.Debug ("True size: " + Width + "," + Height);
         }
         /// <summary>
         /// A test function which generates randomly distributed circles.
@@ -182,7 +199,7 @@ namespace Banshee.Cluttertest
                 AddCircle ((float)(r.NextDouble ()*width), (float)(r.NextDouble ()*height),"");
 
 //            Cluster.KMeansInit (4, Width, Height);
-            Cluster.HierarchicalInit (cluster_list);
+            Cluster.HierarchicalInit (cluster_list, Width, Height);
             //CalculateClusters (4);
         }
 
@@ -424,32 +441,11 @@ namespace Banshee.Cluttertest
         private void HandleAdaptiveZoom (object o, ScrollEventArgs args)
         {
 
-           Hyena.Log.Information("Adaptive Zoom");
+           //Hyena.Log.Information("Adaptive Zoom");
 
             //Mouse position
             float mouse_x = 0, mouse_y = 0;
             EventHelper.GetCoords(args.Event, out mouse_x, out mouse_y);
-
-//            //Transformed position
-//            float trans_x = 0, trans_y = 0;
-//            this.TransformStagePoint(mouse_x,mouse_y,out trans_x, out trans_y);
-//
-//            //raus zoomen
-//            this.SetScale(1.0,1.0);
-//
-//            float trans_x_unif = 0, trans_y_unif = 0;
-//            this.TransformStagePoint(mouse_x,mouse_y,out trans_x_unif, out trans_y_unif);
-//
-//            float pos_x = this.X + (trans_x_unif - trans_x);
-//            float pos_y = this.Y + (trans_y_unif - trans_y);
-//
-//            //punkt auf objekt schieben
-//            this.SetPosition(pos_x, pos_y);
-//
-//            //circle_group.SetScale(zoom_level,zoom_level);
-//
-//
-//            double old_zoom_level = zoom_level;
 
             //rein zoomen
             switch (args.Event.Direction)
@@ -464,40 +460,6 @@ namespace Banshee.Cluttertest
                 ZoomOnPosition (false, mouse_x, mouse_y);
                 break;
             }
-
-//            uint duration = 1000;
-//
-//            if (animation_timeline.Progress < 0.2 && animation_timeline.IsPlaying) { //case zu langsam - keine animationen
-//
-//                this.Animation.Timeline.Stop();
-//
-//                this.SetScaleFull (zoom_level, zoom_level, trans_x, trans_y);
-//
-//                animation_behave.RemoveAll();
-//
-//                //zoom actor in andere richtung - warum center 0,0 geht weiß ich nicht ..
-//                foreach (Actor a in this)
-//                    a.SetScale (1.0/zoom_level,1.0/zoom_level);
-//
-//            } else {
-//
-//                this.SetScaleFull (old_zoom_level, old_zoom_level, trans_x, trans_y);
-//
-//                this.Animatev ((ulong)AnimationMode.EaseOutCubic,duration, new String[]{"scale-x"}, new GLib.Value (zoom_level));
-//                this.Animatev ((ulong)AnimationMode.EaseOutCubic,duration, new String[]{"scale-y"}, new GLib.Value (zoom_level));
-//
-//                animation_behave.RemoveAll();
-//
-//                animation_timeline.Duration = duration;
-//                animation_behave = new BehaviourScale (animation_alpha, 1.0f/old_zoom_level, 1.0f/old_zoom_level, 1.0f/zoom_level, 1.0f/zoom_level);
-//
-//                //neues behaviour an die circles andwenden
-//                foreach (Actor a in cluster_list)
-//                    animation_behave.Apply(a);
-//            }
-//
-//            animation_timeline.Stop();
-//            animation_timeline.Start();
         }
 
         /// <summary>

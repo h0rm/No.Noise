@@ -25,6 +25,7 @@
 // THE SOFTWARE.
 
 using System;
+using System.Linq;
 using Clutter;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -32,11 +33,13 @@ using Hyena;
 
 namespace Banshee.Cluttertest
 {
-    public class Cluster : Clutter.Texture
+    public class Cluster : Clutter.Texture, IStorable
     {
         #region Static Functions
 
+        static private List<QRectangle> debug_quads = new List<QRectangle> ();
         static private Cluster root;
+        static private QuadTree<Cluster> quad_tree;
         static private int max_prototypes = 4;
         static private uint circle_size = 50;
         static private List<CairoTexture> prototype_list = new List<CairoTexture> ();
@@ -45,6 +48,8 @@ namespace Banshee.Cluttertest
         {
             GeneratePrototypes ();
             root = new Cluster (0,0);
+
+
         }
 
         static private void GeneratePrototypes ()
@@ -124,8 +129,8 @@ namespace Banshee.Cluttertest
 
             //context.Restore ();
 
-            if (arc != 0)
-            {
+            if (arc != 0) {
+
                 context.LineWidth = (double)size/10.0;
                 context.Arc (size/2.0, size/2.0,
                          size/2.0-context.LineWidth/2.0,-Math.PI/2.0,2*Math.PI*arc/100.0-Math.PI/2.0);
@@ -138,10 +143,35 @@ namespace Banshee.Cluttertest
             ((IDisposable) context).Dispose ();
         }
 
-        static public void HierarchicalInit (List<Cluster> points)
+        static public List<QRectangle> HierarchicalInit (List<Cluster> points, double width, double height)
         {
             Hyena.Log.Debug ("Hierarchical Clustering Init");
             root.AddChildren (points);
+
+            double max_x = points.Max (p => p.X);
+            double max_y = points.Max (p => p.Y);
+
+            double min_x = points.Min (p => p.X);
+            double min_y = points.Min (p => p.Y);
+
+            Hyena.Log.Debug ("Max : " + max_x + "|" + max_y );
+            Hyena.Log.Debug ("Min : " + min_x + "|" + min_y );
+
+            //Create quadtree
+            quad_tree = new QuadTree<Cluster> (0,0, max_x+1, max_y+1);
+
+            quad_tree.OnCreateQuad += delegate(OnCreateQuadArgs args) {
+                //Hyena.Log.Debug ("New Quad created at (" + args.Rectangle.X + "," + args.Rectangle.Y
+                 //                + ") with (" + args.Rectangle.Width + "," + args.Rectangle.Height);
+                debug_quads.Add (args.Rectangle);
+            };
+
+            lock (points) {
+                foreach (Cluster c in points)
+                    quad_tree.Add (c);
+            }
+
+            return debug_quads;
         }
 
         static public void RefineOneStep ()
@@ -313,7 +343,7 @@ namespace Banshee.Cluttertest
                 positions.RemoveAt (positions.Count-1);
             }
 
-                this.SetPosition (pos.X, pos.Y);
+                this.SetPosition (pos.FloatX, pos.FloatY);
 
             //Point oldPos = ret.XY;
             //ret.SetPosition (this.X, this.Y);

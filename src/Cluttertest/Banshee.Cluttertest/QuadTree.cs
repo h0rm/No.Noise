@@ -16,7 +16,7 @@ namespace Banshee.Cluttertest
         //XY Coordinates are used to store objects
         Point XY { get; }
 
-        bool NeedsUpdate { get; }
+       // bool NeedsUpdate { get; }
     }
 
     /// <summary>
@@ -64,9 +64,10 @@ namespace Banshee.Cluttertest
             quadTreeRoot = new QuadTreeNode<T> (rect);
         }
 
-        public QuadTree (Point center, double width, double height)
+        public QuadTree (double x, double y, double width, double height)
         {
-            quadTreeRoot = new QuadTreeNode<T> (new QRectangle (center,width,height));
+            Hyena.Log.Debug ("New quad tree at " + new Point (x,y) + " width: " + width + " height: " + height);
+            quadTreeRoot = new QuadTreeNode<T> (x,y,width,height);
         }
 
         public QRectangle Rectangle {
@@ -78,17 +79,53 @@ namespace Banshee.Cluttertest
             QuadTreeObject<T> wrappedItem = new QuadTreeObject<T> (item);
 
             dictionary.Add (item, wrappedItem);
-            ///Inserv fehlt no
+            //Hyena.Log.Debug ("Add item at (" + item.XY.X + "," + item.XY.Y + ")");
+            quadTreeRoot.Insert (wrappedItem);
+        }
+
+        public event OnCreateQuadEvent OnCreateQuad {
+            add { create_quad_handler += value; }
+            remove { create_quad_handler -= value; }
+        }
+
+        internal static OnCreateQuadEvent create_quad_handler;
+    }
+
+    #region Handler
+
+    public class OnCreateQuadArgs
+    {
+        public QRectangle Rectangle {
+            get;
+            private set;
+        }
+
+        public int Level {
+            get;
+            private set;
+        }
+
+        public OnCreateQuadArgs (QRectangle rect, int level)
+        {
+            Rectangle = rect;
+            Level = level;
         }
     }
+
+    public delegate void OnCreateQuadEvent (OnCreateQuadArgs args);
+
+    #endregion
 
     /// <summary>
     /// This class represents a node in the quadtree
     /// </summary>
     public class QuadTreeNode<T> where T : IStorable
     {
+
         //number of maximum objects in a node. if exceeded subdivision is performed
-        private const int MAX_OBJECTS = 4;
+        private const int MAX_OBJECTS = 20;
+        private const int MAX_LEVEL = 20;
+        private int level = 0;
 
         //parent node
         private QuadTreeNode<T> parent = null;
@@ -103,6 +140,10 @@ namespace Banshee.Cluttertest
 
         //rectangle which represents the node geometrically
         private QRectangle boundary_rectangle;
+
+        public int Level {
+            get { return level; }
+        }
 
         public QRectangle Rectangle {
             get { return boundary_rectangle; }
@@ -132,14 +173,27 @@ namespace Banshee.Cluttertest
             this.boundary_rectangle = rect;
         }
 
-        public QuadTreeNode (Point center, double width, double height)
+        public QuadTreeNode (double x, double y, double width, double height)
         {
-            this.boundary_rectangle = new QRectangle (center, width, height);
+            this.boundary_rectangle = new QRectangle (x, y, width, height);
+
+            if (QuadTree<T>.create_quad_handler != null)
+                QuadTree<T>.create_quad_handler (new OnCreateQuadArgs (boundary_rectangle,this.level));
+        }
+
+        private QuadTreeNode (QuadTreeNode<T> parent, double x, double y, double width, double height)
+            :this (parent, new QRectangle (x, y, width, height))
+        {
         }
 
         private QuadTreeNode (QuadTreeNode<T> parent, QRectangle rect)
         {
             this.parent = parent;
+            this.boundary_rectangle = rect;
+            this.level = parent.Level+1;
+
+            if (QuadTree<T>.create_quad_handler != null)
+                QuadTree<T>.create_quad_handler (new OnCreateQuadArgs (boundary_rectangle,this.level));
         }
 
         /// <summary>
@@ -171,20 +225,31 @@ namespace Banshee.Cluttertest
         /// </summary>
         private void Subdivide ()
         {
-            Point half = new Point (boundary_rectangle.Width/2, boundary_rectangle.Height/2);
-            Point quad = new Point (boundary_rectangle.Width/4, boundary_rectangle.Height/4);
+            double width_half = boundary_rectangle.Width/2;
+            double height_half = boundary_rectangle.Height/2;
 
-            //New child nodes
+            double x_half = boundary_rectangle.X + width_half;
+            double y_half = boundary_rectangle.Y + height_half;
+
+            double x = boundary_rectangle.X;
+            double y = boundary_rectangle.Y;
+
+            double x_right = boundary_rectangle.TopRight.X;
+            double y_top = boundary_rectangle.TopRight.Y;
+
             top_left = new QuadTreeNode<T> (this,
-                                  new QRectangle (boundary_rectangle.X-quad.X,boundary_rectangle.Y+quad.Y, half.X, half.Y));
-            top_right = new QuadTreeNode<T> (this,
-                                  new QRectangle (boundary_rectangle.X+quad.X, boundary_rectangle.Y+quad.Y, half.X, half.Y));
-            bottom_left = new QuadTreeNode<T> (this,
-                                  new QRectangle (boundary_rectangle.X-quad.X,boundary_rectangle.Y-quad.Y, half.X, half.Y));
-            bottom_right = new QuadTreeNode<T> (this,
-                                  new QRectangle (boundary_rectangle.X+quad.X,boundary_rectangle.Y-quad.Y, half.X, half.Y));
+                               new QRectangle (new Point (x,y_half), new Point (x_half,y_top)));
 
-            //TODO : sicherstellen dass keine löcher entstehen - sollt passen siehe rectangle
+            top_right = new QuadTreeNode<T> (this,
+                               new QRectangle (new Point (x_half,y_half), new Point (x_right,y_top)));
+
+            bottom_left = new QuadTreeNode<T> (this,
+                               new QRectangle (new Point (x,y), new Point (x_half, y_half)));
+
+            bottom_right = new QuadTreeNode<T> (this,
+                               new QRectangle (new Point (x_half,y), new Point (x_right, y_half)));
+
+           //TODO : sicherstellen dass keine löcher entstehen - sollt passen siehe rectangle
 
             //Assign objects to nodes
             for (int i=0; i < objects.Count; i++)
@@ -193,7 +258,7 @@ namespace Banshee.Cluttertest
 
                 if (node != this) {
 
-                    node.Add (objects[i]);      //passt noch nicht ganze - Insert statt Add
+                    node.Insert (objects[i]);
                     objects.Remove (objects[i]);
                     i--;
                 }
@@ -225,8 +290,17 @@ namespace Banshee.Cluttertest
             else if (bottom_right.Rectangle.Contains (item.Value.XY)) {
                 dest = bottom_right;
             }
+
+            return dest;
         }
 
+
+        /// <summary>
+        /// Inserts an item into this quad
+        /// </summary>
+        /// <param name="item">
+        /// A <see cref="QuadTreeObject<T>"/>
+        /// </param>
         internal void Insert (QuadTreeObject<T> item)
         {
             if (!boundary_rectangle.Contains (item.Value.XY)) {     //Item not contained in this (sub)tree
@@ -239,7 +313,8 @@ namespace Banshee.Cluttertest
                 }
             }
 
-            if (top_left == null && objects.Count < MAX_OBJECTS ) {   //if enough space (no subdivision)
+            if ((top_left == null && objects.Count < MAX_OBJECTS ) || Level >= MAX_LEVEL) {
+                //if enough space (no subdivision) or max level reached
                 Add (item);     //simply add
             } else {
 
@@ -256,6 +331,70 @@ namespace Banshee.Cluttertest
             }
 
         }
+
+        /// <summary>
+        /// Gets all objects of this subtree.
+        /// </summary>
+        /// <param name="results">
+        /// A <see cref="List<T>"/>
+        /// </param>
+        public void GetAllObjects (ref List<T> results)
+        {
+            if (results == null)
+                return;
+
+            if (objects != null) {          //add all objects in this node
+                foreach (QuadTreeObject<T> item in objects)
+                    results.Add (item.Value);
+            }
+
+            if (top_left != null) {         //add all objects in child nodes
+                top_left.GetAllObjects (ref results);
+                top_right.GetAllObjects (ref results);
+                bottom_left.GetAllObjects (ref results);
+                bottom_right.GetAllObjects (ref results);
+            }
+        }
+
+        /// <summary>
+        /// Gets all objects in this subtree which are in the specified search area
+        /// </summary>
+        /// <param name="rect">
+        /// A <see cref="QRectangle"/>
+        /// </param>
+        /// <param name="results">
+        /// A <see cref="List<T>"/>
+        /// </param>
+        public void GetObjects (QRectangle rect, ref List<T> results)
+        {
+            if (results == null)
+                return;
+
+            if (rect.Contains (boundary_rectangle)) {
+
+                // If whole quad in search area add all items of subtree
+                GetAllObjects (ref results);
+
+            } else if (rect.Intersects (boundary_rectangle)) {
+
+                // For every item in this quad check if it is contained in search area
+                foreach (QuadTreeObject<T> item in objects) {
+
+                    if (rect.Contains (item.Value.XY))
+                        results.Add (item.Value);
+                }
+
+                if (top_left != null) {
+
+                    //check all child quads
+                    top_left.GetObjects (rect, ref results);
+                    top_right.GetObjects (rect, ref results);
+                    bottom_left.GetObjects (rect, ref results);
+                    bottom_right.GetObjects (rect, ref results);
+                }
+
+            }
+        }
     }
     #region helper classes
 
@@ -267,39 +406,48 @@ namespace Banshee.Cluttertest
         // to circumvent rounding problems this number is used
         private const double E = 0.000001;
 
-        private double height, width;
-        private Point center;
+        private Point bottom_left;
+        private Point top_right;
 
-        public QRectangle (Point center, double width, double height)
-        {
-            this.center = center;
-            this.width = width;
-            this.height = height;
-        }
 
         public QRectangle (double x, double y, double width, double height)
-                                                :this (new Point (x,y),width,height)
         {
+            this.bottom_left = new Point (x,y);
+            this.top_right = new Point (x+width, y+height);
+        }
+
+        public QRectangle (Point bottom_left, Point top_right)
+        {
+            this.bottom_left = bottom_left;
+            this.top_right = top_right;
         }
 
         public double Width {
-            get { return width; }
+            get { return top_right.X - bottom_left.X; }
         }
 
         public double Height {
-            get { return height; }
+            get { return top_right.Y - bottom_left.Y; }
+        }
+
+        public Point TopRight {
+            get { return top_right; }
+        }
+
+        public Point BottomLeft {
+            get { return bottom_left; }
         }
 
         public Point Center {
-            get { return center; }
+            get { return new Point (X + Width/2, Y + Height /2); }
         }
 
         public double X {
-            get { return center.X; }
+            get { return bottom_left.X; }
         }
 
         public double Y {
-            get { return center.Y; }
+            get { return bottom_left.Y; }
         }
 
         /// <summary>
@@ -313,11 +461,40 @@ namespace Banshee.Cluttertest
         /// </returns>
         public bool Contains (Point p)
         {
-            double h_y = Height /2;
-            double h_x = Width /2;
+            return p.X <= top_right.X && p.X >= bottom_left.X &&
+                   p.Y <= top_right.Y && p.Y >= bottom_left.Y;
+        }
 
-            return p.X <= X + h_x + E && p.X >= X - h_x - E &&
-                   p.Y <= Y + h_y + E && p.Y >= Y - h_y -E;
+        /// <summary>
+        /// Checks if another rectangle is contained in this rectangle
+        /// </summary>
+        /// <param name="rect">
+        /// A <see cref="QRectangle"/>
+        /// </param>
+        /// <returns>
+        /// A <see cref="System.Boolean"/>
+        /// </returns>
+        public bool Contains (QRectangle rect)
+        {
+
+            return  X <= rect.X && top_right.Y >= rect.top_right.Y &&
+                    top_right.X >= rect.top_right.X && Y <= rect.Y;
+        }
+
+        /// <summary>
+        /// Checks if another rectangle intersects with this rectangle
+        /// </summary>
+        /// <param name="rect">
+        /// A <see cref="QRectangle"/>
+        /// </param>
+        /// <returns>
+        /// A <see cref="System.Boolean"/>
+        /// </returns>
+        public bool Intersects (QRectangle rect)
+        {
+            //check if rect is completely to the left, right, bottom, top - else the rectangles intersect
+            return !(rect.top_right.X < X || rect.X > top_right.X ||
+                     rect.top_right.Y < Y || rect.Y > top_right.Y);
         }
     }
 
