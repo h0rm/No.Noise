@@ -115,7 +115,10 @@ namespace Banshee.Foo1
 
                 db = new Banshee.NoNoise.Data.NoNoiseDBHandler ();
                 try {
-                    db.Test1 ();
+                    if (db.InsertMatrix (new MathNet.Numerics.LinearAlgebra.Matrix(2,2)))
+                        Hyena.Log.Debug("Foo1 - insert succeeded");
+                    else
+                        Hyena.Log.Debug("Foo1 - insert failed");
                 } catch (Exception e) {
                     Hyena.Log.Exception("DB Exception", e);
                 }
