@@ -43,13 +43,13 @@ namespace Banshee.NoNoise.Data
 
         public NoNoiseDBHandler ()
         {
+            dbcon = (IDbConnection) new SqliteConnection(connectionString);
         }
 
         public bool InsertMatrix (Mirage.Matrix m, int bid)
         {
             IDbCommand dbcmd = null;
             try {
-                dbcon = (IDbConnection) new SqliteConnection(connectionString);
                 dbcon.Open();
                 dbcmd = dbcon.CreateCommand();
 
@@ -65,7 +65,6 @@ namespace Banshee.NoNoise.Data
                 dbcmd = null;
                 if (dbcon != null)
                     dbcon.Close();
-                dbcon = null;
             }
 
             return true;
@@ -105,7 +104,6 @@ namespace Banshee.NoNoise.Data
         {
             IDbCommand dbcmd = null;
             try {
-                dbcon = (IDbConnection) new SqliteConnection(connectionString);
                 dbcon.Open();
                 dbcmd = dbcon.CreateCommand();
 
@@ -121,7 +119,6 @@ namespace Banshee.NoNoise.Data
                 dbcmd = null;
                 if (dbcon != null)
                     dbcon.Close();
-                dbcon = null;
             }
 
             return true;
@@ -131,7 +128,6 @@ namespace Banshee.NoNoise.Data
         {
             IDbCommand dbcmd = null;
             try {
-                dbcon = (IDbConnection) new SqliteConnection(connectionString);
                 dbcon.Open();
                 dbcmd = dbcon.CreateCommand();
 
@@ -151,7 +147,6 @@ namespace Banshee.NoNoise.Data
                 dbcmd = null;
                 if (dbcon != null)
                     dbcon.Close();
-                dbcon = null;
             }
 
             return true;
@@ -203,7 +198,6 @@ namespace Banshee.NoNoise.Data
 
             IDbCommand dbcmd = null;
             try {
-                dbcon = (IDbConnection) new SqliteConnection(connectionString);
                 dbcon.Open();
                 dbcmd = dbcon.CreateCommand();
 
@@ -223,7 +217,6 @@ namespace Banshee.NoNoise.Data
                 dbcmd = null;
                 if (dbcon != null)
                     dbcon.Close();
-                dbcon = null;
             }
         }
 
@@ -233,7 +226,6 @@ namespace Banshee.NoNoise.Data
 
             IDbCommand dbcmd = null;
             try {
-                dbcon = (IDbConnection) new SqliteConnection(connectionString);
                 dbcon.Open();
                 dbcmd = dbcon.CreateCommand();
 
@@ -261,7 +253,6 @@ namespace Banshee.NoNoise.Data
                 dbcmd = null;
                 if (dbcon != null)
                     dbcon.Close();
-                dbcon = null;
             }
         }
 
@@ -368,7 +359,6 @@ namespace Banshee.NoNoise.Data
         {
             IDbCommand dbcmd = null;
             try {
-                dbcon = (IDbConnection) new SqliteConnection(connectionString);
                 dbcon.Open();
                 dbcmd = dbcon.CreateCommand();
 
@@ -386,7 +376,6 @@ namespace Banshee.NoNoise.Data
                 dbcmd = null;
                 if (dbcon != null)
                     dbcon.Close();
-                dbcon = null;
             }
         }
 
@@ -404,7 +393,6 @@ namespace Banshee.NoNoise.Data
         {
             IDbCommand dbcmd = null;
             try {
-                dbcon = (IDbConnection) new SqliteConnection(connectionString);
                 dbcon.Open();
                 dbcmd = dbcon.CreateCommand();
 
@@ -421,7 +409,6 @@ namespace Banshee.NoNoise.Data
                 dbcmd = null;
                 if (dbcon != null)
                     dbcon.Close();
-                dbcon = null;
             }
 
             return true;
@@ -431,7 +418,6 @@ namespace Banshee.NoNoise.Data
         {
             IDbCommand dbcmd = null;
             try {
-                dbcon = (IDbConnection) new SqliteConnection(connectionString);
                 dbcon.Open();
                 dbcmd = dbcon.CreateCommand();
 
@@ -446,8 +432,67 @@ namespace Banshee.NoNoise.Data
                 dbcmd = null;
                 if (dbcon != null)
                     dbcon.Close();
-                dbcon = null;
             }
+        }
+
+        public bool ContainsInfoForTrack (int bid)
+        {
+            IDbCommand dbcmd = null;
+            try {
+                dbcon.Open();
+                dbcmd = dbcon.CreateCommand();
+
+                dbcmd.CommandText = string.Format ("SELECT ID FROM TrackData WHERE banshee_id = '{0}'", bid);
+                return (dbcmd.ExecuteScalar () != null);
+            } catch (Exception e) {
+                Log.Exception("Foo1/DB - Contains TrackInfo query failed for banshee_id: " + bid, e);
+                return false;
+            } finally {
+                if (dbcmd != null)
+                    dbcmd.Dispose();
+                dbcmd = null;
+                if (dbcon != null)
+                    dbcon.Close();
+            }
+        }
+
+        public bool InsertTrackInfo (TrackInfo ti)
+        {
+            IDbCommand dbcmd = null;
+            try {
+                dbcon.Open();
+                dbcmd = dbcon.CreateCommand();
+
+                dbcmd.CommandText = "INSERT INTO TrackData (banshee_id, artist, title, album, duration)" +
+                                    " VALUES (@bid, @artist, @title, @album, @duration)";
+
+                SqliteParameter id = new SqliteParameter("@bid", ti.ID);
+                SqliteParameter artist = new SqliteParameter("@artist", ti.Artist);
+                SqliteParameter title = new SqliteParameter("@title", ti.Title);
+                SqliteParameter album = new SqliteParameter("@album", ti.Album);
+                SqliteParameter duration = new SqliteParameter("@duration", ti.Duration);
+
+                dbcmd.Parameters.Add(id);
+                dbcmd.Parameters.Add(artist);
+                dbcmd.Parameters.Add(title);
+                dbcmd.Parameters.Add(album);
+                dbcmd.Parameters.Add(duration);
+    
+                dbcmd.Prepare();
+
+                dbcmd.ExecuteNonQuery ();
+            } catch (Exception e) {
+                Log.Exception("Foo1/DB - TrackInfo insert failed for TI: " + ti, e);
+                return false;
+            } finally {
+                if (dbcmd != null)
+                    dbcmd.Dispose();
+                dbcmd = null;
+                if (dbcon != null)
+                    dbcon.Close();
+            }
+
+            return true;
         }
     }
 }
