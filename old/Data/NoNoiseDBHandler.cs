@@ -510,89 +510,6 @@ namespace Banshee.NoNoise.Data
         }
         #endregion
 
-        #region Clear Tables
-        /// <summary>
-        /// Clears the MIRData table of the database.
-        /// </summary>
-        public void ClearMirData ()
-        {
-            IDbCommand dbcmd = null;
-            try {
-                dbcon.Open();
-                dbcmd = dbcon.CreateCommand();
-
-                dbcmd.CommandText = "DROP TABLE MIRData";
-                dbcmd.ExecuteNonQuery ();
-
-                dbcmd.CommandText = CREATE_TABLE_MIRDATA;
-                dbcmd.ExecuteNonQuery ();
-            } catch (Exception e) {
-                Log.Exception("Foo1/DB - Clear MIR Data failed", e);
-                throw new Exception ("Clear MIR Data failed!", e);
-            } finally {
-                if (dbcmd != null)
-                    dbcmd.Dispose();
-                dbcmd = null;
-                if (dbcon != null)
-                    dbcon.Close();
-            }
-        }
-
-        /// <summary>
-        /// Clears the PCAData table of the database.
-        /// </summary>
-        public void ClearPcaData ()
-        {
-            IDbCommand dbcmd = null;
-            try {
-                dbcon.Open();
-                dbcmd = dbcon.CreateCommand();
-
-                dbcmd.CommandText = "DROP TABLE PCAData";
-                dbcmd.ExecuteNonQuery ();
-
-                dbcmd.CommandText = CREATE_TABLE_PCADATA;
-                dbcmd.ExecuteNonQuery ();
-            } catch (Exception e) {
-                Log.Exception("Foo1/DB - Clear PCA Data failed", e);
-                throw new Exception ("Clear PCA Data failed!", e);
-            } finally {
-                if (dbcmd != null)
-                    dbcmd.Dispose();
-                dbcmd = null;
-                if (dbcon != null)
-                    dbcon.Close();
-            }
-        }
-
-        /// <summary>
-        /// Clears the TrackData table of the database.
-        /// </summary>
-        public void ClearTrackData ()
-        {
-            IDbCommand dbcmd = null;
-            try {
-                dbcon.Open();
-                dbcmd = dbcon.CreateCommand();
-
-                dbcmd.CommandText = "DROP TABLE TrackData";
-                dbcmd.ExecuteNonQuery ();
-
-                dbcmd.CommandText = CREATE_TABLE_TRACKDATA;
-                dbcmd.ExecuteNonQuery ();
-            } catch (Exception e) {
-                Log.Exception("Foo1/DB - Clear Track Data failed", e);
-                throw new Exception ("Clear Track Data failed!", e);
-            } finally {
-                if (dbcmd != null)
-                    dbcmd.Dispose();
-                dbcmd = null;
-                if (dbcon != null)
-                    dbcon.Close();
-            }
-        }
-        #endregion
-
         #region PCAData
         /// <summary>
         /// Inserts a list of DataEntry's into the PCAData table.
@@ -719,6 +636,89 @@ namespace Banshee.NoNoise.Data
             } catch (Exception e) {
                 Log.Exception("Foo1/DB - Contains TrackInfo query failed for banshee_id: " + bid, e);
                 return false;
+            } finally {
+                if (dbcmd != null)
+                    dbcmd.Dispose();
+                dbcmd = null;
+                if (dbcon != null)
+                    dbcon.Close();
+            }
+        }
+        #endregion
+
+        #region Clear Tables
+        /// <summary>
+        /// Clears the MIRData table of the database.
+        /// </summary>
+        public void ClearMirData ()
+        {
+            IDbCommand dbcmd = null;
+            try {
+                dbcon.Open();
+                dbcmd = dbcon.CreateCommand();
+
+                dbcmd.CommandText = "DROP TABLE MIRData";
+                dbcmd.ExecuteNonQuery ();
+
+                dbcmd.CommandText = CREATE_TABLE_MIRDATA;
+                dbcmd.ExecuteNonQuery ();
+            } catch (Exception e) {
+                Log.Exception("Foo1/DB - Clear MIR Data failed", e);
+                throw new Exception ("Clear MIR Data failed!", e);
+            } finally {
+                if (dbcmd != null)
+                    dbcmd.Dispose();
+                dbcmd = null;
+                if (dbcon != null)
+                    dbcon.Close();
+            }
+        }
+
+        /// <summary>
+        /// Clears the PCAData table of the database.
+        /// </summary>
+        public void ClearPcaData ()
+        {
+            IDbCommand dbcmd = null;
+            try {
+                dbcon.Open();
+                dbcmd = dbcon.CreateCommand();
+
+                dbcmd.CommandText = "DROP TABLE PCAData";
+                dbcmd.ExecuteNonQuery ();
+
+                dbcmd.CommandText = CREATE_TABLE_PCADATA;
+                dbcmd.ExecuteNonQuery ();
+            } catch (Exception e) {
+                Log.Exception("Foo1/DB - Clear PCA Data failed", e);
+                throw new Exception ("Clear PCA Data failed!", e);
+            } finally {
+                if (dbcmd != null)
+                    dbcmd.Dispose();
+                dbcmd = null;
+                if (dbcon != null)
+                    dbcon.Close();
+            }
+        }
+
+        /// <summary>
+        /// Clears the TrackData table of the database.
+        /// </summary>
+        public void ClearTrackData ()
+        {
+            IDbCommand dbcmd = null;
+            try {
+                dbcon.Open();
+                dbcmd = dbcon.CreateCommand();
+
+                dbcmd.CommandText = "DROP TABLE TrackData";
+                dbcmd.ExecuteNonQuery ();
+
+                dbcmd.CommandText = CREATE_TABLE_TRACKDATA;
+                dbcmd.ExecuteNonQuery ();
+            } catch (Exception e) {
+                Log.Exception("Foo1/DB - Clear Track Data failed", e);
+                throw new Exception ("Clear Track Data failed!", e);
             } finally {
                 if (dbcmd != null)
                     dbcmd.Dispose();

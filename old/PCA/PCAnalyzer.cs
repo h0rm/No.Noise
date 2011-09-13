@@ -170,7 +170,7 @@ namespace Banshee.Foo1.PCA
             if (num_columns == 0)
                 return;     // TODO throw exception
 
-            Log.Debug("Foo1/PCA - performing PCA");
+            Log.Information ("Foo1/PCA - performing PCA");
 
             // calc mean
             mean = mean / num_columns;
@@ -200,17 +200,17 @@ namespace Banshee.Foo1.PCA
             }
             cov.Multiply(1.0/(double)(num_columns - 1));
 
-            Log.Debug("Foo1/PCA - cov cols: " + cov.ColumnCount);
-            Log.Debug("Foo1/PCA - cov rows: " + cov.RowCount);
+//            Log.Debug("Foo1/PCA - cov cols: " + cov.ColumnCount);
+//            Log.Debug("Foo1/PCA - cov rows: " + cov.RowCount);
             EigenvalueDecomposition eigen = cov.EigenvalueDecomposition;
 
             Complex[] eigenValues = eigen.EigenValues;
-            Log.Debug("Foo1/PCA - Num of Eigenvalues: " + eigenValues.Length);
+//            Log.Debug("Foo1/PCA - Num of Eigenvalues: " + eigenValues.Length);
             string evals = "";
             foreach (Complex c in eigenValues)
                 evals += c + "; ";
 
-            Log.Debug("Foo1/PCA - Eigenvalues: " + evals);
+//            Log.Debug("Foo1/PCA - Eigenvalues: " + evals);
 
             double[] maxVals = new double[2];
             maxVals[0] = maxVals[1] = double.NegativeInfinity;
@@ -241,13 +241,13 @@ namespace Banshee.Foo1.PCA
 
             Debug.Assert(maxInds[0] > -1 && maxInds[1] > -1);
 
-            Log.Debug("Foo1/PCA - max eigenvalues: " + maxVals[0] + "; " + maxVals[1]);
+//            Log.Debug("Foo1/PCA - max eigenvalues: " + maxVals[0] + "; " + maxVals[1]);
 
             Matrix eigenVectors = eigen.EigenVectors;
-            Log.Debug("Foo1/PCA - Num of Eigenvectors: " + eigenVectors.ColumnCount);
+//            Log.Debug("Foo1/PCA - Num of Eigenvectors: " + eigenVectors.ColumnCount);
 
-            Log.Debug("Foo1/PCA - max eigenvectors: " + eigenVectors.GetColumnVector(maxInds[0])
-                      + ";\n" + eigenVectors.GetColumnVector(maxInds[1]));
+//            Log.Debug("Foo1/PCA - max eigenvectors: " + eigenVectors.GetColumnVector(maxInds[0])
+//                      + ";\n" + eigenVectors.GetColumnVector(maxInds[1]));
 
             base1 = eigenVectors.GetColumnVector(maxInds[0]).Normalize();
             base2 = eigenVectors.GetColumnVector(maxInds[1]).Normalize();
