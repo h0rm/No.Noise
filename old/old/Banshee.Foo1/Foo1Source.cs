@@ -98,7 +98,7 @@ namespace Banshee.Foo1
             Gtk.ThreadNotify ready;
 
             private bool painintheassdummy = false;
-            private bool gatherMIRdata = false;
+//            private bool gatherMIRdata = false;
             private bool dopca = true;
             private bool doprintlib = false;
             private bool doprintselection = false;
@@ -198,38 +198,46 @@ namespace Banshee.Foo1
             {
                 PCAnalyzer ana = new PCAnalyzer();
 
-                if (gatherMIRdata) {
-                    Banshee.Library.MusicLibrarySource ml = ServiceManager.SourceManager.MusicLibrary;
-                    Matrix mfcc;
+//                if (gatherMIRdata) {
+                Banshee.Library.MusicLibrarySource ml = ServiceManager.SourceManager.MusicLibrary;
+                Matrix mfcc;
+                Dictionary<int, Matrix> mfccMap = db.GetMirageMatrices ();
 
-                    for (int i = 0; i < ml.TrackModel.Count; i++) {
-                        try {
-                            TrackInfo ti = ml.TrackModel[i];
-                            string absPath = ti.Uri.AbsolutePath;
-                            int bid = ml.GetTrackIdForUri(ti.Uri);
+                for (int i = 0; i < ml.TrackModel.Count; i++) {
+                    try {
+                        TrackInfo ti = ml.TrackModel[i];
+                        string absPath = ti.Uri.AbsolutePath;
+                        int bid = ml.GetTrackIdForUri(ti.Uri);
+
+
+                        // WARN: A bid could theoretically be inserted/deleted between GetMirageMatrices ()
+                        // and CointainsMirDataForTrack () such that if and else fail
+                        if (!db.ContainsMirDataForTrack (bid)) {
                             mfcc = Analyzer.AnalyzeMFCC(absPath);
 
                             if (!db.InsertMatrix (mfcc, bid))
                                 Hyena.Log.Error ("Foo1 - Matrix insert failed");
+                        } else
+                            mfcc = mfccMap[bid];
 
-                            if (!ana.AddEntry (bid, ConvertMfccMean(mfcc.Mean())))
-                                throw new Exception("AddEntry failed!");
-                        } catch (Exception e) {
-                            Hyena.Log.Exception("Foo1 - MFCC Problem", e);
-                        }
-                    }
-                } else {
-                    Dictionary<int, Matrix> mfccMap = db.GetMirageMatrices ();
-
-                    foreach (int key in mfccMap.Keys) {
-                        try {
-                            if (!ana.AddEntry (key, ConvertMfccMean (mfccMap[key].Mean ())))
-                                throw new Exception ("AddEntry failed!");
-                        } catch (Exception e) {
-                            Hyena.Log.Exception ("Foo1 - PCA Problem", e);
-                        }
+                        if (!ana.AddEntry (bid, ConvertMfccMean(mfcc.Mean())))
+                            throw new Exception("AddEntry failed!");
+                    } catch (Exception e) {
+                        Hyena.Log.Exception("Foo1 - MFCC/DB Problem", e);
                     }
                 }
+//                } else {
+//                    Dictionary<int, Matrix> mfccMap = db.GetMirageMatrices ();
+//
+//                    foreach (int key in mfccMap.Keys) {
+//                        try {
+//                            if (!ana.AddEntry (key, ConvertMfccMean (mfccMap[key].Mean ())))
+//                                throw new Exception ("AddEntry failed!");
+//                        } catch (Exception e) {
+//                            Hyena.Log.Exception ("Foo1 - PCA Problem", e);
+//                        }
+//                    }
+//                }
 
                 try {
                     ana.PerformPCA ();
