@@ -5,6 +5,7 @@
 
 using System.Collections;
 using System.Collections.Generic;
+using System;
 
 namespace Banshee.Cluttertest
 {
@@ -395,6 +396,41 @@ namespace Banshee.Cluttertest
 
             }
         }
+
+        /// <summary>
+        /// Gets all objects in this subtree which are in the specified circular search area
+        /// </summary>
+        /// <param name="circle">
+        /// A <see cref="QCircle"/>
+        /// </param>
+        /// <param name="results">
+        /// A <see cref="List<T>"/>
+        /// </param>
+        public void GetObjects (QCircle circle, ref List<T> results)
+        {
+            if (results == null)
+                return;
+
+            if (circle.Contains (boundary_rectangle)) {
+
+                GetAllObjects (ref results);
+
+            } else if (boundary_rectangle.Intersects (circle)) {
+
+                foreach (QuadTreeObject<T> item in objects) {
+
+                    if (circle.Contains (item.Value.XY))
+                        results.Add (item.Value);
+                }
+
+                if (top_left != null) {
+                    top_left.GetObjects (circle, ref results);
+                    top_right.GetObjects (circle, ref results);
+                    bottom_left.GetObjects (circle, ref results);
+                    bottom_right.GetObjects (circle, ref results);
+                }
+            }
+        }
     }
     #region helper classes
 
@@ -403,8 +439,6 @@ namespace Banshee.Cluttertest
     /// </summary>
     public class QRectangle
     {
-        // to circumvent rounding problems this number is used
-        private const double E = 0.000001;
 
         private Point bottom_left;
         private Point top_right;
@@ -477,8 +511,23 @@ namespace Banshee.Cluttertest
         public bool Contains (QRectangle rect)
         {
 
-            return  X <= rect.X && top_right.Y >= rect.top_right.Y &&
+            return X <= rect.X && top_right.Y >= rect.top_right.Y &&
                     top_right.X >= rect.top_right.X && Y <= rect.Y;
+        }
+
+        /// <summary>
+        /// Checks if a circle is contained in this rectangle
+        /// </summary>
+        /// <param name="circle">
+        /// A <see cref="QCircle"/>
+        /// </param>
+        /// <returns>
+        /// A <see cref="System.Boolean"/>
+        /// </returns>
+        public bool Contains (QCircle circle)
+        {
+            return X <= circle.X - circle.Radius && top_right.X >= circle.X + circle.Radius &&
+                    Y <= circle.Y - circle.Radius && top_right.Y >= circle.Y + circle.Radius;
         }
 
         /// <summary>
@@ -496,25 +545,99 @@ namespace Banshee.Cluttertest
             return !(rect.top_right.X < X || rect.X > top_right.X ||
                      rect.top_right.Y < Y || rect.Y > top_right.Y);
         }
+
+        /// <summary>
+        /// Checks if a given circle intersects with this rectangle
+        /// </summary>
+        /// <param name="circle">
+        /// A <see cref="QCircle"/>
+        /// </param>
+        /// <returns>
+        /// A <see cref="System.Boolean"/>
+        /// </returns>
+        public bool Intersects (QCircle circle)
+        {
+            // check in which region around the rectangle the circle center lies
+            // 0 - bottom/left, 1 - center, 2 - top/right
+            int x = circle.X < X ? 0 : (circle.X > top_right.X ? 2 : 1);
+            int y = circle.Y < Y ? 0 : (circle.Y > top_right.Y ? 2 : 1);
+
+            int zone = x + 3 * y;
+
+            switch (zone) {
+
+            //bottom center
+            case 1:
+                return Y - circle.Y <= circle.Radius;
+
+            //top center
+            case 7:
+                return circle.Y - top_right.Y <= circle.Radius;
+
+            //left center
+            case 3:
+                return X - circle.X <= circle.Radius;
+
+            //right center
+            case 5:
+                return circle.X - top_right.X <= circle.Radius;
+
+            //circle in the center
+            case 4:
+                return true;
+
+            //corner zones - check if corner is inside the circle
+            default:
+                double cx = (zone == 0 || zone == 6) ? X : top_right.X;
+                double cy = (zone == 0 || zone == 2) ? Y : top_right.Y;
+
+                return circle.Contains (new Point (cx, cy));
+            }
+        }
     }
 
     public class QCircle
     {
-        private Point center;
-        private double radius;
-
         public QCircle (Point center, double radius)
         {
-            this.center = center;
-            this.radius = radius;
+            Center = center;
+            Radius = radius;
+        }
+
+        public QCircle (double x, double y, double radius) :
+                                this (new Point (x,y), radius)
+        {
         }
 
         public Point Center {
-            get { return center; }
+            get;
+            private set;
         }
 
         public double Radius {
-            get { return radius; }
+            get;
+            private set;
+        }
+
+        public double X {
+            get { return Center.X; }
+        }
+
+        public double Y {
+            get { return Center.Y; }
+        }
+
+        public bool Contains (Point p)
+        {
+            return Center.DistanceTo (p) <= Radius;
+        }
+
+        public bool Contains (QRectangle rect)
+        {
+            return Center.DistanceTo (rect.BottomLeft) <= Radius &&
+                    Center.DistanceTo (rect.TopRight) <= Radius &&
+                    Center.DistanceTo (new Point (rect.X, rect.TopRight.Y)) <= Radius &&
+                    Center.DistanceTo (new Point (rect.TopRight.X, rect.Y)) <= Radius;
         }
     }
 
