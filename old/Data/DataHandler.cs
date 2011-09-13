@@ -5,7 +5,50 @@ namespace Banshee.NoNoise.Data
 {
 	public class TrackInfo
 	{
-		
+        public TrackInfo (int id, string artist, string title, string album, int duration)
+        {
+            ID = id;
+            Artist = artist;
+            Title = title;
+            Album = album;
+            Duration = duration;
+        }
+
+        public int ID
+        {
+            get;
+            private set;
+        }
+
+        public string Artist
+        {
+            get;
+            set;
+        }
+
+        public string Title
+        {
+            get;
+            set;
+        }
+
+        public string Album
+        {
+            get;
+            set;
+        }
+
+        public int Duration
+        {
+            get;
+            set;
+        }
+
+        public override string ToString ()
+        {
+            return string.Format ("[NNTrackInfo: ID={0}, Artist={1}, Title={2}, Album={3}, Duration={4}]",
+                                  ID, Artist, Title, Album, Duration);
+        }
 	}
 	
 	public class DataValue
@@ -15,7 +58,6 @@ namespace Banshee.NoNoise.Data
 	
 	public class DataEntry
 	{
-		
 		private int id;			//unique id for each track
 		private double pca_x;	//between 0...1
 		private double pca_y;	//between 0...1

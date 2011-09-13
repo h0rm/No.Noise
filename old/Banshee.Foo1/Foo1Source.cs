@@ -99,6 +99,7 @@ namespace Banshee.Foo1
 
             private bool painintheassdummy = false;
 //            private bool gatherMIRdata = false;
+            private bool saveTrackInfosToDB = true;
             private bool dopca = true;
             private bool doprintlib = false;
             private bool doprintselection = false;
@@ -121,34 +122,9 @@ namespace Banshee.Foo1
                 if (dopca)
                     PcaForMusicLibrary ();
 
-//                try {
-////                    if (db.InsertMatrix (new MathNet.Numerics.LinearAlgebra.Matrix(2,2)))
-////                        Hyena.Log.Debug("Foo1 - insert succeeded");
-////                    else
-////                        Hyena.Log.Debug("Foo1 - insert failed");
-//
-//                    List<MathNet.Numerics.LinearAlgebra.Matrix> mats = db.GetMatrices ();
-//                    foreach (MathNet.Numerics.LinearAlgebra.Matrix m in mats) {
-//                        Hyena.Log.Debug(m.ToString ());
-//                    }
-//                } catch (Exception e) {
-//                    Hyena.Log.Exception("DB Exception", e);
-//                }
-
-//                try {
-////                    Analyzer.Init();
-//                    Matrix mfcc = Analyzer.AnalyzeMFCC("/home/thomas/Musik/Martina Topley Bird - 09 - Sandpaper Kisses.mp3");
-////                    mfcc.Print();
-//                    DebugPrintMFCC(mfcc);
-//
-//                    mfcc = Analyzer.AnalyzeMFCC("/home/thomas/Musik/Black Holes and Revelations/Muse - 01 - Take a Bow.mp3");
-//                    DebugPrintMFCC(mfcc);
-//
-//                    // PCA
-//                    PCAnalyzer ana = new PCAnalyzer(mfcc);
-//                } catch (Exception e) {
-//                    Hyena.Log.Exception("MFCC Problem", e);
-//                }
+                // TrackInfo in NoNoise DB
+                if (saveTrackInfosToDB)
+                    WriteTrackInfosToDB ();
 
                 // BPM detector
                 detector = BpmDetectJob.GetDetector ();
@@ -209,7 +185,6 @@ namespace Banshee.Foo1
                         string absPath = ti.Uri.AbsolutePath;
                         int bid = ml.GetTrackIdForUri(ti.Uri);
 
-
                         // WARN: A bid could theoretically be inserted/deleted between GetMirageMatrices ()
                         // and CointainsMirDataForTrack () such that if and else fail
                         if (!db.ContainsMirDataForTrack (bid)) {
@@ -260,6 +235,27 @@ namespace Banshee.Foo1
                 }
 
                 return data;
+            }
+
+            private void WriteTrackInfosToDB ()
+            {
+                Banshee.Library.MusicLibrarySource ml = ServiceManager.SourceManager.MusicLibrary;
+
+                for (int i = 0; i < ml.TrackModel.Count; i++) {
+                    try {
+                        TrackInfo ti = ml.TrackModel[i];
+                        int bid = ml.GetTrackIdForUri(ti.Uri);
+
+                        if (!db.ContainsInfoForTrack (bid)) {
+                            if (!db.InsertTrackInfo (new Banshee.NoNoise.Data.TrackInfo (
+                                                       bid, ti.ArtistName, ti.TrackTitle,
+                                                       ti.AlbumTitle, (int)ti.Duration.TotalSeconds)))
+                                Hyena.Log.Error ("Foo1 - TrackInfo insert failed");
+                        }
+                    } catch (Exception e) {
+                        Hyena.Log.Exception("Foo1 - DB Problem", e);
+                    }
+                }
             }
 
             /// <summary>
