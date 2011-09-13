@@ -41,12 +41,18 @@ namespace Banshee.Foo1.PCA
         private Vector mean = null;
         private List<Vector> differences = null;
         private List<Matrix> matrices = null;
-        private List<Vector> vectors = new List<Vector>();
+        private Dictionary<int, Vector> vectorMap = new Dictionary<int, Vector> ();
         private int num_params = 0;
         private int num_columns = 0;
         private Vector base1;
         private Vector base2;
         private List<DataEntry> coords = null;
+
+        public List<DataEntry> Coordinates {
+            get {
+                return coords;
+            }
+        }
 
         /// <summary>
         /// Standard constructor
@@ -131,7 +137,7 @@ namespace Banshee.Foo1.PCA
         /// True if the feature vector has been successfully added,
         /// false otherwise.
         /// </returns>
-        public bool AddEntry (double[] data)
+        public bool AddEntry (int bid, double[] data)
         {
             if (num_params == -1)
                 num_params = data.Length;
@@ -143,7 +149,7 @@ namespace Banshee.Foo1.PCA
                 mean = v;
             else
                 mean = mean.Add(v);
-            vectors.Add(v);
+            vectorMap.Add (bid, v);
             num_columns++;
 
             return true;
@@ -166,16 +172,16 @@ namespace Banshee.Foo1.PCA
             // calc mean
             mean = mean / num_columns;
 
-            differences = new List<Vector>(vectors.Count);
+            differences = new List<Vector>(vectorMap.Count);
 
-            Debug.Assert(differences.Count == vectors.Count);
+            Debug.Assert(differences.Count == vectorMap.Count);
 
             // fill difference vectors
-            foreach (Vector v in vectors) {
+            foreach (Vector v in vectorMap.Values) {
                 differences.Add(v.Subtract(mean));
             }
 
-            matrices = new List<Matrix>(vectors.Count);
+            matrices = new List<Matrix>(vectorMap.Count);
 
             Debug.Assert(differences.Count == matrices.Count);
 
@@ -256,8 +262,8 @@ namespace Banshee.Foo1.PCA
             coords = new List<DataEntry>(num_columns);
 
             // compute 2D coordinates
-            for (int i = 0; i < vectors.Count; i++) {
-                coords.Add (GetCoordinate (i));
+            foreach (int key in vectorMap.Keys) {
+                coords.Add (GetCoordinate (key));
             }
 
             double[] maxVals = new double[2];
@@ -301,23 +307,23 @@ namespace Banshee.Foo1.PCA
         /// Returns a string containing the coordinates of the i-th entry
         /// computed with the eigenvectors as basis vectors.
         /// </summary>
-        /// <param name="i">
+        /// <param name="key">
         /// The index of the entry
         /// </param>
         /// <returns>
         /// A <see cref="DataEntry"/> with the coordinates
         /// </returns>
-        public DataEntry GetCoordinate (int i)
+        public DataEntry GetCoordinate (int key)
         {
             Matrix m = new Matrix(2, num_params);
             m.SetRowVector(base1, 0);
             m.SetRowVector(base2, 1);
 
-            Matrix coord = m.Multiply(vectors[i].ToColumnMatrix());
+            Matrix coord = m.Multiply(vectorMap[key].ToColumnMatrix());
 
             Debug.Assert(coord.RowCount == 2 && coord.ColumnCount == 1);
 
-            return new DataEntry (i, coord[0,0], coord[1,0], null);
+            return new DataEntry (key, coord[0,0], coord[1,0], null);
         }
 
         /// <summary>
@@ -327,7 +333,7 @@ namespace Banshee.Foo1.PCA
         /// <returns>
         /// A <see cref="System.String"/> with the normalized coordinates
         /// </returns>
-        public string GetCoordinates ()
+        public string GetCoordinateStrings ()
         {
             string ret = "";
             foreach (DataEntry de in coords) {

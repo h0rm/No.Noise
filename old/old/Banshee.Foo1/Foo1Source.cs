@@ -206,32 +206,38 @@ namespace Banshee.Foo1
                         try {
                             TrackInfo ti = ml.TrackModel[i];
                             string absPath = ti.Uri.AbsolutePath;
+                            int bid = ml.GetTrackIdForUri(ti.Uri);
                             mfcc = Analyzer.AnalyzeMFCC(absPath);
 
-                            if (!db.InsertMatrix (mfcc))
-                                Hyena.Log.Debug ("Foo1 - Matrix insert failed");
+                            if (!db.InsertMatrix (mfcc, bid))
+                                Hyena.Log.Error ("Foo1 - Matrix insert failed");
 
-                            if (!ana.AddEntry(ConvertMfccMean(mfcc.Mean())))
+                            if (!ana.AddEntry (bid, ConvertMfccMean(mfcc.Mean())))
                                 throw new Exception("AddEntry failed!");
                         } catch (Exception e) {
                             Hyena.Log.Exception("Foo1 - MFCC Problem", e);
                         }
                     }
                 } else {
-                    List<Matrix> mfccs = db.GetMirageMatrices ();
+                    Dictionary<int, Matrix> mfccMap = db.GetMirageMatrices ();
 
-                    foreach (Matrix m in mfccs) {
+                    foreach (int key in mfccMap.Keys) {
                         try {
-                            if (!ana.AddEntry (ConvertMfccMean (m.Mean ())))
+                            if (!ana.AddEntry (key, ConvertMfccMean (mfccMap[key].Mean ())))
                                 throw new Exception ("AddEntry failed!");
                         } catch (Exception e) {
                             Hyena.Log.Exception ("Foo1 - PCA Problem", e);
                         }
                     }
                 }
+
                 try {
                     ana.PerformPCA ();
-                    Hyena.Log.Debug(ana.GetCoordinates());
+                    Hyena.Log.Debug(ana.GetCoordinateStrings ());
+                    List<Banshee.NoNoise.Data.DataEntry> coords = ana.Coordinates;
+                    db.ClearPcaData ();
+                    if (!db.InsertPcaCoordinates (coords))
+                        Hyena.Log.Error ("Foo1 - PCA coord insert failed");
                 } catch (Exception e) {
                     Hyena.Log.Exception("PCA Problem", e);
                 }
@@ -279,7 +285,7 @@ namespace Banshee.Foo1
                 ti.Copyright = "(c) No.Noise";
                 ti.Update();
 
-                return "Foo1 - ML entry" + index + ": " +
+                return "Foo1 - ML entry " + index + ": " +
                         ti.ArtistName + " - " +
                         ti.TrackTitle + " (" +
                         ti.AlbumTitle + ")" + "\n" +
