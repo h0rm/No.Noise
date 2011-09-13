@@ -48,6 +48,9 @@ namespace Banshee.Foo1.PCA
         private Vector base2;
         private List<DataEntry> coords = null;
 
+        /// <summary>
+        /// A collection of DataEntry objects
+        /// </summary>
         public List<DataEntry> Coordinates {
             get {
                 return coords;

@@ -45,12 +45,19 @@ namespace Banshee.NoNoise.Data
             "CREATE TABLE IF NOT EXISTS TrackData (album VARCHAR(32), artist VARCHAR(32), banshee_id INTEGER, duration INTEGER, id INTEGER PRIMARY KEY, title VARCHAR(32))";
         private IDbConnection dbcon = null;
 
+        /// <summary>
+        /// Constructor. Sets the connection to the database and creates the
+        /// schema if it doesn't exist.
+        /// </summary>
         public NoNoiseDBHandler ()
         {
             dbcon = (IDbConnection) new SqliteConnection(connectionString);
             CreateSchema ();
         }
 
+        /// <summary>
+        /// Creates the database schema, if it doesn't exist.
+        /// </summary>
         private void CreateSchema ()
         {
             IDbCommand dbcmd = null;
@@ -78,6 +85,18 @@ namespace Banshee.NoNoise.Data
             }
         }
 
+        /// <summary>
+        /// Inserts a Mirage.Matrix into the database.
+        /// </summary>
+        /// <param name="m">
+        /// The <see cref="Mirage.Matrix"/> to be inserted
+        /// </param>
+        /// <param name="bid">
+        /// The banshee_id of the corresponding track
+        /// </param>
+        /// <returns>
+        /// True if the matrix was successfully inserted. False otherwise.
+        /// </returns>
         public bool InsertMatrix (Mirage.Matrix m, int bid)
         {
             IDbCommand dbcmd = null;
@@ -102,6 +121,16 @@ namespace Banshee.NoNoise.Data
             return true;
         }
 
+        /// <summary>
+        /// Converts a Mirage.Matrix to a string representation with semicolons
+        /// instead of commas.
+        /// </summary>
+        /// <param name="m">
+        /// The <see cref="Mirage.Matrix"/> to be converted
+        /// </param>
+        /// <returns>
+        /// A <see cref="System.String"/> representation of the matrix
+        /// </returns>
         private string MirageMatrixToString (Mirage.Matrix m)
         {
             StringBuilder sb = new StringBuilder();
@@ -132,6 +161,18 @@ namespace Banshee.NoNoise.Data
             return sb.ToString();
         }
 
+        /// <summary>
+        /// Inserts a Math.Matrix into the database.
+        /// </summary>
+        /// <param name="m">
+        /// The <see cref="Matrix"/> to be inserted
+        /// </param>
+        /// <param name="bid">
+        /// The banshee_id of the corresponding track
+        /// </param>
+        /// <returns>
+        /// True if the matrix was successfully inserted. False otherwise.
+        /// </returns>
         public bool InsertMatrix (Matrix m, int bid)
         {
             IDbCommand dbcmd = null;
@@ -156,6 +197,22 @@ namespace Banshee.NoNoise.Data
             return true;
         }
 
+        /// <summary>
+        /// Inserts a Math.Matrix into the database with a given primary key.
+        /// Updates the matrix in the database if the key already exists.
+        /// </summary>
+        /// <param name="m">
+        /// The <see cref="Matrix"/> to be inserted
+        /// </param>
+        /// <param name="bid">
+        /// The banshee_id
+        /// </param>
+        /// <param name="primaryKey">
+        /// The primary key that should be used
+        /// </param>
+        /// <returns>
+        /// True if the matrix was successfully inserted. False otherwise.
+        /// </returns>
         public bool InsertMatrixPK (Matrix m, int bid, int primaryKey)
         {
             IDbCommand dbcmd = null;
@@ -184,6 +241,25 @@ namespace Banshee.NoNoise.Data
             return true;
         }
 
+        /// <summary>
+        /// Updates a Math.Matrix for a given primary key. This method has to
+        /// be called within an open database connection.
+        /// </summary>
+        /// <param name="m">
+        /// The <see cref="Matrix"/> to be inserted
+        /// </param>
+        /// <param name="bid">
+        /// The banshee_id
+        /// </param>
+        /// <param name="primaryKey">
+        /// The primary key that should be used
+        /// </param>
+        /// <param name="dbcmd">
+        /// A <see cref="IDbCommand"/> of an open connection
+        /// </param>
+        /// <returns>
+        /// True if the matrix was successfully updated. False otherwise.
+        /// </returns>
         private bool UpdateMatrix (Matrix m, int bid, int primaryKey, IDbCommand dbcmd)
         {
             Log.Debug("Foo1/DB - Updating id " + primaryKey);
@@ -194,6 +270,16 @@ namespace Banshee.NoNoise.Data
             return true;
         }
 
+        /// <summary>
+        /// Converts a Math.Matrix to a string representation with semicolons
+        /// instead of commas.
+        /// </summary>
+        /// <param name="m">
+        /// The <see cref="Matrix"/> to be converted
+        /// </param>
+        /// <returns>
+        /// A <see cref="System.String"/> representation of the matrix
+        /// </returns>
         private string MatrixToString (Matrix m)
         {
             StringBuilder sb = new StringBuilder();
@@ -224,6 +310,12 @@ namespace Banshee.NoNoise.Data
             return sb.ToString();
         }
 
+        /// <summary>
+        /// Parses Math.Matrix's from the database and returns them.
+        /// </summary>
+        /// <returns>
+        /// A <see cref="List<Matrix>"/> with all matrices in the database
+        /// </returns>
         public List<Matrix> GetMatrices ()
         {
             List<Matrix> ret = new List<Matrix> ();
@@ -252,6 +344,13 @@ namespace Banshee.NoNoise.Data
             }
         }
 
+        /// <summary>
+        /// Parses Mirage.Matrix's from the database and returns them.
+        /// </summary>
+        /// <returns>
+        /// A <see cref="Dictionary<System.Int32, Mirage.Matrix>"/> containing
+        /// all matrices in the database mapped to their corresponding banshee_id.
+        /// </returns>
         public Dictionary<int, Mirage.Matrix> GetMirageMatrices ()
         {
             Dictionary<int, Mirage.Matrix> ret = new Dictionary<int, Mirage.Matrix> ();
@@ -288,6 +387,13 @@ namespace Banshee.NoNoise.Data
             }
         }
 
+        /// <summary>
+        /// Prints debug information for a database string which represents a
+        /// matrix.
+        /// </summary>
+        /// <param name="matrix">
+        /// A <see cref="System.String"/> representation of a matrix
+        /// </param>
         private void CheckMatrix (string matrix)
         {
             string[] rows;
@@ -297,47 +403,15 @@ namespace Banshee.NoNoise.Data
             }
         }
 
-/*        public void Test1 ()
-        {
-            Matrix m = new Matrix (2, 3);
-            m[0,0] = 1;
-            m[0,1] = 1;
-            m[0,2] = 1;
-            m[1,0] = 0;
-            m[1,1] = 0;
-            m[1,2] = 0;
-    
-            dbcon = (IDbConnection) new SqliteConnection(connectionString);
-            dbcon.Open();
-            IDbCommand dbcmd = dbcon.CreateCommand();
-    
-            string insertMatrix = "INSERT INTO MIRData (Data) VALUES (@mat)";
-            dbcmd.CommandText = insertMatrix;
-            SqliteParameter mat = new SqliteParameter("@mat", m.ToString ());
-            dbcmd.Parameters.Add(mat);
-            dbcmd.Prepare();
-            dbcmd.ExecuteNonQuery();
-    
-            string sql = "SELECT ID, Data FROM MIRData";
-            dbcmd.CommandText = sql;
-            System.Data.IDataReader reader = dbcmd.ExecuteReader();
-            while(reader.Read()) {
-                int FirstName = reader.GetInt32 (0);
-                FirstName = SqliteUtils.FromDbFormat<int> (reader[0]);
-                string LastName = SqliteUtils.FromDbFormat<string> (reader[1]);
-                Matrix matrix = ParseMatrix (LastName);
-                Log.Debug("Data: " + FirstName + " " + matrix);
-           }
-    
-           // clean up
-           reader.Close();
-           reader = null;
-           dbcmd.Dispose();
-           dbcmd = null;
-           dbcon.Close();
-           dbcon = null;
-        }*/
-
+        /// <summary>
+        /// Parses a Math.Matrix from a string.
+        /// </summary>
+        /// <param name="input">
+        /// A <see cref="System.String"/> representation of a matrix
+        /// </param>
+        /// <returns>
+        /// A <see cref="Matrix"/>
+        /// </returns>
         public Matrix ParseMatrix (string input)
         {
             double[][] d = null;
@@ -352,7 +426,6 @@ namespace Banshee.NoNoise.Data
                     string[] cols = r.Split(',');
                     d[i] = new double[cols.Length];
                     for (int j = 0; j < cols.Length; j++) {
-//                        Log.Debug(cols[j]);
                         d[i][j] = double.Parse(cols[j]);
                     }
                 }
@@ -362,6 +435,15 @@ namespace Banshee.NoNoise.Data
             return new Matrix (d);
         }
 
+        /// <summary>
+        /// Parses a Mirage.Matrix from a string.
+        /// </summary>
+        /// <param name="input">
+        /// A <see cref="System.String"/> representation of a matrix
+        /// </param>
+        /// <returns>
+        /// A <see cref="Mirage.Matrix"/>
+        /// </returns>
         public Mirage.Matrix ParseMirageMatrix (string input)
         {
             string[] rows = input.Split('\n');
@@ -376,7 +458,6 @@ namespace Banshee.NoNoise.Data
                     if (i == 0)
                         m = new Mirage.Matrix (rows.Length, cols.Length);
                     for (int j = 0; j < cols.Length; j++) {
-//                        Log.Debug(cols[j]);
                         m.d[i,j] = float.Parse(cols[j]);
                     }
                 }
@@ -387,6 +468,9 @@ namespace Banshee.NoNoise.Data
             return m;
         }
 
+        /// <summary>
+        /// Clears the MIRData table of the database.
+        /// </summary>
         public void ClearMirData ()
         {
             IDbCommand dbcmd = null;
@@ -411,6 +495,9 @@ namespace Banshee.NoNoise.Data
             }
         }
 
+        /// <summary>
+        /// Clears the PCAData table of the database.
+        /// </summary>
         public void ClearPcaData ()
         {
             IDbCommand dbcmd = null;
@@ -435,6 +522,9 @@ namespace Banshee.NoNoise.Data
             }
         }
 
+        /// <summary>
+        /// Clears the TrackData table of the database.
+        /// </summary>
         public void ClearTrackData ()
         {
             IDbCommand dbcmd = null;
@@ -459,6 +549,15 @@ namespace Banshee.NoNoise.Data
             }
         }
 
+        /// <summary>
+        /// Inserts a list of DataEntry's into the PCAData table.
+        /// </summary>
+        /// <param name="coords">
+        /// A <see cref="List<DataEntry>"/> containing the data
+        /// </param>
+        /// <returns>
+        /// True if all data was successfully inserted. False otherwise.
+        /// </returns>
         public bool InsertPcaCoordinates (List<DataEntry> coords)
         {
             bool succ = true;
@@ -469,6 +568,15 @@ namespace Banshee.NoNoise.Data
             return succ;
         }
 
+        /// <summary>
+        /// Inserts one DataEntry into the PCAData table.
+        /// </summary>
+        /// <param name="de">
+        /// The <see cref="DataEntry"/> to be inserted
+        /// </param>
+        /// <returns>
+        /// True if the DataEntry was successfully inserted. False otherwise.
+        /// </returns>
         public bool InsertPcaCoordinate (DataEntry de)
         {
             IDbCommand dbcmd = null;
@@ -494,6 +602,16 @@ namespace Banshee.NoNoise.Data
             return true;
         }
 
+        /// <summary>
+        /// Queries the database if it contains MIRData for the track with the
+        /// given banshee_id.
+        /// </summary>
+        /// <param name="bid">
+        /// The banshee_id
+        /// </param>
+        /// <returns>
+        /// True if the banshee_id is already in the database. False otherwise.
+        /// </returns>
         public bool ContainsMirDataForTrack (int bid)
         {
             IDbCommand dbcmd = null;
@@ -515,6 +633,16 @@ namespace Banshee.NoNoise.Data
             }
         }
 
+        /// <summary>
+        /// Queries the database if it contains TrackData for the track with
+        /// the given banshee_id.
+        /// </summary>
+        /// <param name="bid">
+        /// The banshee_id
+        /// </param>
+        /// <returns>
+        /// True if the banshee_id is already in the database. False otherwise.
+        /// </returns>
         public bool ContainsInfoForTrack (int bid)
         {
             IDbCommand dbcmd = null;
@@ -536,6 +664,15 @@ namespace Banshee.NoNoise.Data
             }
         }
 
+        /// <summary>
+        /// Inserts one TrackInfo into the TrackData table.
+        /// </summary>
+        /// <param name="ti">
+        /// The <see cref="TrackInfo"/> to be inserted
+        /// </param>
+        /// <returns>
+        /// True if the TrackInfo was successfully inserted. False otherwise.
+        /// </returns>
         public bool InsertTrackInfo (TrackInfo ti)
         {
             IDbCommand dbcmd = null;
