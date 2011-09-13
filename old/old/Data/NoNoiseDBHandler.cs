@@ -37,13 +37,45 @@ namespace Banshee.NoNoise.Data
     public class NoNoiseDBHandler
     {
         private readonly string connectionString = "URI=file:/home/thomas/test.db,version=3";
-        private readonly string CREATE_TABLE_PCADATAENTRIES =
-            "CREATE TABLE PCADataEntries (Banshee_id INTEGER, ID INTEGER PRIMARY KEY, pca_x DOUBLE, pca_y DOUBLE)";
+        private readonly string CREATE_TABLE_MIRDATA =
+            "CREATE TABLE IF NOT EXISTS MIRData (banshee_id INTEGER, data CLOB, id INTEGER PRIMARY KEY)";
+        private readonly string CREATE_TABLE_PCADATA =
+            "CREATE TABLE IF NOT EXISTS PCAData (banshee_id INTEGER, id INTEGER PRIMARY KEY, pca_x DOUBLE, pca_y DOUBLE)";
+        private readonly string CREATE_TABLE_TRACKDATA =
+            "CREATE TABLE IF NOT EXISTS TrackData (album VARCHAR(32), artist VARCHAR(32), banshee_id INTEGER, duration INTEGER, id INTEGER PRIMARY KEY, title VARCHAR(32))";
         private IDbConnection dbcon = null;
 
         public NoNoiseDBHandler ()
         {
             dbcon = (IDbConnection) new SqliteConnection(connectionString);
+            CreateSchema ();
+        }
+
+        private void CreateSchema ()
+        {
+            IDbCommand dbcmd = null;
+            try {
+                dbcon.Open();
+                dbcmd = dbcon.CreateCommand();
+
+                dbcmd.CommandText = CREATE_TABLE_MIRDATA;
+                dbcmd.ExecuteNonQuery ();
+
+                dbcmd.CommandText = CREATE_TABLE_PCADATA;
+                dbcmd.ExecuteNonQuery ();
+
+                dbcmd.CommandText = CREATE_TABLE_TRACKDATA;
+                dbcmd.ExecuteNonQuery ();
+            } catch (Exception e) {
+                Log.Exception("Foo1/DB - Schema creation failed", e);
+                throw new Exception ("Unable to create DB schema!", e);
+            } finally {
+                if (dbcmd != null)
+                    dbcmd.Dispose();
+                dbcmd = null;
+                if (dbcon != null)
+                    dbcon.Close();
+            }
         }
 
         public bool InsertMatrix (Mirage.Matrix m, int bid)
@@ -53,7 +85,7 @@ namespace Banshee.NoNoise.Data
                 dbcon.Open();
                 dbcmd = dbcon.CreateCommand();
 
-                dbcmd.CommandText = string.Format("INSERT INTO MIRData (Banshee_id, Data) VALUES ('{0}', '{1}')",
+                dbcmd.CommandText = string.Format("INSERT INTO MIRData (banshee_id, data) VALUES ('{0}', '{1}')",
                                                   bid, MirageMatrixToString(m));
                 dbcmd.ExecuteNonQuery ();
             } catch (Exception e) {
@@ -107,7 +139,7 @@ namespace Banshee.NoNoise.Data
                 dbcon.Open();
                 dbcmd = dbcon.CreateCommand();
 
-                dbcmd.CommandText = string.Format("INSERT INTO MIRData (Banshee_id, Data) VALUES ('{0}', '{1}')",
+                dbcmd.CommandText = string.Format("INSERT INTO MIRData (banshee_id, data) VALUES ('{0}', '{1}')",
                                                   bid, MatrixToString (m));
                 dbcmd.ExecuteNonQuery ();
             } catch (Exception e) {
@@ -131,11 +163,11 @@ namespace Banshee.NoNoise.Data
                 dbcon.Open();
                 dbcmd = dbcon.CreateCommand();
 
-                dbcmd.CommandText = string.Format ("SELECT ID FROM MIRData WHERE ID = '{0}'", primaryKey);
+                dbcmd.CommandText = string.Format ("SELECT id FROM MIRData WHERE id = '{0}'", primaryKey);
                 if (dbcmd.ExecuteScalar () != null)
                     return UpdateMatrix (m, bid, primaryKey, dbcmd);
 
-                dbcmd.CommandText = string.Format("INSERT INTO MIRData (Banshee_id, Data, ID) VALUES ('{0}', '{1}', '{2}')",
+                dbcmd.CommandText = string.Format("INSERT INTO MIRData (banshee_id, data, id) VALUES ('{0}', '{1}', '{2}')",
                                                   bid, MatrixToString (m), primaryKey);
                 dbcmd.ExecuteNonQuery ();
             } catch (Exception e) {
@@ -155,7 +187,7 @@ namespace Banshee.NoNoise.Data
         private bool UpdateMatrix (Matrix m, int bid, int primaryKey, IDbCommand dbcmd)
         {
             Log.Debug("Foo1/DB - Updating id " + primaryKey);
-            dbcmd.CommandText = string.Format("UPDATE MIRData SET Data = '{0}', Banshee_id = '{1}' WHERE ID == '{2}'",
+            dbcmd.CommandText = string.Format("UPDATE MIRData SET data = '{0}', banshee_id = '{1}' WHERE id = '{2}'",
                                               MatrixToString (m), bid, primaryKey);
             dbcmd.ExecuteNonQuery ();
 
@@ -201,7 +233,7 @@ namespace Banshee.NoNoise.Data
                 dbcon.Open();
                 dbcmd = dbcon.CreateCommand();
 
-                dbcmd.CommandText = "SELECT Data FROM MIRData";
+                dbcmd.CommandText = "SELECT data FROM MIRData";
                 System.Data.IDataReader reader = dbcmd.ExecuteReader();
                 while(reader.Read()) {
                     ret.Add (ParseMatrix (reader.GetString (0)));
@@ -229,7 +261,7 @@ namespace Banshee.NoNoise.Data
                 dbcon.Open();
                 dbcmd = dbcon.CreateCommand();
 
-                dbcmd.CommandText = "SELECT Data, ID, Banshee_id FROM MIRData";
+                dbcmd.CommandText = "SELECT data, id, banshee_id FROM MIRData";
                 System.Data.IDataReader reader = dbcmd.ExecuteReader();
                 while(reader.Read()) {
                     Mirage.Matrix mat = ParseMirageMatrix (reader.GetString (0));
@@ -355,6 +387,30 @@ namespace Banshee.NoNoise.Data
             return m;
         }
 
+        public void ClearMirData ()
+        {
+            IDbCommand dbcmd = null;
+            try {
+                dbcon.Open();
+                dbcmd = dbcon.CreateCommand();
+
+                dbcmd.CommandText = "DROP TABLE MIRData";
+                dbcmd.ExecuteNonQuery ();
+
+                dbcmd.CommandText = CREATE_TABLE_MIRDATA;
+                dbcmd.ExecuteNonQuery ();
+            } catch (Exception e) {
+                Log.Exception("Foo1/DB - Clear MIR Data failed", e);
+                throw new Exception ("Clear MIR Data failed!", e);
+            } finally {
+                if (dbcmd != null)
+                    dbcmd.Dispose();
+                dbcmd = null;
+                if (dbcon != null)
+                    dbcon.Close();
+            }
+        }
+
         public void ClearPcaData ()
         {
             IDbCommand dbcmd = null;
@@ -362,14 +418,38 @@ namespace Banshee.NoNoise.Data
                 dbcon.Open();
                 dbcmd = dbcon.CreateCommand();
 
-                dbcmd.CommandText = "DROP TABLE PCADataEntries";
+                dbcmd.CommandText = "DROP TABLE PCAData";
                 dbcmd.ExecuteNonQuery ();
 
-                dbcmd.CommandText = CREATE_TABLE_PCADATAENTRIES;
+                dbcmd.CommandText = CREATE_TABLE_PCADATA;
                 dbcmd.ExecuteNonQuery ();
             } catch (Exception e) {
                 Log.Exception("Foo1/DB - Clear PCA Data failed", e);
                 throw new Exception ("Clear PCA Data failed!", e);
+            } finally {
+                if (dbcmd != null)
+                    dbcmd.Dispose();
+                dbcmd = null;
+                if (dbcon != null)
+                    dbcon.Close();
+            }
+        }
+
+        public void ClearTrackData ()
+        {
+            IDbCommand dbcmd = null;
+            try {
+                dbcon.Open();
+                dbcmd = dbcon.CreateCommand();
+
+                dbcmd.CommandText = "DROP TABLE TrackData";
+                dbcmd.ExecuteNonQuery ();
+
+                dbcmd.CommandText = CREATE_TABLE_TRACKDATA;
+                dbcmd.ExecuteNonQuery ();
+            } catch (Exception e) {
+                Log.Exception("Foo1/DB - Clear Track Data failed", e);
+                throw new Exception ("Clear Track Data failed!", e);
             } finally {
                 if (dbcmd != null)
                     dbcmd.Dispose();
@@ -397,7 +477,7 @@ namespace Banshee.NoNoise.Data
                 dbcmd = dbcon.CreateCommand();
 
                 dbcmd.CommandText = string.Format(
-                        "INSERT INTO PCADataEntries (Banshee_id, pca_x, pca_y) VALUES ('{0}', '{1}', '{2}')",
+                        "INSERT INTO PCAData (banshee_id, pca_x, pca_y) VALUES ('{0}', '{1}', '{2}')",
                         de.ID, de.X, de.Y);
                 dbcmd.ExecuteNonQuery ();
             } catch (Exception e) {
@@ -421,7 +501,7 @@ namespace Banshee.NoNoise.Data
                 dbcon.Open();
                 dbcmd = dbcon.CreateCommand();
 
-                dbcmd.CommandText = string.Format ("SELECT ID FROM MIRData WHERE Banshee_id = '{0}'", bid);
+                dbcmd.CommandText = string.Format ("SELECT id FROM MIRData WHERE banshee_id = '{0}'", bid);
                 return (dbcmd.ExecuteScalar () != null);
             } catch (Exception e) {
                 Log.Exception("Foo1/DB - Contains MIRData query failed for Banshee_id: " + bid, e);
@@ -442,7 +522,7 @@ namespace Banshee.NoNoise.Data
                 dbcon.Open();
                 dbcmd = dbcon.CreateCommand();
 
-                dbcmd.CommandText = string.Format ("SELECT ID FROM TrackData WHERE banshee_id = '{0}'", bid);
+                dbcmd.CommandText = string.Format ("SELECT id FROM TrackData WHERE banshee_id = '{0}'", bid);
                 return (dbcmd.ExecuteScalar () != null);
             } catch (Exception e) {
                 Log.Exception("Foo1/DB - Contains TrackInfo query failed for banshee_id: " + bid, e);
