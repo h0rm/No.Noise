@@ -162,6 +162,12 @@ namespace Banshee.Foo1
                 w.ShowAll();
             }
 
+            /// <summary>
+            /// Prints debug information for an MFCC matrix.
+            /// </summary>
+            /// <param name="mfcc">
+            /// A MFCC <see cref="Matrix"/>
+            /// </param>
             private void DebugPrintMFCC (Matrix mfcc)
             {
                 Hyena.Log.Debug("Cols: " + mfcc.columns);
@@ -170,6 +176,11 @@ namespace Banshee.Foo1
                 mfcc.Mean().Print();
             }
 
+            /// <summary>
+            /// Checks for each track in the music library if there is already
+            /// MIR data in the database. If not, computes the MFCC matrix and
+            /// stores it in the database.
+            /// </summary>
             private void PcaForMusicLibrary ()
             {
                 PCAnalyzer ana = new PCAnalyzer();
@@ -226,6 +237,15 @@ namespace Banshee.Foo1
                 }
             }
 
+            /// <summary>
+            /// Converts a Mirage.Vector to an array of doubles.
+            /// </summary>
+            /// <param name="mean">
+            /// The <see cref="Mirage.Vector"/> to be converted
+            /// </param>
+            /// <returns>
+            /// The <see cref="System.Double[]"/> representation of the vector
+            /// </returns>
             private double[] ConvertMfccMean (Mirage.Vector mean)
             {
                 double[] data = new double[mean.d.Length];
@@ -237,6 +257,10 @@ namespace Banshee.Foo1
                 return data;
             }
 
+            /// <summary>
+            /// Checks for each track in the music library if it is already in the
+            /// database. If not, inserts it.
+            /// </summary>
             private void WriteTrackInfosToDB ()
             {
                 Banshee.Library.MusicLibrarySource ml = ServiceManager.SourceManager.MusicLibrary;
@@ -305,6 +329,9 @@ namespace Banshee.Foo1
                         ti.TrackCount + ".";
             }
 
+            /// <summary>
+            /// Prints a modelselection of the music library.
+            /// </summary>
             private void PrintSelection () {
                 Selection s = new Selection();
                 s.SelectRange(10, 23);

@@ -3,8 +3,29 @@ using System.Collections.Generic;
 
 namespace Banshee.NoNoise.Data
 {
+    /// <summary>
+    /// This class encapsulates track information used for the NoNoise plug-in.
+    /// </summary>
 	public class TrackInfo
 	{
+        /// <summary>
+        /// Constructor
+        /// </summary>
+        /// <param name="id">
+        /// The banshee_id
+        /// </param>
+        /// <param name="artist">
+        /// Artist name
+        /// </param>
+        /// <param name="title">
+        /// Song title
+        /// </param>
+        /// <param name="album">
+        /// Album title
+        /// </param>
+        /// <param name="duration">
+        /// Song duration in seconds
+        /// </param>
         public TrackInfo (int id, string artist, string title, string album, int duration)
         {
             ID = id;
@@ -14,30 +35,45 @@ namespace Banshee.NoNoise.Data
             Duration = duration;
         }
 
+        /// <summary>
+        /// The banshee_id
+        /// </summary>
         public int ID
         {
             get;
             private set;
         }
 
+        /// <summary>
+        /// Artist name
+        /// </summary>
         public string Artist
         {
             get;
             set;
         }
 
+        /// <summary>
+        /// Song title
+        /// </summary>
         public string Title
         {
             get;
             set;
         }
 
+        /// <summary>
+        /// Album title
+        /// </summary>
         public string Album
         {
             get;
             set;
         }
 
+        /// <summary>
+        /// Song duration in seconds
+        /// </summary>
         public int Duration
         {
             get;
@@ -50,12 +86,20 @@ namespace Banshee.NoNoise.Data
                                   ID, Artist, Title, Album, Duration);
         }
 	}
-	
+
+    /// <summary>
+    /// This class encapsulates additional information of a track used for the
+    /// visualization.
+    /// </summary>
 	public class DataValue
 	{
 		
 	}
-	
+
+    /// <summary>
+    /// This class encapsulates the PCA coordinates of a track with its banshee_id
+    /// and additional data.
+    /// </summary>
 	public class DataEntry
 	{
 		private int id;			//unique id for each track
