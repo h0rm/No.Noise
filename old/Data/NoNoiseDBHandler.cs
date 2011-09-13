@@ -36,6 +36,7 @@ namespace Banshee.NoNoise.Data
 {
     public class NoNoiseDBHandler
     {
+        #region Constants
         private readonly string connectionString = "URI=file:/home/thomas/test.db,version=3";
         private readonly string CREATE_TABLE_MIRDATA =
             "CREATE TABLE IF NOT EXISTS MIRData (banshee_id INTEGER, data CLOB, id INTEGER PRIMARY KEY)";
@@ -43,7 +44,11 @@ namespace Banshee.NoNoise.Data
             "CREATE TABLE IF NOT EXISTS PCAData (banshee_id INTEGER, id INTEGER PRIMARY KEY, pca_x DOUBLE, pca_y DOUBLE)";
         private readonly string CREATE_TABLE_TRACKDATA =
             "CREATE TABLE IF NOT EXISTS TrackData (album VARCHAR(32), artist VARCHAR(32), banshee_id INTEGER, duration INTEGER, id INTEGER PRIMARY KEY, title VARCHAR(32))";
+        #endregion
+
+        #region Members
         private IDbConnection dbcon = null;
+        #endregion
 
         /// <summary>
         /// Constructor. Sets the connection to the database and creates the
@@ -85,82 +90,8 @@ namespace Banshee.NoNoise.Data
             }
         }
 
-        /// <summary>
-        /// Inserts a Mirage.Matrix into the database.
-        /// </summary>
-        /// <param name="m">
-        /// The <see cref="Mirage.Matrix"/> to be inserted
-        /// </param>
-        /// <param name="bid">
-        /// The banshee_id of the corresponding track
-        /// </param>
-        /// <returns>
-        /// True if the matrix was successfully inserted. False otherwise.
-        /// </returns>
-        public bool InsertMatrix (Mirage.Matrix m, int bid)
-        {
-            IDbCommand dbcmd = null;
-            try {
-                dbcon.Open();
-                dbcmd = dbcon.CreateCommand();
-
-                dbcmd.CommandText = string.Format("INSERT INTO MIRData (banshee_id, data) VALUES ('{0}', '{1}')",
-                                                  bid, MirageMatrixToString(m));
-                dbcmd.ExecuteNonQuery ();
-            } catch (Exception e) {
-                Log.Exception("Foo1/DB - Mirage.Matrix insert failed", e);
-                return false;
-            } finally {
-                if (dbcmd != null)
-                    dbcmd.Dispose();
-                dbcmd = null;
-                if (dbcon != null)
-                    dbcon.Close();
-            }
-
-            return true;
-        }
-
-        /// <summary>
-        /// Converts a Mirage.Matrix to a string representation with semicolons
-        /// instead of commas.
-        /// </summary>
-        /// <param name="m">
-        /// The <see cref="Mirage.Matrix"/> to be converted
-        /// </param>
-        /// <returns>
-        /// A <see cref="System.String"/> representation of the matrix
-        /// </returns>
-        private string MirageMatrixToString (Mirage.Matrix m)
-        {
-            StringBuilder sb = new StringBuilder();
-
-            int i = 0;
-            while (i < m.rows) {
-                if (i == 0) {
-                    sb.Append("[[");
-                } else {
-                    sb.Append(" [");
-                }
-
-                int j = 0;
-                while (j < m.columns) {
-                    if (j != 0) {
-                        sb.Append(";");
-                    }
-                    sb.Append(m.d[i,j]);
-                    j++;
-                }
-                if (i == (m.rows - 1)) {
-                    sb.Append("]]");
-                    break;
-                }
-                sb.AppendLine("]");
-                i++;
-            }
-            return sb.ToString();
-        }
-
+        #region MIRData
+        #region Math.Matrix
         /// <summary>
         /// Inserts a Math.Matrix into the database.
         /// </summary>
@@ -345,6 +276,116 @@ namespace Banshee.NoNoise.Data
         }
 
         /// <summary>
+        /// Parses a Math.Matrix from a string.
+        /// </summary>
+        /// <param name="input">
+        /// A <see cref="System.String"/> representation of a matrix
+        /// </param>
+        /// <returns>
+        /// A <see cref="Matrix"/>
+        /// </returns>
+        public Matrix ParseMatrix (string input)
+        {
+            double[][] d = null;
+            string[] rows = input.Split('\n');
+            d = new double[rows.Length][];
+
+            try {
+                for (int i = 0; i < rows.Length; i++) {
+                    string r = rows[i];
+                    int start, end;
+                    r = r.Substring (start = (r.LastIndexOf("[") + 1), (end = r.IndexOf("]")) - start);
+                    string[] cols = r.Split(',');
+                    d[i] = new double[cols.Length];
+                    for (int j = 0; j < cols.Length; j++) {
+                        d[i][j] = double.Parse(cols[j]);
+                    }
+                }
+            } catch (Exception e) {
+                Log.Exception("Foo1/DB - Matrix parse exception", e);
+            }
+            return new Matrix (d);
+        }
+        #endregion
+
+        #region Mirage.Matrix
+        /// <summary>
+        /// Inserts a Mirage.Matrix into the database.
+        /// </summary>
+        /// <param name="m">
+        /// The <see cref="Mirage.Matrix"/> to be inserted
+        /// </param>
+        /// <param name="bid">
+        /// The banshee_id of the corresponding track
+        /// </param>
+        /// <returns>
+        /// True if the matrix was successfully inserted. False otherwise.
+        /// </returns>
+        public bool InsertMatrix (Mirage.Matrix m, int bid)
+        {
+            IDbCommand dbcmd = null;
+            try {
+                dbcon.Open();
+                dbcmd = dbcon.CreateCommand();
+
+                dbcmd.CommandText = string.Format("INSERT INTO MIRData (banshee_id, data) VALUES ('{0}', '{1}')",
+                                                  bid, MirageMatrixToString(m));
+                dbcmd.ExecuteNonQuery ();
+            } catch (Exception e) {
+                Log.Exception("Foo1/DB - Mirage.Matrix insert failed", e);
+                return false;
+            } finally {
+                if (dbcmd != null)
+                    dbcmd.Dispose();
+                dbcmd = null;
+                if (dbcon != null)
+                    dbcon.Close();
+            }
+
+            return true;
+        }
+
+        /// <summary>
+        /// Converts a Mirage.Matrix to a string representation with semicolons
+        /// instead of commas.
+        /// </summary>
+        /// <param name="m">
+        /// The <see cref="Mirage.Matrix"/> to be converted
+        /// </param>
+        /// <returns>
+        /// A <see cref="System.String"/> representation of the matrix
+        /// </returns>
+        private string MirageMatrixToString (Mirage.Matrix m)
+        {
+            StringBuilder sb = new StringBuilder();
+
+            int i = 0;
+            while (i < m.rows) {
+                if (i == 0) {
+                    sb.Append("[[");
+                } else {
+                    sb.Append(" [");
+                }
+
+                int j = 0;
+                while (j < m.columns) {
+                    if (j != 0) {
+                        sb.Append(";");
+                    }
+                    sb.Append(m.d[i,j]);
+                    j++;
+                }
+                if (i == (m.rows - 1)) {
+                    sb.Append("]]");
+                    break;
+                }
+                sb.AppendLine("]");
+                i++;
+            }
+            return sb.ToString();
+        }
+
+        /// <summary>
         /// Parses Mirage.Matrix's from the database and returns them.
         /// </summary>
         /// <returns>
@@ -388,54 +429,6 @@ namespace Banshee.NoNoise.Data
         }
 
         /// <summary>
-        /// Prints debug information for a database string which represents a
-        /// matrix.
-        /// </summary>
-        /// <param name="matrix">
-        /// A <see cref="System.String"/> representation of a matrix
-        /// </param>
-        private void CheckMatrix (string matrix)
-        {
-            string[] rows;
-            Log.Debug ("MatrixRows: " + (rows = matrix.Split ('\n')).Length);
-            foreach (string r in rows) {
-                Log.Debug ("MatrixCols: " + r.Split (',').Length);
-            }
-        }
-
-        /// <summary>
-        /// Parses a Math.Matrix from a string.
-        /// </summary>
-        /// <param name="input">
-        /// A <see cref="System.String"/> representation of a matrix
-        /// </param>
-        /// <returns>
-        /// A <see cref="Matrix"/>
-        /// </returns>
-        public Matrix ParseMatrix (string input)
-        {
-            double[][] d = null;
-            string[] rows = input.Split('\n');
-            d = new double[rows.Length][];
-
-            try {
-                for (int i = 0; i < rows.Length; i++) {
-                    string r = rows[i];
-                    int start, end;
-                    r = r.Substring (start = (r.LastIndexOf("[") + 1), (end = r.IndexOf("]")) - start);
-                    string[] cols = r.Split(',');
-                    d[i] = new double[cols.Length];
-                    for (int j = 0; j < cols.Length; j++) {
-                        d[i][j] = double.Parse(cols[j]);
-                    }
-                }
-            } catch (Exception e) {
-                Log.Exception("Foo1/DB - Matrix parse exception", e);
-            }
-            return new Matrix (d);
-        }
-
-        /// <summary>
         /// Parses a Mirage.Matrix from a string.
         /// </summary>
         /// <param name="input">
@@ -467,7 +460,57 @@ namespace Banshee.NoNoise.Data
             }
             return m;
         }
+        #endregion
 
+        /// <summary>
+        /// Prints debug information for a database string which represents a
+        /// matrix.
+        /// </summary>
+        /// <param name="matrix">
+        /// A <see cref="System.String"/> representation of a matrix
+        /// </param>
+        private void CheckMatrix (string matrix)
+        {
+            string[] rows;
+            Log.Debug ("MatrixRows: " + (rows = matrix.Split ('\n')).Length);
+            foreach (string r in rows) {
+                Log.Debug ("MatrixCols: " + r.Split (',').Length);
+            }
+        }
+
+        /// <summary>
+        /// Queries the database if it contains MIRData for the track with the
+        /// given banshee_id.
+        /// </summary>
+        /// <param name="bid">
+        /// The banshee_id
+        /// </param>
+        /// <returns>
+        /// True if the banshee_id is already in the database. False otherwise.
+        /// </returns>
+        public bool ContainsMirDataForTrack (int bid)
+        {
+            IDbCommand dbcmd = null;
+            try {
+                dbcon.Open();
+                dbcmd = dbcon.CreateCommand();
+
+                dbcmd.CommandText = string.Format ("SELECT id FROM MIRData WHERE banshee_id = '{0}'", bid);
+                return (dbcmd.ExecuteScalar () != null);
+            } catch (Exception e) {
+                Log.Exception("Foo1/DB - Contains MIRData query failed for Banshee_id: " + bid, e);
+                return false;
+            } finally {
+                if (dbcmd != null)
+                    dbcmd.Dispose();
+                dbcmd = null;
+                if (dbcon != null)
+                    dbcon.Close();
+            }
+        }
+        #endregion
+
+        #region Clear Tables
         /// <summary>
         /// Clears the MIRData table of the database.
         /// </summary>
@@ -548,7 +591,9 @@ namespace Banshee.NoNoise.Data
                     dbcon.Close();
             }
         }
+        #endregion
 
+        #region PCAData
         /// <summary>
         /// Inserts a list of DataEntry's into the PCAData table.
         /// </summary>
@@ -601,69 +646,9 @@ namespace Banshee.NoNoise.Data
 
             return true;
         }
+        #endregion
 
-        /// <summary>
-        /// Queries the database if it contains MIRData for the track with the
-        /// given banshee_id.
-        /// </summary>
-        /// <param name="bid">
-        /// The banshee_id
-        /// </param>
-        /// <returns>
-        /// True if the banshee_id is already in the database. False otherwise.
-        /// </returns>
-        public bool ContainsMirDataForTrack (int bid)
-        {
-            IDbCommand dbcmd = null;
-            try {
-                dbcon.Open();
-                dbcmd = dbcon.CreateCommand();
-
-                dbcmd.CommandText = string.Format ("SELECT id FROM MIRData WHERE banshee_id = '{0}'", bid);
-                return (dbcmd.ExecuteScalar () != null);
-            } catch (Exception e) {
-                Log.Exception("Foo1/DB - Contains MIRData query failed for Banshee_id: " + bid, e);
-                return false;
-            } finally {
-                if (dbcmd != null)
-                    dbcmd.Dispose();
-                dbcmd = null;
-                if (dbcon != null)
-                    dbcon.Close();
-            }
-        }
-
-        /// <summary>
-        /// Queries the database if it contains TrackData for the track with
-        /// the given banshee_id.
-        /// </summary>
-        /// <param name="bid">
-        /// The banshee_id
-        /// </param>
-        /// <returns>
-        /// True if the banshee_id is already in the database. False otherwise.
-        /// </returns>
-        public bool ContainsInfoForTrack (int bid)
-        {
-            IDbCommand dbcmd = null;
-            try {
-                dbcon.Open();
-                dbcmd = dbcon.CreateCommand();
-
-                dbcmd.CommandText = string.Format ("SELECT id FROM TrackData WHERE banshee_id = '{0}'", bid);
-                return (dbcmd.ExecuteScalar () != null);
-            } catch (Exception e) {
-                Log.Exception("Foo1/DB - Contains TrackInfo query failed for banshee_id: " + bid, e);
-                return false;
-            } finally {
-                if (dbcmd != null)
-                    dbcmd.Dispose();
-                dbcmd = null;
-                if (dbcon != null)
-                    dbcon.Close();
-            }
-        }
-
+        #region TrackData
         /// <summary>
         /// Inserts one TrackInfo into the TrackData table.
         /// </summary>
@@ -711,6 +696,38 @@ namespace Banshee.NoNoise.Data
 
             return true;
         }
+
+        /// <summary>
+        /// Queries the database if it contains TrackData for the track with
+        /// the given banshee_id.
+        /// </summary>
+        /// <param name="bid">
+        /// The banshee_id
+        /// </param>
+        /// <returns>
+        /// True if the banshee_id is already in the database. False otherwise.
+        /// </returns>
+        public bool ContainsInfoForTrack (int bid)
+        {
+            IDbCommand dbcmd = null;
+            try {
+                dbcon.Open();
+                dbcmd = dbcon.CreateCommand();
+
+                dbcmd.CommandText = string.Format ("SELECT id FROM TrackData WHERE banshee_id = '{0}'", bid);
+                return (dbcmd.ExecuteScalar () != null);
+            } catch (Exception e) {
+                Log.Exception("Foo1/DB - Contains TrackInfo query failed for banshee_id: " + bid, e);
+                return false;
+            } finally {
+                if (dbcmd != null)
+                    dbcmd.Dispose();
+                dbcmd = null;
+                if (dbcon != null)
+                    dbcon.Close();
+            }
+        }
+        #endregion
     }
 }
 
