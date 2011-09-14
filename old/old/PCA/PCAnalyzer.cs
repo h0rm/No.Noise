@@ -35,6 +35,9 @@ using Banshee.NoNoise.Data;
 
 namespace Banshee.Foo1.PCA
 {
+    /// <summary>
+    /// Helper class to perform a principal component analysis.
+    /// </summary>
     public class PCAnalyzer
     {
         private Matrix m = null;
@@ -133,6 +136,9 @@ namespace Banshee.Foo1.PCA
         /// All following feature vectors have to have the same number
         /// of parameters.
         /// </summary>
+        /// <param name="bid">
+        /// The banshee_id
+        /// </param>
         /// <param name="data">
         /// A feature vector
         /// </param>
@@ -159,6 +165,57 @@ namespace Banshee.Foo1.PCA
         }
 
         /// <summary>
+        /// Calls <see cref="AddEntry"/> with all passed features combined
+        /// in one array.
+        /// </summary>
+        /// <param name="bid">
+        /// The banshee_id
+        /// </param>
+        /// <param name="data">
+        /// A feature vector, may be null
+        /// </param>
+        /// <param name="args">
+        /// Additional features
+        /// </param>
+        /// <returns>
+        /// True if the feature vector has been successfully added,
+        /// false otherwise.
+        /// </returns>
+        public bool AddEntry (int bid, double[] data, params double[] args)
+        {
+            double[] comb = null;
+            if (data != null) {
+                comb = new double[data.Length + args.Length];
+                Array.Copy (data, comb, data.Length);
+                Array.Copy (args, 0, comb, data.Length, args.Length);
+            } else
+                comb = args;
+
+            Log.Debug ("Foo1/PCA - combined vector: " + GetValues (comb));
+
+            return AddEntry (bid, comb);
+        }
+
+        /// <summary>
+        /// Debug method for the feature vector.
+        /// </summary>
+        /// <param name="array">
+        /// The <see cref="System.Double[]"/> to be debugged
+        /// </param>
+        /// <returns>
+        /// A <see cref="System.String"/> representation of the array
+        /// </returns>
+        private string GetValues (double[] array)
+        {
+            string ret = "[";
+            foreach (double o in array) {
+                ret += o;
+                ret += ";";
+            }
+            return ret.TrimEnd(';') + "]";
+        }
+
+        /// <summary>
         /// Constructs the covariance matrix, extracts the eigenvalues and
         /// eigenvectors and finds the two eigenvectors corresponding to the
         /// largest eigenvalues.
@@ -168,7 +225,7 @@ namespace Banshee.Foo1.PCA
         public void PerformPCA ()
         {
             if (num_columns == 0)
-                return;     // TODO throw exception
+                throw new Exception ("No features added!");
 
             Log.Information ("Foo1/PCA - performing PCA");
 
