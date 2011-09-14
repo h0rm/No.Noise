@@ -45,8 +45,8 @@ namespace Banshee.NoNoise.Data
             "CREATE TABLE IF NOT EXISTS PCAData (banshee_id INTEGER, id INTEGER PRIMARY KEY, pca_x DOUBLE, " +
             "pca_y DOUBLE)";
         private readonly string CREATE_TABLE_TRACKDATA =
-            "CREATE TABLE IF NOT EXISTS TrackData (album VARCHAR(32), artist VARCHAR(32), banshee_id INTEGER, " +
-            "duration INTEGER, id INTEGER PRIMARY KEY, title VARCHAR(32))";
+            "CREATE TABLE IF NOT EXISTS TrackData (album VARCHAR, artist VARCHAR, banshee_id INTEGER, " +
+            "duration INTEGER, id INTEGER PRIMARY KEY, title VARCHAR)";
         #endregion
 
         #region Members
