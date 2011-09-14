@@ -208,6 +208,10 @@ namespace Banshee.Foo1
 
                         if (!ana.AddEntry (bid, ConvertMfccMean(mfcc.Mean())))
                             throw new Exception("AddEntry failed!");
+//                        if (!ana.AddEntry (bid, ConvertMfccMean(mfcc.Mean()), ti.Duration.TotalSeconds))
+//                            throw new Exception("AddEntry failed!");
+//                        if (!ana.AddEntry (bid, null, ti.Bpm, ti.Duration.TotalSeconds))
+//                            throw new Exception("AddEntry failed!");
                     } catch (Exception e) {
                         Hyena.Log.Exception("Foo1 - MFCC/DB Problem", e);
                     }

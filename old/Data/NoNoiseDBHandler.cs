@@ -293,8 +293,8 @@ namespace Banshee.NoNoise.Data
             try {
                 for (int i = 0; i < rows.Length; i++) {
                     string r = rows[i];
-                    int start, end;
-                    r = r.Substring (start = (r.LastIndexOf("[") + 1), (end = r.IndexOf("]")) - start);
+                    int start;
+                    r = r.Substring (start = (r.LastIndexOf("[") + 1), r.IndexOf("]") - start);
                     string[] cols = r.Split(',');
                     d[i] = new double[cols.Length];
                     for (int j = 0; j < cols.Length; j++) {
