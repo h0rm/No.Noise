@@ -6,8 +6,8 @@ namespace Banshee.NoNoise.Data
     /// <summary>
     /// This class encapsulates track information used for the NoNoise plug-in.
     /// </summary>
-	public class TrackInfo
-	{
+	public class TrackData
+    {
         /// <summary>
         /// Constructor
         /// </summary>
@@ -26,7 +26,7 @@ namespace Banshee.NoNoise.Data
         /// <param name="duration">
         /// Song duration in seconds
         /// </param>
-        public TrackInfo (int id, string artist, string title, string album, int duration)
+        public TrackData (int id, string artist, string title, string album, int duration)
         {
             ID = id;
             Artist = artist;
@@ -38,8 +38,7 @@ namespace Banshee.NoNoise.Data
         /// <summary>
         /// The banshee_id
         /// </summary>
-        public int ID
-        {
+        public int ID {
             get;
             private set;
         }
@@ -47,8 +46,7 @@ namespace Banshee.NoNoise.Data
         /// <summary>
         /// Artist name
         /// </summary>
-        public string Artist
-        {
+        public string Artist {
             get;
             set;
         }
@@ -56,8 +54,7 @@ namespace Banshee.NoNoise.Data
         /// <summary>
         /// Song title
         /// </summary>
-        public string Title
-        {
+        public string Title {
             get;
             set;
         }
@@ -65,8 +62,7 @@ namespace Banshee.NoNoise.Data
         /// <summary>
         /// Album title
         /// </summary>
-        public string Album
-        {
+        public string Album {
             get;
             set;
         }
@@ -74,8 +70,7 @@ namespace Banshee.NoNoise.Data
         /// <summary>
         /// Song duration in seconds
         /// </summary>
-        public int Duration
-        {
+        public int Duration {
             get;
             set;
         }
@@ -92,7 +87,7 @@ namespace Banshee.NoNoise.Data
     /// visualization.
     /// </summary>
 	public class DataValue
-	{
+    {
 		
 	}
 
@@ -101,7 +96,7 @@ namespace Banshee.NoNoise.Data
     /// and additional data.
     /// </summary>
 	public class DataEntry
-	{
+    {
 		private int id;			//unique id for each track
 		private double pca_x;	//between 0...1
 		private double pca_y;	//between 0...1
@@ -118,16 +113,14 @@ namespace Banshee.NoNoise.Data
 		/// <summary>
 		/// unique id for each track
 		/// </summary>
-		public int ID
-		{
+		public int ID {
 			get { return id; }
 		}
 		
 		/// <summary>
 		/// x pca value between 0...1
 		/// </summary>
-		public double X
-		{
+		public double X {
 			get { return pca_x; }
             set { pca_x = value; }
 		}
@@ -135,8 +128,7 @@ namespace Banshee.NoNoise.Data
 		/// <summary>
 		/// y pca value between 0...1
 		/// </summary>
-		public double Y
-		{
+		public double Y {
 			get { return pca_y; }
             set { pca_y = value; }
 		}
@@ -144,8 +136,7 @@ namespace Banshee.NoNoise.Data
 		/// <summary>
 		/// additional information like color
 		/// </summary>
-		public DataValue Value
-		{
+		public DataValue Value {
 			get { return val; }
             set { val = value; }
 		}
@@ -157,9 +148,9 @@ namespace Banshee.NoNoise.Data
 	}
 	
 	interface DataHandler
-	{
+    {
 		List<DataEntry> GetData ();		//returns a list of all tracks
-		TrackInfo GetTrackInfo (int ID);	//returns all info to a given track
+		TrackData GetTrackInfo (int ID);	//returns all info to a given track
 	}
 }
 
