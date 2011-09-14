@@ -44,7 +44,7 @@ namespace Banshee.Foo1.PCA
         private Vector mean = null;
         private List<Vector> differences = null;
         private List<Matrix> matrices = null;
-        private Dictionary<int, Vector> vectorMap = new Dictionary<int, Vector> ();
+        private Dictionary<int, Vector> vector_map = new Dictionary<int, Vector> ();
         private int num_params = 0;
         private int num_columns = 0;
         private Vector base1;
@@ -55,9 +55,7 @@ namespace Banshee.Foo1.PCA
         /// A collection of DataEntry objects
         /// </summary>
         public List<DataEntry> Coordinates {
-            get {
-                return coords;
-            }
+            get { return coords; }
         }
 
         /// <summary>
@@ -109,21 +107,21 @@ namespace Banshee.Foo1.PCA
         /// <summary>
         /// Converts a mirage matrix to a math matrix
         /// </summary>
-        /// <param name="_m">
+        /// <param name="mat">
         /// A <see cref="Mirage.Matrix"/>
         /// </param>
         /// <returns>
         /// A <see cref="Matrix"/>
         /// </returns>
-        private Matrix ConvertMatrix (Mirage.Matrix _m)
+        private Matrix ConvertMatrix (Mirage.Matrix mat)
         {
             Log.Debug("Foo1/PCA - converting mirage matrix");
-            double[][] d = Matrix.CreateMatrixData(_m.rows, _m.columns);
+            double[][] d = Matrix.CreateMatrixData(mat.rows, mat.columns);
 
-            for (int i = 0; i < _m.rows; i++)
-                for (int j = 0; j < _m.columns; j++)
-                    d[i][j] = _m.d[i,j];
-            num_columns = _m.columns;
+            for (int i = 0; i < mat.rows; i++)
+                for (int j = 0; j < mat.columns; j++)
+                    d[i][j] = mat.d[i,j];
+            num_columns = mat.columns;
 
             Log.Debug("Foo1/PCA - conversion complete");
 
@@ -158,7 +156,7 @@ namespace Banshee.Foo1.PCA
                 mean = v;
             else
                 mean = mean.Add(v);
-            vectorMap.Add (bid, v);
+            vector_map.Add (bid, v);
             num_columns++;
 
             return true;
@@ -232,29 +230,27 @@ namespace Banshee.Foo1.PCA
             // calc mean
             mean = mean / num_columns;
 
-            differences = new List<Vector>(vectorMap.Count);
+            differences = new List<Vector>(vector_map.Count);
 
-            Debug.Assert(differences.Count == vectorMap.Count);
+            Debug.Assert(differences.Count == vector_map.Count);
 
             // fill difference vectors
-            foreach (Vector v in vectorMap.Values) {
+            foreach (Vector v in vector_map.Values)
                 differences.Add(v.Subtract(mean));
-            }
 
-            matrices = new List<Matrix>(vectorMap.Count);
+            matrices = new List<Matrix>(vector_map.Count);
 
             Debug.Assert(differences.Count == matrices.Count);
 
             // fill matrices
-            foreach (Vector d in differences) {
+            foreach (Vector d in differences)
                 matrices.Add(d.ToColumnMatrix().Multiply(d.ToRowMatrix()));
-            }
 
             // build covariance matrix
             Matrix cov = matrices[0];
-            for (int i = 1; i < matrices.Count; i++) {
+            for (int i = 1; i < matrices.Count; i++)
                 cov += matrices[i];
-            }
+
             cov.Multiply(1.0/(double)(num_columns - 1));
 
 //            Log.Debug("Foo1/PCA - cov cols: " + cov.ColumnCount);
@@ -322,9 +318,8 @@ namespace Banshee.Foo1.PCA
             coords = new List<DataEntry>(num_columns);
 
             // compute 2D coordinates
-            foreach (int key in vectorMap.Keys) {
+            foreach (int key in vector_map.Keys)
                 coords.Add (GetCoordinate (key));
-            }
 
             double[] maxVals = new double[2];
             maxVals[0] = maxVals[1] = double.NegativeInfinity;
@@ -379,7 +374,7 @@ namespace Banshee.Foo1.PCA
             m.SetRowVector(base1, 0);
             m.SetRowVector(base2, 1);
 
-            Matrix coord = m.Multiply(vectorMap[key].ToColumnMatrix());
+            Matrix coord = m.Multiply(vector_map[key].ToColumnMatrix());
 
             Debug.Assert(coord.RowCount == 2 && coord.ColumnCount == 1);
 
@@ -396,9 +391,8 @@ namespace Banshee.Foo1.PCA
         public string GetCoordinateStrings ()
         {
             string ret = "";
-            foreach (DataEntry de in coords) {
+            foreach (DataEntry de in coords)
                 ret += de + "\n";
-            }
             return ret;
         }
     }

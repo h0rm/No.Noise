@@ -37,13 +37,16 @@ namespace Banshee.NoNoise.Data
     public class NoNoiseDBHandler
     {
         #region Constants
-        private readonly string connectionString = "URI=file:/home/thomas/test.db,version=3";
+        // TODO change connection string to final db
+        private readonly string CONNECTION_STRING = "URI=file:/home/thomas/test.db,version=3";
         private readonly string CREATE_TABLE_MIRDATA =
             "CREATE TABLE IF NOT EXISTS MIRData (banshee_id INTEGER, data CLOB, id INTEGER PRIMARY KEY)";
         private readonly string CREATE_TABLE_PCADATA =
-            "CREATE TABLE IF NOT EXISTS PCAData (banshee_id INTEGER, id INTEGER PRIMARY KEY, pca_x DOUBLE, pca_y DOUBLE)";
+            "CREATE TABLE IF NOT EXISTS PCAData (banshee_id INTEGER, id INTEGER PRIMARY KEY, pca_x DOUBLE, " +
+            "pca_y DOUBLE)";
         private readonly string CREATE_TABLE_TRACKDATA =
-            "CREATE TABLE IF NOT EXISTS TrackData (album VARCHAR(32), artist VARCHAR(32), banshee_id INTEGER, duration INTEGER, id INTEGER PRIMARY KEY, title VARCHAR(32))";
+            "CREATE TABLE IF NOT EXISTS TrackData (album VARCHAR(32), artist VARCHAR(32), banshee_id INTEGER, " +
+            "duration INTEGER, id INTEGER PRIMARY KEY, title VARCHAR(32))";
         #endregion
 
         #region Members
@@ -56,7 +59,7 @@ namespace Banshee.NoNoise.Data
         /// </summary>
         public NoNoiseDBHandler ()
         {
-            dbcon = (IDbConnection) new SqliteConnection(connectionString);
+            dbcon = (IDbConnection) new SqliteConnection(CONNECTION_STRING);
             CreateSchema ();
         }
 
@@ -92,6 +95,7 @@ namespace Banshee.NoNoise.Data
 
         #region MIRData
         #region Math.Matrix
+
         /// <summary>
         /// Inserts a Math.Matrix into the database.
         /// </summary>
@@ -155,8 +159,8 @@ namespace Banshee.NoNoise.Data
                 if (dbcmd.ExecuteScalar () != null)
                     return UpdateMatrix (m, bid, primaryKey, dbcmd);
 
-                dbcmd.CommandText = string.Format("INSERT INTO MIRData (banshee_id, data, id) VALUES ('{0}', '{1}', '{2}')",
-                                                  bid, MatrixToString (m), primaryKey);
+                dbcmd.CommandText = string.Format("INSERT INTO MIRData (banshee_id, data, id) VALUES ('{0}', '{1}'," +
+                                                    " '{2}')", bid, MatrixToString (m), primaryKey);
                 dbcmd.ExecuteNonQuery ();
             } catch (Exception e) {
                 Log.Exception("Foo1/DB - Matrix insert failed for id: " + primaryKey, e);
@@ -309,6 +313,7 @@ namespace Banshee.NoNoise.Data
         #endregion
 
         #region Mirage.Matrix
+
         /// <summary>
         /// Inserts a Mirage.Matrix into the database.
         /// </summary>
@@ -511,6 +516,7 @@ namespace Banshee.NoNoise.Data
         #endregion
 
         #region PCAData
+
         /// <summary>
         /// Inserts a list of DataEntry's into the PCAData table.
         /// </summary>
@@ -566,6 +572,7 @@ namespace Banshee.NoNoise.Data
         #endregion
 
         #region TrackData
+
         /// <summary>
         /// Inserts one TrackInfo into the TrackData table.
         /// </summary>
@@ -575,7 +582,7 @@ namespace Banshee.NoNoise.Data
         /// <returns>
         /// True if the TrackInfo was successfully inserted. False otherwise.
         /// </returns>
-        public bool InsertTrackInfo (TrackInfo ti)
+        public bool InsertTrackInfo (TrackData ti)
         {
             IDbCommand dbcmd = null;
             try {
@@ -647,6 +654,7 @@ namespace Banshee.NoNoise.Data
         #endregion
 
         #region Clear Tables
+
         /// <summary>
         /// Clears the MIRData table of the database.
         /// </summary>

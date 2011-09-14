@@ -47,6 +47,8 @@ using Banshee.PlaybackController;
 using Banshee.Foo1.Bpm;
 using Banshee.Foo1.PCA;
 
+using Banshee.NoNoise.Data;
+
 using Mirage;
 
 using Hyena.Data;
@@ -192,21 +194,21 @@ namespace Banshee.Foo1
 
                 for (int i = 0; i < ml.TrackModel.Count; i++) {
                     try {
-                        TrackInfo ti = ml.TrackModel[i];
+                        TrackInfo ti = ml.TrackModel [i];
                         string absPath = ti.Uri.AbsolutePath;
-                        int bid = ml.GetTrackIdForUri(ti.Uri);
+                        int bid = ml.GetTrackIdForUri (ti.Uri);
 
                         // WARN: A bid could theoretically be inserted/deleted between GetMirageMatrices ()
                         // and CointainsMirDataForTrack () such that if and else fail
                         if (!db.ContainsMirDataForTrack (bid)) {
-                            mfcc = Analyzer.AnalyzeMFCC(absPath);
+                            mfcc = Analyzer.AnalyzeMFCC (absPath);
 
                             if (!db.InsertMatrix (mfcc, bid))
                                 Hyena.Log.Error ("Foo1 - Matrix insert failed");
                         } else
                             mfcc = mfccMap[bid];
 
-                        if (!ana.AddEntry (bid, ConvertMfccMean(mfcc.Mean())))
+                        if (!ana.AddEntry (bid, ConvertMfccMean (mfcc.Mean ())))
                             throw new Exception("AddEntry failed!");
 //                        if (!ana.AddEntry (bid, ConvertMfccMean(mfcc.Mean()), ti.Duration.TotalSeconds))
 //                            throw new Exception("AddEntry failed!");
@@ -268,14 +270,20 @@ namespace Banshee.Foo1
             private void WriteTrackInfosToDB ()
             {
                 Banshee.Library.MusicLibrarySource ml = ServiceManager.SourceManager.MusicLibrary;
+//                try {
+//                    TrackInfo dti = ml.TrackModel[154];
+//                    Hyena.Log.Debug ("Foo1 - DBTrackInfo, id 154, artist: " + dti.ArtistName);
+//                } catch (Exception e) {
+//                    Hyena.Log.Exception ("Foo1 - no ti with id 154", e);
+//                }
 
                 for (int i = 0; i < ml.TrackModel.Count; i++) {
                     try {
-                        TrackInfo ti = ml.TrackModel[i];
-                        int bid = ml.GetTrackIdForUri(ti.Uri);
+                        TrackInfo ti = ml.TrackModel [i];
+                        int bid = ml.GetTrackIdForUri (ti.Uri);
 
                         if (!db.ContainsInfoForTrack (bid)) {
-                            if (!db.InsertTrackInfo (new Banshee.NoNoise.Data.TrackInfo (
+                            if (!db.InsertTrackInfo (new TrackData (
                                                        bid, ti.ArtistName, ti.TrackTitle,
                                                        ti.AlbumTitle, (int)ti.Duration.TotalSeconds)))
                                 Hyena.Log.Error ("Foo1 - TrackInfo insert failed");
@@ -388,7 +396,8 @@ namespace Banshee.Foo1
                     int id = DatabaseTrackInfo.GetTrackIdForUri(args.Uri);
                     if (id >= 0) {
 //                        int index = (int)TrackCache.IndexOf ((long)id); // auch nicht accessible...?
-                        Hyena.Log.Debug("Foo1 - BPM...Track index: " + ServiceManager.SourceManager.MusicLibrary.GetTrackIdForUri(args.Uri));
+                        Hyena.Log.Debug("Foo1 - BPM...Track index: " +
+                                        ServiceManager.SourceManager.MusicLibrary.GetTrackIdForUri(args.Uri));
 //                        if (index >= 0) {
 //                            TrackInfo track = TrackModel[index];
 //                            if (track != null) {
