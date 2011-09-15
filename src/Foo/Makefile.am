@@ -1,13 +1,8 @@
 ASSEMBLY = Banshee.Foo
 LINK = $(BANSHEE_LIBS)
 
-SOURCES =  \
-	Banshee.Foo/FooSource.cs \
-	Banshee.Foo/MyWidget.cs \
-	gtk-gui/generated.cs
+SOURCES = Banshee.Foo/FooSource.cs
 
-RESOURCES =  \
-	Foo.addin.xml \
-	gtk-gui/gui.stetic
+RESOURCES = Foo.addin.xml
 
 include $(top_srcdir)/build/build.mk

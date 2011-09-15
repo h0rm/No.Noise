@@ -1,28 +1,19 @@
-ASSEMBLY =  \
-	\\ \
-	Banshee.Cluttertest \
+SOURCES =  \
+	Banshee.Cluttertest/Cluster.cs \
 	Banshee.Cluttertest/ClutterHelper.cs \
 	Banshee.Cluttertest/CluttertestSource.cs \
-	Banshee.Core \
-	Banshee.Services \
-	Banshee.ThickClient \
-	Banshee.Widgets \
-	Culture=neutral \
-	Hyena \
-	Hyena.Gui \
-	Version=1.5.0.0
+	Banshee.Cluttertest/ClutterView.cs \
+	Banshee.Cluttertest/Gui.cs \
+	Banshee.Cluttertest/Point.cs \
+	Banshee.Cluttertest/PointGroup.cs \
+	Banshee.Cluttertest/QuadTree.cs \
+	Banshee.Cluttertest/View.cs 
+
 LINK =  \
 	$(BANSHEE_LIBS) \
-	Mono.Posix \
-	-pkg:clutter-gtk-sharp \
-	-pkg:clutter-sharp \
-	-pkg:gtk-sharp-2.0 \
-	-pkg:mono-addins \
-	-pkg:mono-cairo \
-	System \
-	System.Core
+	$(CLUTTER_SHARP_LIBS) 
 
-SOURCES =
+ASSEMBLY = Banshee.Cluttertest
 
 RESOURCES = Cluttertest.addin.xml
 

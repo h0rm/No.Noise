@@ -1,4 +1,5 @@
 SUBDIRS = \
+    Foo \
     Cluttertest \
     Foo \
 	AlarmClock \

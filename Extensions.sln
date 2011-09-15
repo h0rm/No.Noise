@@ -1,6 +1,8 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 10.00
 # Visual Studio 2008
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Foo", "src\Foo\Foo.csproj", "{944676DC-C546-4897-A377-EC34E37F323A}"
+EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Cluttertest", "src\Cluttertest\Cluttertest.csproj", "{49C8AF5A-E258-4308-B9ED-43BA4B266CE5}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Foo", "src\Foo\Foo.csproj", "{46625EE8-9A57-48AD-9A49-B67AD0D9A775}"
@@ -88,6 +90,10 @@ Global
 		Windows|Any CPU = Windows|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{944676DC-C546-4897-A377-EC34E37F323A}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{944676DC-C546-4897-A377-EC34E37F323A}.Debug|x86.Build.0 = Debug|Any CPU
+		{944676DC-C546-4897-A377-EC34E37F323A}.Release|x86.ActiveCfg = Release|Any CPU
+		{944676DC-C546-4897-A377-EC34E37F323A}.Release|x86.Build.0 = Release|Any CPU
 		{04568A95-2430-41EB-82D6-939F5E7E8403}.Debug|x86.ActiveCfg = Debug|Any CPU
 		{04568A95-2430-41EB-82D6-939F5E7E8403}.Debug|x86.Build.0 = Debug|Any CPU
 		{04568A95-2430-41EB-82D6-939F5E7E8403}.Release|x86.ActiveCfg = Release|Any CPU

@@ -4,7 +4,7 @@
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProductVersion>8.0.50727</ProductVersion>
-    <ProjectGuid>{46625EE8-9A57-48AD-9A49-B67AD0D9A775}</ProjectGuid>
+    <ProjectGuid>{944676DC-C546-4897-A377-EC34E37F323A}</ProjectGuid>
     <OutputType>Library</OutputType>
     <UseParentDirectoryAsNamespace>true</UseParentDirectoryAsNamespace>
     <AssemblyName>Banshee.Foo</AssemblyName>
@@ -28,7 +28,6 @@
     </CustomCommands>
     <WarningLevel>4</WarningLevel>
     <Optimize>false</Optimize>
-    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Windows|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -37,15 +36,8 @@
     <PlatformTarget>x86</PlatformTarget>
     <WarningLevel>4</WarningLevel>
     <Optimize>false</Optimize>
-    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="clutter-sharp, Version=1.0.0.0, Culture=neutral, PublicKeyToken=87b7d16e3a31768b">
-      <Package>/usr/lib/clutter-sharp/clutter-sharp.dll</Package>
-    </Reference>
-    <Reference Include="clutter-gtk-sharp, Version=1.0.0.0, Culture=neutral, PublicKeyToken=87b7d16e3a31768b">
-      <Package>/usr/lib/clutter-sharp/clutter-gtk-sharp.dll</Package>
-    </Reference>
     <Reference Include="System" />
     <Reference Include="gtk-sharp, Version=2.12.0.0, Culture=neutral, PublicKeyToken=35e10195dab3c99f">
       <Package>gtk-sharp-2.0</Package>
@@ -61,51 +53,36 @@
       <SpecificVersion>False</SpecificVersion>
       <Package>mono-addins</Package>
     </Reference>
+    <Reference Include="Banshee.Core, Version=1.7.0.0, Culture=neutral">
+      <Package>banshee-core</Package>
+    </Reference>
+    <Reference Include="Banshee.Services, Version=1.7.0.0, Culture=neutral">
+      <Package>banshee-services</Package>
+    </Reference>
+    <Reference Include="Banshee.ThickClient, Version=1.7.0.0, Culture=neutral">
+      <Package>banshee-thickclient</Package>
+    </Reference>
+    <Reference Include="Banshee.Widgets, Version=1.7.0.0, Culture=neutral">
+      <Package>banshee-thickclient</Package>
+    </Reference>
+    <Reference Include="Hyena, Version=1.7.0.0, Culture=neutral">
+      <Package>banshee-hyena</Package>
+    </Reference>
+    <Reference Include="Hyena.Data.Sqlite, Version=1.7.0.0, Culture=neutral">
+      <Package>banshee-hyena-data-sqlite</Package>
+    </Reference>
+    <Reference Include="Hyena.Gui, Version=1.7.0.0, Culture=neutral">
+      <Package>banshee-hyena-gui</Package>
+    </Reference>
     <Reference Include="System.Core" />
-    <Reference Include="Banshee.Core, Version=2.0.0.0, Culture=neutral, PublicKeyToken=null">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\..\banshee\bin\Banshee.Core.dll</HintPath>
-    </Reference>
-    <Reference Include="Banshee.Services, Version=2.0.0.0, Culture=neutral, PublicKeyToken=null">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\..\banshee\bin\Banshee.Services.dll</HintPath>
-    </Reference>
-    <Reference Include="Banshee.ThickClient, Version=2.0.0.0, Culture=neutral, PublicKeyToken=null">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\..\banshee\bin\Banshee.ThickClient.dll</HintPath>
-    </Reference>
-    <Reference Include="Hyena.Data.Sqlite, Version=2.0.0.0, Culture=neutral, PublicKeyToken=null">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\..\banshee\bin\Hyena.Data.Sqlite.dll</HintPath>
-    </Reference>
-    <Reference Include="Hyena, Version=2.0.0.0, Culture=neutral, PublicKeyToken=null">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\..\banshee\bin\Hyena.dll</HintPath>
-    </Reference>
-    <Reference Include="Hyena.Gui, Version=2.0.0.0, Culture=neutral, PublicKeyToken=null">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\..\banshee\bin\Hyena.Gui.dll</HintPath>
-    </Reference>
-    <Reference Include="Banshee.Widgets, Version=2.0.0.0, Culture=neutral, PublicKeyToken=null">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\..\banshee\bin\Banshee.Widgets.dll</HintPath>
-    </Reference>
-    <Reference Include="glib-sharp, Version=2.12.0.0, Culture=neutral, PublicKeyToken=35e10195dab3c99f">
-      <Package>glib-sharp-2.0</Package>
-    </Reference>
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Foo.addin.xml">
       <LogicalName>Foo.addin.xml</LogicalName>
     </EmbeddedResource>
-    <EmbeddedResource Include="gtk-gui\gui.stetic">
-      <LogicalName>gui.stetic</LogicalName>
-    </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Banshee.Foo\FooSource.cs" />
-    <Compile Include="gtk-gui\generated.cs" />
-    <Compile Include="Banshee.Foo\MyWidget.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ProjectExtensions>

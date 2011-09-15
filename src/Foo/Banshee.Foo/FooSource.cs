@@ -30,18 +30,15 @@ using System;
 
 using Mono.Addins;
 
-using Cairo;
 using Banshee.Base;
 using Banshee.Sources;
 using Banshee.Sources.Gui;
-using Banshee.Widgets;
 
 // Other namespaces you might want:
 using Banshee.ServiceStack;
 using Banshee.Preferences;
 using Banshee.MediaEngine;
 using Banshee.PlaybackController;
-
 
 namespace Banshee.Foo
 {
@@ -72,24 +69,11 @@ namespace Banshee.Foo
 
         private class CustomView : ISourceContents
         {
+            Gtk.Label label = new Gtk.Label ("Custom view for Foo extension is working!");
 
-            Gtk.Widget w;
-
-            public CustomView()
-            {
-                Gtk.Box box = new Gtk.HBox(true,0);
-
-                MyWidget widget = new MyWidget();
-
-                //box.Add(new Gtk.Label("Hallo"));
-                //box.Add(new Gtk.Label("no mal Hallo"));
-                box.Add(widget);
-                box.ShowAll();
-                w = widget;
-            }
             public bool SetSource (ISource source) { return true; }
             public void ResetSource () { }
-            public Gtk.Widget Widget { get { return w; } }
+            public Gtk.Widget Widget { get { return label; } }
             public ISource Source { get { return null; } }
         }
 
