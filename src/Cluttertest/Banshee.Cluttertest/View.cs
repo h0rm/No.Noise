@@ -38,11 +38,16 @@ namespace Banshee.Cluttertest
             Hyena.Log.Information ("View Start");
             SetSizeRequest (100,100);
             Stage.Color = new Color (0,0,0,255);
-            point_group = new PointGroup ();
+            point_group = new PointGroup (Stage);
             gui = new Gui ();
 
             Stage.Add (point_group);
             Stage.Add (gui);
+            Stage.SetClip (0,0,Stage.Width, Stage.Height);
+
+            Stage.AllocationChanged += delegate {
+                Stage.SetClip (0,0,Stage.Width, Stage.Height);
+            };
 
             point_group.SongEntered += delegate (object source, SongHighlightArgs args) {
                 //Hyena.Log.Information ("Entered "+args.X+":"+args.Y+" | "+args.ID);
@@ -70,8 +75,8 @@ namespace Banshee.Cluttertest
 
         public void TestGenerateData ()
         {
-            point_group.TestGenerateCircles(5000,5000,2000);
-            //point_group.ParseTextFile ("/home/horm/Downloads/16255/airport_locations.tsv", 2000);
+            //point_group.TestGenerateCircles(5000,5000,2000);
+            point_group.ParseTextFile ("/home/horm/Downloads/16255/airport_locations.tsv", 2000);
         }
     }
 }

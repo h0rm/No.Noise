@@ -313,7 +313,7 @@ namespace Banshee.Cluttertest
             other.Animation.Completed += delegate {
                 other.Hide ();
                 //other.SetPosition (pos.X,pos.Y);
-                Hyena.Log.Debug ("Hidden");
+                //Hyena.Log.Debug ("Hidden");
             };
             //other.Hide ();          //hide merged cluster
             //this.SetPosition (merged.X, merged.Y);

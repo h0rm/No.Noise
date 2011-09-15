@@ -92,6 +92,8 @@ namespace Banshee.Cluttertest
         private float mouse_old_y;
 
         private Shader shader;
+
+        private Stage stage;
        // private CairoTexture test_circle;
         #endregion
 
@@ -107,8 +109,9 @@ namespace Banshee.Cluttertest
         }
         #endregion
 
-        public PointGroup () : base ()
+        public PointGroup (Stage stage) : base ()
         {
+            this.stage = stage;
             Init();
         }
 
@@ -278,9 +281,13 @@ namespace Banshee.Cluttertest
             //circles klonen
             this.Reactive = true;
             this.ScrollEvent += HandleAdaptiveZoom;
-            this.ButtonPressEvent += HandleStageButtonPressEvent;
-            this.ButtonReleaseEvent += HandleStageButtonReleaseEvent;
-            this.MotionEvent += HandleMotionEvent;
+
+
+            stage.ButtonPressEvent += HandleStageButtonPressEvent;
+            stage.ButtonReleaseEvent += HandleStageButtonReleaseEvent;
+            //this.ButtonPressEvent += HandleStageButtonPressEvent;
+            //this.ButtonReleaseEvent += HandleStageButtonReleaseEvent;
+            stage.MotionEvent += HandleMotionEvent;
             //this.LeaveEvent += HandleHandleLeaveEvent;
             //this.Stage.ButtonPressEvent += HandleGlobalButtonPressEven;
         }
@@ -479,9 +486,13 @@ namespace Banshee.Cluttertest
             float x, y;
             EventHelper.GetCoords (args.Event, out x, out y);
 
-            this.SetPosition (this.X + x - mouse_old_x, this.Y + y - mouse_old_y);
+            float newx = this.X + x - mouse_old_x;
+            float newy = this.Y + y - mouse_old_y;
+
+            this.SetPosition (newx, newy);
             mouse_old_x = x;
             mouse_old_y = y;
+
         }
 
         /// <summary>
