@@ -53,12 +53,20 @@ namespace Banshee.Cluttertest
     /// <summary>
     /// The main QuadTree class which handles Insertion, Deletion and Retrieval of objects.
     /// </summary>
-    public class QuadTree<T> where T : IStorable
+    public class QuadTree<T> : ICloneable where T : IStorable
     {
         private readonly Dictionary<T, QuadTreeObject<T>> dictionary
                                             = new Dictionary<T, QuadTreeObject<T>> ();
 
         private readonly QuadTreeNode<T> quadTreeRoot;
+
+
+        private QuadTree (QuadTree<T> tree) : this (tree.Rectangle)
+        {
+            //Create new Tree with the same items
+            foreach (T item in tree.dictionary.Keys)
+                Add (item);
+        }
 
         public QuadTree (QRectangle rect)
         {
@@ -84,6 +92,28 @@ namespace Banshee.Cluttertest
             quadTreeRoot.Insert (wrappedItem);
         }
 
+        public bool Remove (T item)
+        {
+            if (dictionary.ContainsKey(item))
+            {
+                quadTreeRoot.Delete (dictionary[item]);
+                dictionary.Remove (item);
+                return true;
+            } else {
+                return false;
+            }
+        }
+
+        public void Clear ()
+        {
+            dictionary.Clear ();
+            quadTreeRoot.Clear();
+        }
+
+        public object Clone ()
+        {
+            return new QuadTree<T> (this);
+        }
         public event OnCreateQuadEvent OnCreateQuad {
             add { create_quad_handler += value; }
             remove { create_quad_handler -= value; }
@@ -172,6 +202,11 @@ namespace Banshee.Cluttertest
 
         public QuadTreeNode (QRectangle rect) {
             this.boundary_rectangle = rect;
+        }
+
+        public bool IsEmptyLeaf
+        {
+            get { return objects.Count == 0 && TopLeft == null; }
         }
 
         public QuadTreeNode (double x, double y, double width, double height)
@@ -295,6 +330,60 @@ namespace Banshee.Cluttertest
             return dest;
         }
 
+        private void CleanUpwards ()
+        {
+            //if children, check if empty and clean
+            if (top_left != null){
+
+                if (top_left.IsEmptyLeaf && top_right.IsEmptyLeaf &&
+                    bottom_left.IsEmptyLeaf && bottom_right.IsEmptyLeaf)
+                {
+                    top_left = null;
+                    top_right = null;
+                    bottom_left = null;
+                    bottom_right = null;
+                }
+            }
+
+            //tell parent to clean up
+            if (parent != null && objects.Count == 0)
+                parent.CleanUpwards ();
+        }
+
+        public void Clear ()
+        {
+            //Clear children
+            if (top_left != null){
+                top_left.Clear ();
+                top_right.Clear ();
+                bottom_left.Clear ();
+                bottom_right.Clear ();
+            }
+
+            //clear objects
+            if (objects.Count != 0){
+                objects.Clear ();
+            }
+
+            //delete references
+            top_left = null;
+            top_right = null;
+            bottom_left = null;
+            bottom_right = null;
+        }
+
+        internal void Delete (QuadTreeObject<T> item)
+        {
+            if (item.Owner != null){
+                //someone cares
+                if (item.Owner == this){
+                    Remove (item);
+                    CleanUpwards ();
+                } else {
+                    item.Owner.Delete (item);
+                }
+            }
+        }
 
         /// <summary>
         /// Inserts an item into this quad
