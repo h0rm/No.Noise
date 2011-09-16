@@ -143,6 +143,14 @@ namespace Banshee.Cluttertest
             ((IDisposable) context).Dispose ();
         }
 
+        static public List<QRectangle> HierarchicalInitDebug (List<Cluster> points, double width, double height)
+        {
+
+            Hyena.Log.Debug ("Hierarchical Clustering Debug Init");
+            root.AddChildren (points);
+
+            return debug_quads;
+        }
         static public List<QRectangle> HierarchicalInit (List<Cluster> points, double width, double height)
         {
             Hyena.Log.Debug ("Hierarchical Clustering Init");
@@ -163,7 +171,7 @@ namespace Banshee.Cluttertest
             quad_tree.OnCreateQuad += delegate(OnCreateQuadArgs args) {
                 //Hyena.Log.Debug ("New Quad created at (" + args.Rectangle.X + "," + args.Rectangle.Y
                  //                + ") with (" + args.Rectangle.Width + "," + args.Rectangle.Height);
-                debug_quads.Add (args.Rectangle);
+//                debug_quads.Add (args.Rectangle);
             };
 
             lock (points) {

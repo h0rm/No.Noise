@@ -94,6 +94,28 @@ namespace Banshee.Cluttertest
         private Shader shader;
 
         private Stage stage;
+        private bool clipping_enabled=false;
+        private List<DebugPoint> debug_points;
+        private Stack<Cluster> debug_stack;
+
+        class DebugPoint{
+
+            public DebugPoint (double x, double y)
+            {
+                XY = new Point (x, y);
+                Owner = null;
+            }
+            public Point XY {
+                get;
+                set;
+            }
+
+            public Cluster Owner {
+                get;
+                set;
+            }
+        }
+
        // private CairoTexture test_circle;
         #endregion
 
@@ -138,28 +160,39 @@ namespace Banshee.Cluttertest
         public void ParseTextFile (string filename, int count)
         {
             cluster_list = new List<Cluster> ();
+            debug_points = new List<DebugPoint> ();
+            debug_stack = new Stack<Cluster> ();
 
-            using (StreamReader sr = new StreamReader(filename))
+            using (StreamReader sr = new StreamReader (filename))
             {
                 string line;
 
 
-                for(int i=0; i < count; i++)
+                for (int i = 0; i < count; i++)
                 {
-                    if((line = sr.ReadLine()) == null)
+                    if ((line = sr.ReadLine ()) == null)
                         break;
 
                     char[] delimiters = new char[] { '\t' };
-                    string[] parts = line.Split(delimiters, StringSplitOptions.RemoveEmptyEntries);
+                    string[] parts = line.Split (delimiters, StringSplitOptions.RemoveEmptyEntries);
 
-                    double x = Math.Abs(float.Parse(parts[1], System.Globalization.CultureInfo.InvariantCulture))*20.0f;
-                    double y = Math.Abs(float.Parse(parts[2], System.Globalization.CultureInfo.InvariantCulture))*20.0f;
+                    double x = Math.Abs (float.Parse (parts[1], System.Globalization.CultureInfo.InvariantCulture)) * 20.0f;
+                    double y = Math.Abs (float.Parse (parts[2], System.Globalization.CultureInfo.InvariantCulture)) * 20.0f;
 
-                    if ( x != 0 && y != 0)
-                        AddCircle ((float)x,(float)y,parts[0]);
-
+                    if (x != 0 && y != 0) {
+                        //AddCircle ((float)x,(float)y,parts[0]);
+                        debug_points.Add (new DebugPoint (x, y));
+                        Hyena.Log.Debug ("Point " + x + "," + y);
+                    }
                 }
 
+            }
+
+            for (int i = 0; i < 2000; i++) {
+                AddCircle (0f, 0f, "debug");
+            }
+            foreach (Cluster c in cluster_list) {
+                debug_stack.Push (c);
             }
 
 //            Cluster.KMeansInit (4, Width, Height);
@@ -480,7 +513,8 @@ namespace Banshee.Cluttertest
         /// </param>
         private void HandleMotionEvent (object o, MotionEventArgs args)
         {
-            if (!mouse_down)        //wenn nicht geklickt
+            if (!mouse_down)
+                //wenn nicht geklickt
                 return;
 
             float x, y;
@@ -493,6 +527,9 @@ namespace Banshee.Cluttertest
             mouse_old_x = x;
             mouse_old_y = y;
 
+            if (clipping_enabled)
+        //                UpdateClipping ();
+                UpdateClippingDebug ();
         }
 
         /// <summary>
@@ -510,6 +547,62 @@ namespace Banshee.Cluttertest
             mouse_down = false;
         }
 
+        private void UpdateClippingDebug ()
+        {
+
+            float x, y;
+            double px, py;
+            Cluster current;
+            DebugPoint p;
+//            GetTransformedPosition (out x, out y);
+            x = X;
+            y = Y;
+//
+            Hyena.Log.Debug ("Stackcount " + debug_stack.Count);
+            for (int i = 0; i < debug_points.Count; i++)
+            {
+                p = debug_points[i];
+                px = p.XY.X + x;
+                py = p.XY.Y + y;
+
+
+
+                if (px < stage.Width && px > 0 && py < stage.Height && py > 0)
+                {
+                    //Hyena.Log.Debug ("In window");
+                    if (debug_stack.Count == 0)
+                        continue;
+
+                    if (p.Owner != null)
+                        continue;
+
+                    //Hyena.Log.Debug ("Pop");
+
+                    current = debug_stack.Pop ();
+                    current.SetPosition (p.XY.FloatX, p.XY.FloatY);
+                    p.Owner = current;
+                } else {
+                    if (p.Owner == null)
+                        continue;
+
+                    debug_stack.Push (p.Owner);
+                    p.Owner = null;
+
+                }
+            }
+        }
+        private void UpdateClipping ()
+        {
+            float x, y;
+            foreach (Cluster c in cluster_list)
+            {
+                c.GetTransformedPosition (out x, out y);
+                if (x < stage.Width && x > 0 && y < stage.Height && y > 0)
+                    c.Show ();
+                else
+                    c.Hide ();
+            }
+        }
         /// <summary>
         /// Handles the button press event for displacing the actor.
         /// </summary>
@@ -524,7 +617,7 @@ namespace Banshee.Cluttertest
 
             uint button = EventHelper.GetButton (args.Event);
 
-            if(button != 1)
+            if (button != 1)
             {
                 Hyena.Log.Debug ("Rechtsklick.");
                 //UpdateCirclePrototypeColor();
@@ -533,6 +626,16 @@ namespace Banshee.Cluttertest
                 //Cluster.KMeansRefineStep (cluster_list);
                 //Cluster.HierarchicalCalculateStep (this);
                 //Cluster.HierarchicalNewCalculateStep (this);
+
+                if (!clipping_enabled) {
+                    clipping_enabled = true;
+                } else {
+                    foreach (Cluster c in cluster_list)
+                        c.Show ();
+                    clipping_enabled = false;
+                }
+
+                Hyena.Log.Debug ("Clipping is now " + (clipping_enabled ? "on" : "off"));
                 return;
             }
             EventHelper.GetCoords (args.Event, out mouse_old_x, out mouse_old_y);
