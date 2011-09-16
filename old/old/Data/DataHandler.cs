@@ -77,7 +77,7 @@ namespace Banshee.NoNoise.Data
 
         public override string ToString ()
         {
-            return string.Format ("[NNTrackInfo: ID={0}, Artist={1}, Title={2}, Album={3}, Duration={4}]",
+            return string.Format ("[TrackData: ID={0}, Artist={1}, Title={2}, Album={3}, Duration={4}]",
                                   ID, Artist, Title, Album, Duration);
         }
 	}

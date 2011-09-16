@@ -200,6 +200,7 @@
     <Compile Include="PCA\PCAnalyzer.cs" />
     <Compile Include="Data\DataHandler.cs" />
     <Compile Include="Data\NoNoiseDBHandler.cs" />
+    <Compile Include="Data\DataParser.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ProjectExtensions>

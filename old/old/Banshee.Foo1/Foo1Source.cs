@@ -100,6 +100,7 @@ namespace Banshee.Foo1
             Gtk.ThreadNotify ready;
 
             private bool painintheassdummy = false;
+            private bool dotests = true;
 //            private bool gatherMIRdata = false;
             private bool saveTrackInfosToDB = true;
             private bool dopca = true;
@@ -119,6 +120,9 @@ namespace Banshee.Foo1
                 session = new Session(API_KEY, API_SECRET);
 
                 db = new Banshee.NoNoise.Data.NoNoiseDBHandler ();
+
+                if (dotests)
+                    PerformTests ();
 
                 // PCA
                 if (dopca)
@@ -162,6 +166,41 @@ namespace Banshee.Foo1
                 w.Add(bw);
 
                 w.ShowAll();
+            }
+
+            private void PerformTests ()
+            {
+                bool succ = true;
+                succ &= DBVectorTest ();
+
+                if (succ)
+                    Hyena.Log.Debug ("Foo1 - Tests finished successfully");
+                else
+                    Hyena.Log.Debug ("Foo1 - Tests failed");
+            }
+
+            private bool DBVectorTest ()
+            {
+                Mirage.Vector v = new Mirage.Vector (20);
+                Random r = new Random ();
+                for (int i = 0; i < v.rows; i++) {
+                    v.d [i, 0] = (float) r.NextDouble ();
+                }
+
+                Mirage.Vector v2 = DataParser.ParseMirageVector (DataParser.MirageVectorToString (v));
+                if (v.rows != v2.rows) {
+                    Hyena.Log.Warning ("Foo1/Testing - vectors don't have the same length");
+                    return false;
+                }
+                for (int i = 0; i < v.rows; i++) {
+                    if (!v.d [i, 0].ToString ().Equals (v2.d [i, 0].ToString ())) {     // string precision
+                        Hyena.Log.WarningFormat ("Foo1/Testing - values at pos {0} are not the same ({1} | {2})",
+                                                 i, v.d [i, 0], v2.d [i, 0]);
+                        return false;
+                    }
+                }
+
+                return true;
             }
 
             /// <summary>

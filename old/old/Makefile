@@ -105,7 +105,7 @@ DIST_SOURCES =
 DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
 ACLOCAL = ${SHELL} /home/thomas/banshee-community-extensions/missing --run aclocal-1.11
 ACLOCAL_AMFLAGS = -I build/m4/shamrock -I build/m4/shave -I build/m4/extensions ${ACLOCAL_FLAGS}
-ALL_LINGUAS = de el es fi fr it pt ru_RU
+ALL_LINGUAS = de el es fi fr it pt ru_RU sk uk_UA
 AMTAR = ${SHELL} /home/thomas/banshee-community-extensions/missing --run tar
 AM_MAKEFLAGS = `test -z $V && echo -s`
 APPINDICATORSHARP_CFLAGS = 
@@ -120,16 +120,16 @@ BANSHEE_EXTDIR = /usr/lib/banshee/Extensions
 BANSHEE_LASTFM_CFLAGS =  
 BANSHEE_LASTFM_LIBS = -r:System -r:Mono.Posix -r:ICSharpCode.SharpZipLib -r:/usr/lib/banshee/Lastfm.dll -r:/usr/lib/banshee/Mono.Media.dll -r:/usr/lib/banshee/Hyena.dll  
 BANSHEE_LIBDIR = /usr/lib/banshee
-BANSHEE_LIBS = -r:/usr/lib/banshee/Banshee.Widgets.dll -r:/usr/lib/banshee/Banshee.ThickClient.dll -r:/usr/lib/banshee/Banshee.Services.dll -r:Mono.Cairo -r:/usr/lib/banshee/Hyena.Gui.dll -r:/usr/lib/banshee/Banshee.Core.dll -r:System -r:/usr/lib/banshee/Mono.Media.dll -r:/usr/lib/cli/NDesk.DBus-1.0/NDesk.DBus.dll -r:/usr/lib/cli/NDesk.DBus.GLib-1.0/NDesk.DBus.GLib.dll -r:/usr/lib/pkgconfig/../../lib/cli/glib-sharp-2.0/glib-sharp.dll -r:/usr/lib/cli/Mono.Addins-0.2/Mono.Addins.dll -r:Mono.Posix -r:/usr/lib/banshee/Hyena.dll -r:/usr/lib/banshee/Hyena.Data.Sqlite.dll -r:/usr/lib/banshee/MusicBrainz.dll -r:/usr/lib/pkgconfig/../../lib/cli/pango-sharp-2.0/pango-sharp.dll -r:/usr/lib/pkgconfig/../../lib/cli/atk-sharp-2.0/atk-sharp.dll -r:/usr/lib/pkgconfig/../../lib/cli/gdk-sharp-2.0/gdk-sharp.dll -r:/usr/lib/pkgconfig/../../lib/cli/gtk-sharp-2.0/gtk-sharp.dll -r:/usr/lib/cli/taglib-sharp-2.0/taglib-sharp.dll -r:System.Data -r:Mono.Data.SqliteClient  
+BANSHEE_LIBS = -r:/usr/lib/banshee/Banshee.Widgets.dll -r:/usr/lib/banshee/Banshee.ThickClient.dll -r:/usr/lib/banshee/Banshee.Services.dll -r:Mono.Cairo -r:/usr/lib/banshee/Hyena.Gui.dll -r:/usr/lib/banshee/Banshee.Core.dll -r:System -r:/usr/lib/banshee/Mono.Media.dll -r:/usr/lib/cli/NDesk.DBus-1.0/NDesk.DBus.dll -r:/usr/lib/cli/NDesk.DBus.GLib-1.0/NDesk.DBus.GLib.dll -r:/usr/lib/pkgconfig/../../lib/cli/glib-sharp-2.0/glib-sharp.dll -r:/usr/lib/cli/Mono.Addins-0.2/Mono.Addins.dll -r:Mono.Posix -r:/usr/lib/banshee/Hyena.dll -r:/usr/lib/banshee/Hyena.Data.Sqlite.dll -r:/usr/lib/banshee/MusicBrainz.dll -r:/usr/lib/pkgconfig/../../lib/cli/pango-sharp-2.0/pango-sharp.dll -r:/usr/lib/pkgconfig/../../lib/cli/atk-sharp-2.0/atk-sharp.dll -r:/usr/lib/pkgconfig/../../lib/cli/gdk-sharp-2.0/gdk-sharp.dll -r:/usr/lib/pkgconfig/../../lib/cli/gtk-sharp-2.0/gtk-sharp.dll -r:/usr/lib/cli/taglib-sharp-2.0/taglib-sharp.dll -r:System.Data -r:Mono.Data.SqliteClient 
 BANSHEE_NOWPLAYING_CFLAGS =  
 BANSHEE_NOWPLAYING_LIBS = -r:/usr/lib/banshee/Extensions/Banshee.NowPlaying.dll  
 BANSHEE_WEBBROWSER_CFLAGS = -I:/usr/lib/pkgconfig/../../share/gapi-2.0/glib-api.xml -I:/usr/lib/pkgconfig/../../share/gapi-2.0/pango-api.xml -I:/usr/lib/pkgconfig/../../share/gapi-2.0/atk-api.xml -I:/usr/lib/pkgconfig/../../share/gapi-2.0/gdk-api.xml -I:/usr/lib/pkgconfig/../../share/gapi-2.0/gtk-api.xml  
 BANSHEE_WEBBROWSER_LIBS = -r:/usr/lib/banshee/Banshee.WebBrowser.dll -r:/usr/lib/banshee/Banshee.Services.dll -r:Mono.Cairo -r:/usr/lib/banshee/Hyena.Gui.dll -r:/usr/lib/banshee/Banshee.Widgets.dll -r:/usr/lib/banshee/Banshee.ThickClient.dll -r:/usr/lib/banshee/Banshee.Core.dll -r:System -r:/usr/lib/banshee/Mono.Media.dll -r:/usr/lib/cli/NDesk.DBus-1.0/NDesk.DBus.dll -r:/usr/lib/cli/NDesk.DBus.GLib-1.0/NDesk.DBus.GLib.dll -r:/usr/lib/pkgconfig/../../lib/cli/glib-sharp-2.0/glib-sharp.dll -r:/usr/lib/cli/Mono.Addins-0.2/Mono.Addins.dll -r:Mono.Posix -r:/usr/lib/banshee/Hyena.dll -r:/usr/lib/banshee/Hyena.Data.Sqlite.dll -r:/usr/lib/banshee/MusicBrainz.dll -r:/usr/lib/pkgconfig/../../lib/cli/pango-sharp-2.0/pango-sharp.dll -r:/usr/lib/pkgconfig/../../lib/cli/atk-sharp-2.0/atk-sharp.dll -r:/usr/lib/pkgconfig/../../lib/cli/gdk-sharp-2.0/gdk-sharp.dll -r:/usr/lib/pkgconfig/../../lib/cli/gtk-sharp-2.0/gtk-sharp.dll -r:/usr/lib/cli/taglib-sharp-2.0/taglib-sharp.dll  
 BUILD_HOST_CPU = i686
 BUILD_HOST_OS = linux-gnu
-BUILD_TIME = 2011-04-26 16:19:13 CEST
+BUILD_TIME = 2011-09-15 16:10:56 CEST
 BUILD_VENDOR_ID = git-checkout
-CATALOGS =  de.gmo el.gmo es.gmo fi.gmo fr.gmo it.gmo pt.gmo ru_RU.gmo
+CATALOGS =  de.gmo el.gmo es.gmo fi.gmo fr.gmo it.gmo pt.gmo ru_RU.gmo sk.gmo uk_UA.gmo
 CATOBJEXT = .gmo
 CC = /bin/bash /home/thomas/banshee-community-extensions/build/m4/shave/shave cc gcc
 CCDEPMODE = depmode=gcc3
@@ -175,7 +175,7 @@ GETTEXT_PACKAGE = banshee-community-extensions
 GLIB_CFLAGS = -I/usr/include/glib-2.0 -I/usr/lib/glib-2.0/include  
 GLIB_LIBS = -lglib-2.0  
 GMCS_FLAGS = -unsafe
-GMOFILES =  de.gmo el.gmo es.gmo fi.gmo fr.gmo it.gmo pt.gmo ru_RU.gmo
+GMOFILES =  de.gmo el.gmo es.gmo fi.gmo fr.gmo it.gmo pt.gmo ru_RU.gmo sk.gmo uk_UA.gmo
 GMSGFMT = /usr/bin/msgfmt
 GNOME_DOC_UTILS_CFLAGS =  
 GNOME_DOC_UTILS_LIBS =  
@@ -237,13 +237,13 @@ OTOOL64 =
 PACKAGE = banshee-community-extensions
 PACKAGE_BUGREPORT = http://bugzilla.gnome.org/enter_bug.cgi?product=banshee&component=Community%20Extensions
 PACKAGE_NAME = banshee-community-extensions
-PACKAGE_STRING = banshee-community-extensions 2.0.0
+PACKAGE_STRING = banshee-community-extensions 2.0.1
 PACKAGE_TARNAME = banshee-community-extensions
 PACKAGE_URL = 
-PACKAGE_VERSION = 2.0.0
+PACKAGE_VERSION = 2.0.1
 PATH_SEPARATOR = :
 PKG_CONFIG = /usr/bin/pkg-config
-POFILES =  de.po el.po es.po fi.po fr.po it.po pt.po ru_RU.po
+POFILES =  de.po el.po es.po fi.po fr.po it.po pt.po ru_RU.po sk.po uk_UA.po
 POSUB = po
 PO_IN_DATADIR_FALSE = 
 PO_IN_DATADIR_TRUE = 
@@ -261,7 +261,7 @@ TAO_SDL_CFLAGS =
 TAO_SDL_LIBS = 
 USE_NLS = yes
 V = @
-VERSION = 2.0.0
+VERSION = 2.0.1
 XGETTEXT = /usr/bin/xgettext
 ZEITGEIST_SHARP_CFLAGS = 
 ZEITGEIST_SHARP_LIBS = 
@@ -329,6 +329,7 @@ SOURCES = \
 	Banshee.Foo1/Foo1SourceContents.cs \
 	Bpm/BpmDetectJob.cs \
 	Data/DataHandler.cs \
+	Data/DataParser.cs \
 	Data/NoNoiseDBHandler.cs \
 	lastfm-sharp/Lib.cs \
 	lastfm-sharp/RequestParameters.cs \
