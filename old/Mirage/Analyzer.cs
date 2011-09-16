@@ -66,7 +66,7 @@ namespace Mirage
         // EDIT !
         public static Matrix AnalyzeMFCC (string file_path)
         {
-            Hyena.Log.Debug("AnalyzeMFCC called");
+            Hyena.Log.Debug("AnalyzeMFCC called for " + file_path);
 
             DbgTimer t = new DbgTimer ();
             t.Start ();

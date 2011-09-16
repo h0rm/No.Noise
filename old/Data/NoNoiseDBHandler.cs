@@ -116,7 +116,7 @@ namespace Banshee.NoNoise.Data
                 dbcmd = dbcon.CreateCommand();
 
                 dbcmd.CommandText = string.Format("INSERT INTO MIRData (banshee_id, data) VALUES ('{0}', '{1}')",
-                                                  bid, MatrixToString (m));
+                                                  bid, DataParser.MatrixToString (m));
                 dbcmd.ExecuteNonQuery ();
             } catch (Exception e) {
                 Log.Exception("Foo1/DB - Matrix insert failed", e);
@@ -160,7 +160,7 @@ namespace Banshee.NoNoise.Data
                     return UpdateMatrix (m, bid, primaryKey, dbcmd);
 
                 dbcmd.CommandText = string.Format("INSERT INTO MIRData (banshee_id, data, id) VALUES ('{0}', '{1}'," +
-                                                    " '{2}')", bid, MatrixToString (m), primaryKey);
+                                                    " '{2}')", bid, DataParser.MatrixToString (m), primaryKey);
                 dbcmd.ExecuteNonQuery ();
             } catch (Exception e) {
                 Log.Exception("Foo1/DB - Matrix insert failed for id: " + primaryKey, e);
@@ -199,50 +199,10 @@ namespace Banshee.NoNoise.Data
         {
             Log.Debug("Foo1/DB - Updating id " + primaryKey);
             dbcmd.CommandText = string.Format("UPDATE MIRData SET data = '{0}', banshee_id = '{1}' WHERE id = '{2}'",
-                                              MatrixToString (m), bid, primaryKey);
+                                              DataParser.MatrixToString (m), bid, primaryKey);
             dbcmd.ExecuteNonQuery ();
 
             return true;
-        }
-
-        /// <summary>
-        /// Converts a Math.Matrix to a string representation with semicolons
-        /// instead of commas.
-        /// </summary>
-        /// <param name="m">
-        /// The <see cref="Matrix"/> to be converted
-        /// </param>
-        /// <returns>
-        /// A <see cref="System.String"/> representation of the matrix
-        /// </returns>
-        private string MatrixToString (Matrix m)
-        {
-            StringBuilder sb = new StringBuilder();
-
-            int i = 0;
-            while (i < m.RowCount) {
-                if (i == 0) {
-                    sb.Append("[[");
-                } else {
-                    sb.Append(" [");
-                }
-
-                int j = 0;
-                while (j < m.ColumnCount) {
-                    if (j != 0) {
-                        sb.Append(";");
-                    }
-                    sb.Append(m[i,j]);
-                    j++;
-                }
-                if (i == (m.RowCount - 1)) {
-                    sb.Append("]]");
-                    break;
-                }
-                sb.AppendLine("]");
-                i++;
-            }
-            return sb.ToString();
         }
 
         /// <summary>
@@ -263,7 +223,7 @@ namespace Banshee.NoNoise.Data
                 dbcmd.CommandText = "SELECT data FROM MIRData";
                 System.Data.IDataReader reader = dbcmd.ExecuteReader();
                 while(reader.Read()) {
-                    ret.Add (ParseMatrix (reader.GetString (0)));
+                    ret.Add (DataParser.ParseMatrix (reader.GetString (0)));
                 }
 
                 return ret;
@@ -277,38 +237,6 @@ namespace Banshee.NoNoise.Data
                 if (dbcon != null)
                     dbcon.Close();
             }
-        }
-
-        /// <summary>
-        /// Parses a Math.Matrix from a string.
-        /// </summary>
-        /// <param name="input">
-        /// A <see cref="System.String"/> representation of a matrix
-        /// </param>
-        /// <returns>
-        /// A <see cref="Matrix"/>
-        /// </returns>
-        public Matrix ParseMatrix (string input)
-        {
-            double[][] d = null;
-            string[] rows = input.Split('\n');
-            d = new double[rows.Length][];
-
-            try {
-                for (int i = 0; i < rows.Length; i++) {
-                    string r = rows[i];
-                    int start;
-                    r = r.Substring (start = (r.LastIndexOf("[") + 1), r.IndexOf("]") - start);
-                    string[] cols = r.Split(',');
-                    d[i] = new double[cols.Length];
-                    for (int j = 0; j < cols.Length; j++) {
-                        d[i][j] = double.Parse(cols[j]);
-                    }
-                }
-            } catch (Exception e) {
-                Log.Exception("Foo1/DB - Matrix parse exception", e);
-            }
-            return new Matrix (d);
         }
         #endregion
 
@@ -334,7 +262,7 @@ namespace Banshee.NoNoise.Data
                 dbcmd = dbcon.CreateCommand();
 
                 dbcmd.CommandText = string.Format("INSERT INTO MIRData (banshee_id, data) VALUES ('{0}', '{1}')",
-                                                  bid, MirageMatrixToString(m));
+                                                  bid, DataParser.MirageMatrixToString(m));
                 dbcmd.ExecuteNonQuery ();
             } catch (Exception e) {
                 Log.Exception("Foo1/DB - Mirage.Matrix insert failed", e);
@@ -350,44 +278,28 @@ namespace Banshee.NoNoise.Data
             return true;
         }
 
-        /// <summary>
-        /// Converts a Mirage.Matrix to a string representation with semicolons
-        /// instead of commas.
-        /// </summary>
-        /// <param name="m">
-        /// The <see cref="Mirage.Matrix"/> to be converted
-        /// </param>
-        /// <returns>
-        /// A <see cref="System.String"/> representation of the matrix
-        /// </returns>
-        private string MirageMatrixToString (Mirage.Matrix m)
+        public bool InsertVector (Mirage.Vector v, int bid)
         {
-            StringBuilder sb = new StringBuilder();
+            IDbCommand dbcmd = null;
+            try {
+                dbcon.Open();
+                dbcmd = dbcon.CreateCommand();
 
-            int i = 0;
-            while (i < m.rows) {
-                if (i == 0) {
-                    sb.Append("[[");
-                } else {
-                    sb.Append(" [");
-                }
-
-                int j = 0;
-                while (j < m.columns) {
-                    if (j != 0) {
-                        sb.Append(";");
-                    }
-                    sb.Append(m.d[i,j]);
-                    j++;
-                }
-                if (i == (m.rows - 1)) {
-                    sb.Append("]]");
-                    break;
-                }
-                sb.AppendLine("]");
-                i++;
+                dbcmd.CommandText = string.Format("INSERT INTO MIRData (banshee_id, data) VALUES ('{0}', '{1}')",
+                                                  bid, DataParser.MirageVectorToString(v));
+                dbcmd.ExecuteNonQuery ();
+            } catch (Exception e) {
+                Log.Exception("Foo1/DB - Mirage.Vector insert failed", e);
+                return false;
+            } finally {
+                if (dbcmd != null)
+                    dbcmd.Dispose();
+                dbcmd = null;
+                if (dbcon != null)
+                    dbcon.Close();
             }
-            return sb.ToString();
+
+            return true;
         }
 
         /// <summary>
@@ -409,7 +321,7 @@ namespace Banshee.NoNoise.Data
                 dbcmd.CommandText = "SELECT data, id, banshee_id FROM MIRData";
                 System.Data.IDataReader reader = dbcmd.ExecuteReader();
                 while(reader.Read()) {
-                    Mirage.Matrix mat = ParseMirageMatrix (reader.GetString (0));
+                    Mirage.Matrix mat = DataParser.ParseMirageMatrix (reader.GetString (0));
                     int bid = reader.GetInt32 (2);
                     if (mat != null)
                         ret.Add (bid, mat);
@@ -433,37 +345,39 @@ namespace Banshee.NoNoise.Data
             }
         }
 
-        /// <summary>
-        /// Parses a Mirage.Matrix from a string.
-        /// </summary>
-        /// <param name="input">
-        /// A <see cref="System.String"/> representation of a matrix
-        /// </param>
-        /// <returns>
-        /// A <see cref="Mirage.Matrix"/>
-        /// </returns>
-        public Mirage.Matrix ParseMirageMatrix (string input)
+        public Dictionary<int, Mirage.Vector> GetMirageVectors ()
         {
-            string[] rows = input.Split('\n');
-            Mirage.Matrix m = null;
+            Dictionary<int, Mirage.Vector> ret = new Dictionary<int, Mirage.Vector> ();
 
+            IDbCommand dbcmd = null;
             try {
-                for (int i = 0; i < rows.Length; i++) {
-                    string r = rows[i];
-                    int start;
-                    r = r.Substring (start = (r.LastIndexOf("[") + 1), r.IndexOf("]") - start);
-                    string[] cols = r.Split(';');
-                    if (i == 0)
-                        m = new Mirage.Matrix (rows.Length, cols.Length);
-                    for (int j = 0; j < cols.Length; j++) {
-                        m.d[i,j] = float.Parse(cols[j]);
+                dbcon.Open();
+                dbcmd = dbcon.CreateCommand();
+
+                dbcmd.CommandText = "SELECT data, id, banshee_id FROM MIRData";
+                System.Data.IDataReader reader = dbcmd.ExecuteReader();
+                while(reader.Read()) {
+                    Mirage.Vector vec = DataParser.ParseMirageVector (reader.GetString (0));
+                    int bid = reader.GetInt32 (2);
+                    if (vec != null)
+                        ret.Add (bid, vec);
+                    else {
+                        Log.Warning ("Foo1/DBNull - Vector with id " + reader.GetInt32 (1) + " is null!");
+                        Log.Debug (reader.GetString (0));
                     }
                 }
+
+                return ret;
             } catch (Exception e) {
-                Log.Exception("Foo1/DB - Mirage.Matrix parse exception", e);
+                Log.Exception("Foo1/DB - Mirage.Vector read failed", e);
                 return null;
+            } finally {
+                if (dbcmd != null)
+                    dbcmd.Dispose();
+                dbcmd = null;
+                if (dbcon != null)
+                    dbcon.Close();
             }
-            return m;
         }
         #endregion
 

@@ -329,6 +329,7 @@ SOURCES = \
 	Banshee.Foo1/Foo1SourceContents.cs \
 	Bpm/BpmDetectJob.cs \
 	Data/DataHandler.cs \
+	Data/DataParser.cs \
 	Data/NoNoiseDBHandler.cs \
 	lastfm-sharp/Lib.cs \
 	lastfm-sharp/RequestParameters.cs \
