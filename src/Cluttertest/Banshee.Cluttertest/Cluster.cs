@@ -47,7 +47,7 @@ namespace Banshee.Cluttertest
         static public void Init ()
         {
             GeneratePrototypes ();
-            root = new Cluster (0,0);
+            root = new Cluster ();
 
 
         }
@@ -200,9 +200,8 @@ namespace Banshee.Cluttertest
         private List<Cluster> children;
         private List<Point> positions;  //save old cluster positions
 
-        public Cluster (uint x, uint y):base ()
+        public Cluster ():base ()
         {
-            this.SetPosition (x,y);
             children = new List<Cluster> ();
             positions = new List<Point> ();
         }

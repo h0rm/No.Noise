@@ -83,6 +83,10 @@ namespace Banshee.Cluttertest
             get { return quadTreeRoot.Rectangle; }
         }
 
+        public List<T> GetAllObjects ()
+        {
+            return new List<T> (dictionary.Keys);
+        }
         public void Add (T item)
         {
             QuadTreeObject<T> wrappedItem = new QuadTreeObject<T> (item);
@@ -114,6 +118,40 @@ namespace Banshee.Cluttertest
         {
             return new QuadTree<T> (this);
         }
+
+        /// <summary>
+        /// Gets all objects in the tree which are in the search area
+        /// </summary>
+        /// <param name="circle">
+        /// A <see cref="QCircle"/>
+        /// </param>
+        /// <returns>
+        /// A <see cref="List<T>"/>
+        /// </returns>
+        public List<T> GetObjects (QCircle circle)
+        {
+            return quadTreeRoot.GetObjects (circle);
+        }
+
+        /// <summary>
+        /// Gets all objects in the tree which are in the search area
+        /// </summary>
+        /// <param name="rect">
+        /// A <see cref="QRectangle"/>
+        /// </param>
+        /// <returns>
+        /// A <see cref="List<T>"/>
+        /// </returns>
+        public List<T> GetObjects (QRectangle rect)
+        {
+            return quadTreeRoot.GetObjects (rect);
+        }
+
+        public T GetNearest (T item, double start_radius)
+        {
+            return quadTreeRoot.GetNearestObjectInTree (new QCircle (item.XY, start_radius), item);
+        }
+
         public event OnCreateQuadEvent OnCreateQuad {
             add { create_quad_handler += value; }
             remove { create_quad_handler -= value; }
@@ -252,7 +290,11 @@ namespace Banshee.Cluttertest
         /// </param>
         private void Remove (QuadTreeObject<T> item)
         {
-            objects.Remove (item);
+            int i = objects.IndexOf (item);
+            if (i >= 0){
+                objects[i] = objects[objects.Count-1];
+                objects.RemoveAt (objects.Count-1);
+            }
         }
 
 
@@ -423,6 +465,38 @@ namespace Banshee.Cluttertest
         }
 
         /// <summary>
+        /// Gets all objects in a subtree which are in the search area
+        /// </summary>
+        /// <param name="rect">
+        /// A <see cref="QRectangle"/>
+        /// </param>
+        /// <returns>
+        /// A <see cref="List<T>"/>
+        /// </returns>
+        public List<T> GetObjects (QRectangle rect)
+        {
+            List<T> result = new List<T> ();
+            GetObjects (rect, ref result);
+            return result;
+        }
+
+        /// <summary>
+        /// Gets all objects in a subtree which are in the search area
+        /// </summary>
+        /// <param name="circle">
+        /// A <see cref="QCircle"/>
+        /// </param>
+        /// <returns>
+        /// A <see cref="List<T>"/>
+        /// </returns>
+        public List<T> GetObjects (QCircle circle)
+        {
+            List<T> result = new List<T> ();
+            GetObjects (circle, ref result);
+            return result;
+        }
+
+        /// <summary>
         /// Gets all objects of this subtree.
         /// </summary>
         /// <param name="results">
@@ -519,6 +593,78 @@ namespace Banshee.Cluttertest
                     bottom_right.GetObjects (circle, ref results);
                 }
             }
+        }
+
+        public T GetNearestObjectInTree (QCircle circle, T except)
+        {
+            Stack<QuadTreeNode<T>> stack = new Stack<QuadTreeNode<T>> ();
+            stack.Push (this);
+
+            T result = default(T);
+
+            while (stack.Count > 0) {
+//                Hyena.Log.Information ("Circle at " + circle.Center + " size: " + circle.Radius);
+                QuadTreeNode<T> current = stack.Pop ();
+
+                // This node does not intersect with the search area
+                if (!current.boundary_rectangle.Intersects (circle))
+                    continue;
+
+
+                if (current.TopLeft == null) {
+                    // Leaf node
+//                    Hyena.Log.Debug ("No children");
+                    T found = current.GetNearestObject (ref circle, except);
+
+                    if (found != null)
+                        result = found;
+                } else {
+//                    Hyena.Log.Debug ("Children");
+                    // Add children if intesecting
+                    if (current.TopLeft.boundary_rectangle.Intersects (circle))
+                        stack.Push (current.TopLeft);
+                    if (current.TopRight.boundary_rectangle.Intersects (circle))
+                        stack.Push (current.TopRight);
+                    if (current.BottomLeft.boundary_rectangle.Intersects (circle))
+                        stack.Push (current.BottomLeft);
+                    if (current.BottomRight.boundary_rectangle.Intersects (circle))
+                        stack.Push (current.BottomRight);
+                }
+
+            }
+            return result;
+        }
+        /// <summary>
+        /// Get nearest object to point in this node (no children)
+        /// </summary>
+        /// <param name="circle">
+        /// A <see cref="QCircle"/>
+        /// </param>
+        /// <returns>
+        /// A <see cref="T"/>
+        /// </returns>
+        public T GetNearestObject (ref QCircle c, T except)
+        {
+            T result = default(T);
+
+            //Leaf node
+//            Hyena.Log.Information ("Objects " + objects.Count);
+
+            foreach (QuadTreeObject<T> item in objects) {
+
+                if (item.Value.Equals (except))
+                    continue;
+
+                double d = item.Value.XY.DistanceTo (c.Center);
+
+                if (d < c.Radius) {
+                    c.Radius = d;
+                    result = item.Value;
+
+                }
+            }
+
+            return result;
         }
     }
     #region helper classes
@@ -705,7 +851,7 @@ namespace Banshee.Cluttertest
 
         public double Radius {
             get;
-            private set;
+            set;
         }
 
         public double X {

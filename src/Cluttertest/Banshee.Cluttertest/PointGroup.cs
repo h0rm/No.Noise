@@ -28,6 +28,7 @@ using System.Collections.Generic;
 using Clutter;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 
 namespace Banshee.Cluttertest
 {
@@ -95,10 +96,13 @@ namespace Banshee.Cluttertest
 
         private Stage stage;
         private bool clipping_enabled=false;
-        private List<DebugPoint> debug_points;
+        private List<DebugPoint> debug_points_visible;
         private Stack<Cluster> debug_stack;
+        private QuadTree<DebugPoint> debug_tree;
 
-        class DebugPoint{
+
+        class DebugPoint : IStorable
+        {
 
             public DebugPoint (double x, double y)
             {
@@ -160,8 +164,9 @@ namespace Banshee.Cluttertest
         public void ParseTextFile (string filename, int count)
         {
             cluster_list = new List<Cluster> ();
-            debug_points = new List<DebugPoint> ();
+            debug_points_visible = new List<DebugPoint> ();
             debug_stack = new Stack<Cluster> ();
+
 
             using (StreamReader sr = new StreamReader (filename))
             {
@@ -181,12 +186,22 @@ namespace Banshee.Cluttertest
 
                     if (x != 0 && y != 0) {
                         //AddCircle ((float)x,(float)y,parts[0]);
-                        debug_points.Add (new DebugPoint (x, y));
+                        debug_points_visible.Add (new DebugPoint (x, y));
                         Hyena.Log.Debug ("Point " + x + "," + y);
                     }
                 }
 
             }
+
+            double max_x = debug_points_visible.Max (p => p.XY.X);
+            double max_y = debug_points_visible.Max (p => p.XY.Y);
+
+            debug_tree = new QuadTree<DebugPoint> (0,0,max_x,max_y);
+
+            foreach (DebugPoint p in debug_points_visible)
+                debug_tree.Add (p);
+
+            debug_points_visible = new List<DebugPoint> (2000);
 
             for (int i = 0; i < 2000; i++) {
                 AddCircle (0f, 0f, "debug");
@@ -194,6 +209,7 @@ namespace Banshee.Cluttertest
             foreach (Cluster c in cluster_list) {
                 debug_stack.Push (c);
             }
+
 
 //            Cluster.KMeansInit (4, Width, Height);
             List<QRectangle> list = Cluster.HierarchicalInit (cluster_list, Width, Height);
@@ -251,7 +267,7 @@ namespace Banshee.Cluttertest
         public void AddCircle (float x, float y, string name)
         {
             //Clone clone = new Clone (circle_prototype);
-            Cluster clone = new Cluster (circle_size,circle_size);
+            Cluster clone = new Cluster ();
 
             //Random r = new Random();
 
@@ -461,7 +477,7 @@ namespace Banshee.Cluttertest
                 animation_timeline.Duration = duration;
                 animation_behave = new BehaviourScale (animation_alpha, 1.0f / old_zoom_level, 1.0f / old_zoom_level, 1.0f / zoom_level, 1.0f / zoom_level);
                 animation_timeline.NewFrame += delegate {
-                    UpdateClippingDebug ();
+//                    UpdateClippingTreeDebug ();
                 };
                 //neues behaviour an die circles andwenden
                 foreach (Actor a in cluster_list)
@@ -530,9 +546,13 @@ namespace Banshee.Cluttertest
             mouse_old_x = x;
             mouse_old_y = y;
 
+            Stopwatch stop = new Stopwatch ();
+            stop.Start ();
             if (clipping_enabled)
-        //                UpdateClipping ();
-                UpdateClippingDebug ();
+//                        UpdateClippingDebug ();
+                UpdateClippingTreeDebug ();
+            stop.Stop ();
+            Hyena.Log.Information ("Time to Update: "+stop.ElapsedTicks);
         }
 
         /// <summary>
@@ -550,9 +570,10 @@ namespace Banshee.Cluttertest
             mouse_down = false;
         }
 
-        private void UpdateClippingDebug ()
+        private void UpdateClippingTreeDebug ()
         {
 
+            List<DebugPoint> points;
             float x, y, tx, ty;
             double px, py, sx, sy;
             Cluster current;
@@ -562,15 +583,107 @@ namespace Banshee.Cluttertest
 
             x = tx;
             y = ty;
-            Hyena.Log.Debug ("Update Clipping " + "Stackcount " + debug_stack.Count);
+//            Hyena.Log.Debug ("Update Clipping " + "Stackcount " + debug_stack.Count);
+
+//            Stopwatch stop = new Stopwatch ();
+            points = debug_tree.GetObjects (new QRectangle ((-circle_size-x)/sx,(-circle_size-y)/sy,
+                                               (stage.Width+2*circle_size)/sx,(stage.Height+2*circle_size)/sy));
+//            stop.Stop ();
+//            Hyena.Log.Debug ("Time for treeget: "+stop.ElapsedTicks);
+//            Hyena.Log.Debug ("Area "+(stage.Width/(float)sx) + ","+(stage.Width/(float)sy) +"at "
+//                             + (--x/(float)sx)+","+(-y/(float)sy));
+//            Hyena.Log.Debug ("Debug points visible: "+debug_points_visible.Count);
+//            Hyena.Log.Debug ("Debug points hidden in range: "+points.Count);
+
+            // Check visible points
+//            stop.Reset ();
+//            stop.Start ();
+//            Hyena.Log.Debug ("START Visible (" + debug_points_visible.Count + ") Invisible (" + points.Count + ")");
+//
+
+            for (int i = 0; i < debug_points_visible.Count; i++)
+            {
+                p = debug_points_visible[i];
+
+                px = p.XY.X*sx + x;
+                py = p.XY.Y*sy + y;
+
+                if (px > stage.Width + circle_size || px < -circle_size ||
+                    py > stage.Height + circle_size || py < -circle_size)
+                {
+
+                    debug_stack.Push (p.Owner);
+                    p.Owner.Hide ();
+                    p.Owner = null;
+                    debug_tree.Add (p);
+                    debug_points_visible[i] = debug_points_visible[debug_points_visible.Count-1];
+                    debug_points_visible.RemoveAt (debug_points_visible.Count-1);
+                    i--;
+                }
+            }
+//
+//            Hyena.Log.Debug ("MED Visible (" + debug_points_visible.Count + ") Invisible (" + points.Count + ")");
+//            Hyena.Log.Debug ("Time for visible ("+debug_points_visible.Count+") points: "+stop.ElapsedTicks);
+//
+//            stop.Reset ();
+//            stop.Start ();
+
+            // Check invisible points
+            for (int i = 0; i < points.Count; i++)
+            {
+                p = points[i];
+                px = p.XY.X*sx + x;
+                py = p.XY.Y*sy + y;
+
+//                Hyena.Log.Debug ("Point "+p.XY);
+
+                //Hyena.Log.Debug ("In window");
+                if (debug_stack.Count == 0)
+                    continue;
+
+                //if (p.Owner != null)
+                  //  continue;
+
+                    //Hyena.Log.Debug ("Pop");
+
+//                if (px < stage.Width + circle_size && px > -circle_size &&
+//                    py < stage.Height + circle_size && py > -circle_size){
+
+                    current = debug_stack.Pop ();
+                    current.SetPosition (p.XY.FloatX, p.XY.FloatY);
+                    current.Show ();
+                    p.Owner = current;
+                    debug_tree.Remove (p);
+                    debug_points_visible.Add (p);
+//                }
+            }
+
+//
+//            Hyena.Log.Debug ("END Visible (" + debug_points_visible.Count + ") Invisible (" + points.Count + ")");
+        }
+        private void UpdateClippingDebug ()
+        {
+            float x, y, tx, ty;
+            double px, py, sx, sy;
+            Cluster current;
+            DebugPoint p;
+            GetTransformedPosition (out tx, out ty);
+            GetScale (out sx, out sy);
+
+            x = tx;
+            y = ty;
+//            Hyena.Log.Debug ("Update Clipping " + "Stackcount " + debug_stack.Count);
             //            Hyena.Log.Debug ("Org: " + x + "," + y + " Trans:" + tx + "," + ty);
             //            Hyena.Log.Debug ("Scale: " + sx + "," + sy + "Stackcount " + debug_stack.Count);
-            for (int i = 0; i < debug_points.Count; i++)
+
+//            Hyena.Log.Debug ("Area "+(-x+stage.Width) + ","+(-y+Stage.Height));
+
+            for (int i = 0; i < debug_points_visible.Count; i++)
             {
-                p = debug_points[i];
+                p = debug_points_visible[i];
                 px = p.XY.X * sx + x;
                 py = p.XY.Y * sy + y;
-
+//                Hyena.Log.Debug ("Point "+p.XY);
 
 
                 if (px < stage.Width + circle_size && px > -circle_size &&
