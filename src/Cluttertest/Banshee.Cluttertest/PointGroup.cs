@@ -403,19 +403,19 @@ namespace Banshee.Cluttertest
         {
             //Transformed position
             float trans_x = 0, trans_y = 0;
-            this.TransformStagePoint(x,y,out trans_x, out trans_y);
+            this.TransformStagePoint (x, y, out trans_x, out trans_y);
 
             //raus zoomen
-            this.SetScale(1.0,1.0);
+            this.SetScale (1.0, 1.0);
 
             float trans_x_unif = 0, trans_y_unif = 0;
-            this.TransformStagePoint(x,y,out trans_x_unif, out trans_y_unif);
+            this.TransformStagePoint (x, y, out trans_x_unif, out trans_y_unif);
 
             float pos_x = this.X + (trans_x_unif - trans_x);
             float pos_y = this.Y + (trans_y_unif - trans_y);
 
             //punkt auf objekt schieben
-            this.SetPosition(pos_x, pos_y);
+            this.SetPosition (pos_x, pos_y);
 
             //circle_group.SetScale(zoom_level,zoom_level);
 
@@ -436,30 +436,33 @@ namespace Banshee.Cluttertest
 
             uint duration = 1000;
 
-            if (animation_timeline.Progress < 0.2 && animation_timeline.IsPlaying) { //case zu langsam - keine animationen
+            if (animation_timeline.Progress < 0.2 && animation_timeline.IsPlaying) {
+                //case zu langsam - keine animationen
 
-                this.Animation.Timeline.Stop();
+                this.Animation.Timeline.Stop ();
 
                 this.SetScaleFull (zoom_level, zoom_level, trans_x, trans_y);
 
-                animation_behave.RemoveAll();
+                animation_behave.RemoveAll ();
 
                 //zoom actor in andere richtung - warum center 0,0 geht weiß ich nicht ..
                 foreach (Actor a in this)
-                    a.SetScale (1.0/zoom_level,1.0/zoom_level);
+                    a.SetScale (1.0 / zoom_level, 1.0 / zoom_level);
 
             } else {
 
                 this.SetScaleFull (old_zoom_level, old_zoom_level, trans_x, trans_y);
 
-                this.Animatev ((ulong)AnimationMode.EaseOutCubic,duration, new String[]{"scale-x"}, new GLib.Value (zoom_level));
-                this.Animatev ((ulong)AnimationMode.EaseOutCubic,duration, new String[]{"scale-y"}, new GLib.Value (zoom_level));
+                this.Animatev ((ulong)AnimationMode.EaseOutCubic, duration, new String[] { "scale-x" }, new GLib.Value (zoom_level));
+                this.Animatev ((ulong)AnimationMode.EaseOutCubic, duration, new String[] { "scale-y" }, new GLib.Value (zoom_level));
 
-                animation_behave.RemoveAll();
+                animation_behave.RemoveAll ();
 
                 animation_timeline.Duration = duration;
-                animation_behave = new BehaviourScale (animation_alpha, 1.0f/old_zoom_level, 1.0f/old_zoom_level, 1.0f/zoom_level, 1.0f/zoom_level);
-
+                animation_behave = new BehaviourScale (animation_alpha, 1.0f / old_zoom_level, 1.0f / old_zoom_level, 1.0f / zoom_level, 1.0f / zoom_level);
+                animation_timeline.NewFrame += delegate {
+                    UpdateClippingDebug ();
+                };
                 //neues behaviour an die circles andwenden
                 foreach (Actor a in cluster_list)
                     animation_behave.Apply(a);
@@ -550,24 +553,28 @@ namespace Banshee.Cluttertest
         private void UpdateClippingDebug ()
         {
 
-            float x, y;
-            double px, py;
+            float x, y, tx, ty;
+            double px, py, sx, sy;
             Cluster current;
             DebugPoint p;
-//            GetTransformedPosition (out x, out y);
-            x = X;
-            y = Y;
-//
-            Hyena.Log.Debug ("Stackcount " + debug_stack.Count);
+            GetTransformedPosition (out tx, out ty);
+            GetScale (out sx, out sy);
+
+            x = tx;
+            y = ty;
+            Hyena.Log.Debug ("Update Clipping " + "Stackcount " + debug_stack.Count);
+            //            Hyena.Log.Debug ("Org: " + x + "," + y + " Trans:" + tx + "," + ty);
+            //            Hyena.Log.Debug ("Scale: " + sx + "," + sy + "Stackcount " + debug_stack.Count);
             for (int i = 0; i < debug_points.Count; i++)
             {
                 p = debug_points[i];
-                px = p.XY.X + x;
-                py = p.XY.Y + y;
+                px = p.XY.X * sx + x;
+                py = p.XY.Y * sy + y;
 
 
 
-                if (px < stage.Width && px > 0 && py < stage.Height && py > 0)
+                if (px < stage.Width + circle_size && px > -circle_size &&
+                    py < stage.Height + circle_size && py > -circle_size)
                 {
                     //Hyena.Log.Debug ("In window");
                     if (debug_stack.Count == 0)
@@ -580,12 +587,14 @@ namespace Banshee.Cluttertest
 
                     current = debug_stack.Pop ();
                     current.SetPosition (p.XY.FloatX, p.XY.FloatY);
+                    current.Show ();
                     p.Owner = current;
                 } else {
                     if (p.Owner == null)
                         continue;
 
                     debug_stack.Push (p.Owner);
+                    p.Owner.Hide ();
                     p.Owner = null;
 
                 }
