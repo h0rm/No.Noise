@@ -48,29 +48,25 @@ namespace Banshee.NoNoise.Data
         {
             StringBuilder sb = new StringBuilder();
 
-            int i = 0;
-            while (i < m.RowCount) {
-                if (i == 0) {
-                    sb.Append("[[");
-                } else {
-                    sb.Append(" [");
+            for (int i = 0; i < m.RowCount; i++) {
+                if (i == 0)
+                    sb.Append ("[[");
+                else
+                    sb.Append (" [");
+
+                for (int j = 0; j < m.ColumnCount; j++) {
+                    if (j != 0)
+                        sb.Append (";");
+                    sb.Append (m [i, j]);
                 }
 
-                int j = 0;
-                while (j < m.ColumnCount) {
-                    if (j != 0) {
-                        sb.Append(";");
-                    }
-                    sb.Append(m[i,j]);
-                    j++;
-                }
                 if (i == (m.RowCount - 1)) {
                     sb.Append("]]");
-                    break;
+                    continue;
                 }
                 sb.AppendLine("]");
-                i++;
             }
+
             return sb.ToString();
         }
 
@@ -88,29 +84,25 @@ namespace Banshee.NoNoise.Data
         {
             StringBuilder sb = new StringBuilder();
 
-            int i = 0;
-            while (i < m.rows) {
-                if (i == 0) {
-                    sb.Append("[[");
-                } else {
-                    sb.Append(" [");
+            for (int i = 0; i < m.rows; i++) {
+                if (i == 0)
+                    sb.Append ("[[");
+                else
+                    sb.Append (" [");
+
+                for (int j = 0; j < m.columns; j++) {
+                    if (j != 0)
+                        sb.Append (";");
+                    sb.Append (m.d [i, j]);
                 }
 
-                int j = 0;
-                while (j < m.columns) {
-                    if (j != 0) {
-                        sb.Append(";");
-                    }
-                    sb.Append(m.d[i,j]);
-                    j++;
-                }
                 if (i == (m.rows - 1)) {
                     sb.Append("]]");
-                    break;
+                    continue;
                 }
                 sb.AppendLine("]");
-                i++;
             }
+
             return sb.ToString();
         }
 
@@ -161,7 +153,7 @@ namespace Banshee.NoNoise.Data
                     string r = rows[i];
                     int start;
                     r = r.Substring (start = (r.LastIndexOf("[") + 1), r.IndexOf("]") - start);
-                    string[] cols = r.Split(',');
+                    string[] cols = r.Split(';');
                     d[i] = new double[cols.Length];
                     for (int j = 0; j < cols.Length; j++) {
                         d[i][j] = double.Parse(cols[j]);

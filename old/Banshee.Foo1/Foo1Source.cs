@@ -49,7 +49,7 @@ using Banshee.Foo1.PCA;
 
 using Banshee.NoNoise.Data;
 
-using Mirage;
+using MathNet.Numerics.LinearAlgebra;
 
 using Hyena.Data;
 using Hyena.Data.Gui;
@@ -171,7 +171,9 @@ namespace Banshee.Foo1
             private void PerformTests ()
             {
                 bool succ = true;
-                succ &= DBVectorTest ();
+                succ &= DBMatrixTest ();
+                succ &= DBMirageMatrixText ();
+                succ &= DBMirageVectorTest ();
 
                 if (succ)
                     Hyena.Log.Debug ("Foo1 - Tests finished successfully");
@@ -179,7 +181,63 @@ namespace Banshee.Foo1
                     Hyena.Log.Debug ("Foo1 - Tests failed");
             }
 
-            private bool DBVectorTest ()
+            private bool DBMatrixTest ()
+            {
+                Matrix m = new Matrix (20, 45);
+                Random r = new Random ();
+                for (int i = 0; i < m.RowCount; i++) {
+                    for (int j = 0; j < m.ColumnCount; j++) {
+                        m [i, j] = (double) r.NextDouble ();
+                    }
+                }
+
+                Matrix m2 = DataParser.ParseMatrix (DataParser.MatrixToString (m));
+                if (m.RowCount != m2.RowCount || m.ColumnCount != m2.ColumnCount) {
+                    Hyena.Log.Warning ("Foo1/Testing - matrices don't have the same size");
+                    return false;
+                }
+                for (int i = 0; i < m.RowCount; i++) {
+                    for (int j = 0; j < m.ColumnCount; j++) {
+                        if (!m [i, j].ToString ().Equals (m2 [i, j].ToString ())) {     // string precision
+                            Hyena.Log.WarningFormat ("Foo1/Testing - values at pos ({0}, {1}) are not the same ({2} | {3})",
+                                                     i, j, m [i, j], m2 [i, j]);
+                            return false;
+                        }
+                    }
+                }
+
+                return true;
+            }
+
+            private bool DBMirageMatrixText ()
+            {
+                Mirage.Matrix m = new Mirage.Matrix (20, 45);
+                Random r = new Random ();
+                for (int i = 0; i < m.rows; i++) {
+                    for (int j = 0; j < m.columns; j++) {
+                        m.d [i, j] = (float) r.NextDouble ();
+                    }
+                }
+
+                Mirage.Matrix m2 = DataParser.ParseMirageMatrix (DataParser.MirageMatrixToString (m));
+                if (m.rows != m2.rows || m.columns != m2.columns) {
+                    Hyena.Log.Warning ("Foo1/Testing - mirage matrices don't have the same size");
+                    return false;
+                }
+                for (int i = 0; i < m.rows; i++) {
+                    for (int j = 0; j < m.columns; j++) {
+                        if (!m.d [i, j].ToString ().Equals (m2.d [i, j].ToString ())) {     // string precision
+                            Hyena.Log.WarningFormat ("Foo1/Testing - values at pos ({0}, {1}) are not the same ({2} | {3})",
+                                                     i, j, m.d [i, j], m2.d [i, j]);
+                            return false;
+                        }
+                    }
+                }
+
+                return true;
+            }
+
+            private bool DBMirageVectorTest ()
             {
                 Mirage.Vector v = new Mirage.Vector (20);
                 Random r = new Random ();
@@ -189,7 +247,7 @@ namespace Banshee.Foo1
 
                 Mirage.Vector v2 = DataParser.ParseMirageVector (DataParser.MirageVectorToString (v));
                 if (v.rows != v2.rows) {
-                    Hyena.Log.Warning ("Foo1/Testing - vectors don't have the same length");
+                    Hyena.Log.Warning ("Foo1/Testing - mirage vectors don't have the same length");
                     return false;
                 }
                 for (int i = 0; i < v.rows; i++) {
@@ -209,7 +267,7 @@ namespace Banshee.Foo1
             /// <param name="mfcc">
             /// A MFCC <see cref="Matrix"/>
             /// </param>
-            private void DebugPrintMFCC (Matrix mfcc)
+            private void DebugPrintMFCC (Mirage.Matrix mfcc)
             {
                 Hyena.Log.Debug("Cols: " + mfcc.columns);
                 Hyena.Log.Debug("Rows: " + mfcc.rows);
@@ -228,8 +286,8 @@ namespace Banshee.Foo1
 
 //                if (gatherMIRdata) {
                 Banshee.Library.MusicLibrarySource ml = ServiceManager.SourceManager.MusicLibrary;
-                Matrix mfcc;
-                Dictionary<int, Matrix> mfccMap = db.GetMirageMatrices ();
+                Mirage.Matrix mfcc;
+                Dictionary<int, Mirage.Matrix> mfccMap = db.GetMirageMatrices ();
 
                 for (int i = 0; i < ml.TrackModel.Count; i++) {
                     try {
@@ -240,7 +298,7 @@ namespace Banshee.Foo1
                         // WARN: A bid could theoretically be inserted/deleted between GetMirageMatrices ()
                         // and CointainsMirDataForTrack () such that if and else fail
                         if (!db.ContainsMirDataForTrack (bid)) {
-                            mfcc = Analyzer.AnalyzeMFCC (absPath);
+                            mfcc = Mirage.Analyzer.AnalyzeMFCC (absPath);
 
                             if (!db.InsertMatrix (mfcc, bid))
                                 Hyena.Log.Error ("Foo1 - Matrix insert failed");
