@@ -214,6 +214,47 @@ namespace Banshee.Foo1.PCA
         }
 
         /// <summary>
+        /// Helper method to check the correctness of the pca computations,
+        /// namely the covariance matrix computation.
+        /// </summary>
+        public void PcaTest ()
+        {
+            EigenvalueDecomposition eigen = m.EigenvalueDecomposition;
+            Complex[] eigenValues = eigen.EigenValues;
+
+            double[] maxVals = new double[2];
+            maxVals[0] = maxVals[1] = double.NegativeInfinity;
+            int[] maxInds = new int[2];
+            maxInds[0] = maxInds[1] = -1;
+
+            int i = 0;
+
+            foreach (Complex c in eigenValues) {
+                if (!c.IsReal)
+                    Log.Warning("Foo1/PCA - complex is not real!");
+
+                double tmp = c.Real;
+                if (tmp > maxVals[0]) {
+                    maxVals[1] = maxVals[0];
+                    maxInds[1] = maxInds[0];
+                    maxVals[0] = tmp;
+                    maxInds[0] = i;
+                } else if (tmp > maxVals[1]) {
+                    maxVals[1] = tmp;
+                    maxInds[1] = i;
+                }
+
+                i++;
+            }
+
+            Debug.Assert(maxInds[0] > -1 && maxInds[1] > -1);
+            Matrix eigenVectors = eigen.EigenVectors;
+            base1 = eigenVectors.GetColumnVector(maxInds[0]).Normalize();
+            base2 = eigenVectors.GetColumnVector(maxInds[1]).Normalize();
+            Log.Debug ("Foo1/PCA - base vectors: " + base1 + " and " + base2);
+        }
+
+        /// <summary>
         /// Constructs the covariance matrix, extracts the eigenvalues and
         /// eigenvectors and finds the two eigenvectors corresponding to the
         /// largest eigenvalues.
@@ -304,6 +345,7 @@ namespace Banshee.Foo1.PCA
 
             base1 = eigenVectors.GetColumnVector(maxInds[0]).Normalize();
             base2 = eigenVectors.GetColumnVector(maxInds[1]).Normalize();
+            Log.Debug ("Foo1/PCA - base vectors: " + base1 + " and " + base2);
 
             ComputeCoordinates ();
         }
@@ -359,7 +401,7 @@ namespace Banshee.Foo1.PCA
         }
 
         /// <summary>
-        /// Returns a string containing the coordinates of the i-th entry
+        /// Returns a DataEntry containing the coordinates of the i-th entry
         /// computed with the eigenvectors as basis vectors.
         /// </summary>
         /// <param name="key">

@@ -1,5 +1,6 @@
 ASSEMBLY = Banshee.Foo1
-LINK = $(BANSHEE_LIBS)
+GMCS_FLAGS = -unsafe
+LINK = $(BANSHEE_LIBS) -r:/home/thomas/NoNoise/MathNet.Iridium-2008.8.16.470/ForRedistribution/MathNet.Iridium.dll -r:System.Data -r:Mono.Data.SqliteClient
 
 SOURCES =  \
 	Banshee.Foo1/Foo1Source.cs \
