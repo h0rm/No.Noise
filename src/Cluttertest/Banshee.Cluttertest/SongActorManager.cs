@@ -82,6 +82,7 @@ namespace Banshee.Cluttertest
 
             SongActor actor = free_actors.Pop ();
             actor.SetPosition ((float)x, (float)y);
+            actor.Opacity = 255;
             actor.Show ();
 
             return actor;

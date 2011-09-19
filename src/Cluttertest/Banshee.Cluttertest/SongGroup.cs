@@ -211,16 +211,22 @@ namespace Banshee.Cluttertest
 //                ZoomOnCenter (true);
 //                point_manager.Level = 0;
                 point_manager.IncreaseLevel ();
+//                AnimateClustering ();
                 UpdateView ();
+                ZoomOnCenter (false);
             }
             else
             {
 //                ZoomOnCenter (false);
 //                point_manager.Level = 1;
+                ZoomOnCenter (true);
                 point_manager.DecreaseLevel ();
                 UpdateView ();
+
             }
         }
+
+
 
 
         /// <summary>
@@ -307,8 +313,55 @@ namespace Banshee.Cluttertest
             animation_timeline.Start();
         }
 
+        public void AnimateClustering ()
+        {
+            SongPoint p;
+
+            completed_clustering_animations = 0;
+            started_clustering_animations = points_visible.Count;
+
+            for (int i = 0; i < points_visible.Count; i++) {
+
+                p = points_visible[i];
+
+                p.Actor.Animatev ((ulong)AnimationMode.EaseOutCirc,
+                                     1000, new String[]{"x"}, new GLib.Value (p.Parent.X) );
+                p.Actor.Animatev ((ulong)AnimationMode.EaseOutCirc,
+                                     1000, new String[]{"y"}, new GLib.Value (p.Parent.Y) );
+
+                if (p.Parent.RightChild != null)
+                    p.Actor.Animatev ((ulong)AnimationMode.EaseOutCirc,
+                               1000,new String[]{"opacity"},new GLib.Value (150));
+
+
+                p.Actor.Animation.Timeline.Completed += HandleClusteringAnimationCompleted;
+            }
+
+        }
+
+        private int completed_clustering_animations, started_clustering_animations;
+        private Object completed_clustering_animations_lock = new Object ();
+
+        void HandleClusteringAnimationCompleted (object sender, EventArgs e)
+        {
+
+            lock (completed_clustering_animations_lock) {
+
+                completed_clustering_animations++;
+
+                if (completed_clustering_animations == started_clustering_animations) {
+                    Hyena.Log.Information ("Animations finished");
+                    point_manager.IncreaseLevel ();
+                    UpdateView ();
+                    ZoomOnCenter (false);
+                }
+            }
+        }
+
+
         private void UpdateView ()
         {
+            Hyena.Log.Information ("Update view");
             //remove all visible points
             for (int i = 0; i < points_visible.Count; i++) {
                 actor_manager.Free (points_visible[i].Actor);

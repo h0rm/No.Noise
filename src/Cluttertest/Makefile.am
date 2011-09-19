@@ -20,4 +20,7 @@ ASSEMBLY = Banshee.Cluttertest
 
 RESOURCES = Cluttertest.addin.xml
 
+#EXTRA_DIST = \
+#	Data/airport_locations.tsv
+
 include $(top_srcdir)/build/build.mk

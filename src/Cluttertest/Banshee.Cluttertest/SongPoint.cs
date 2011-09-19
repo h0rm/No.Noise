@@ -37,6 +37,9 @@ namespace Banshee.Cluttertest
             Y = y;
             ID = id;
             Actor = null;
+            Parent = null;
+            LeftChild = null;
+            RightChild = null;
         }
 
         /// <summary>
@@ -51,6 +54,21 @@ namespace Banshee.Cluttertest
         /// The Y position in the 2D space
         /// </summary>
         public double Y {
+            get;
+            private set;
+        }
+
+        public SongPoint Parent {
+            get;
+            private set;
+        }
+
+        public SongPoint LeftChild {
+            get;
+            private set;
+        }
+
+        public SongPoint RightChild {
             get;
             private set;
         }
@@ -76,11 +94,21 @@ namespace Banshee.Cluttertest
 
         public SongPoint GetMerged (SongPoint other)
         {
-            Point merged = new Point (X, Y);
-            merged.Add (other.X, other.Y);
-            merged.Normalize (2);
+            Point merged = this.XY;
 
-            return new SongPoint (merged.X, merged.Y, ID + other.ID);
+            if (other != null) {
+                merged.Add (other.XY);
+                merged.Normalize (2);
+            }
+
+            SongPoint parent = new SongPoint (merged.X, merged.Y, ID + other.ID);
+            parent.LeftChild = this;
+            parent.RightChild = other;
+
+            this.Parent = parent;
+            other.Parent = parent;
+
+            return parent;
         }
 
     }
