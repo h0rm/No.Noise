@@ -5,9 +5,11 @@ SOURCES =  \
 	Banshee.Cluttertest/ClutterView.cs \
 	Banshee.Cluttertest/Gui.cs \
 	Banshee.Cluttertest/Point.cs \
-	Banshee.Cluttertest/PointGroup.cs \
+	Banshee.Cluttertest/SongGroup.cs \
 	Banshee.Cluttertest/QuadTree.cs \
-	Banshee.Cluttertest/View.cs 
+	Banshee.Cluttertest/View.cs \
+	Banshee.Cluttertest/SongActor.cs \
+	Banshee.Cluttertest/SongPoint.cs
 
 LINK =  \
 	$(BANSHEE_LIBS) \
