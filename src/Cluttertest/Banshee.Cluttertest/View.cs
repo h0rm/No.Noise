@@ -76,7 +76,7 @@ namespace Banshee.Cluttertest
         public void TestGenerateData ()
         {
             //point_group.TestGenerateCircles(5000,5000,2000);
-            point_group.ParseTextFile ("/home/horm/Downloads/16255/airport_locations.tsv", 5000);
+            point_group.ParseTextFile ("/home/horm/Downloads/16255/airport_locations.tsv", 8000);
         }
     }
 }

@@ -1,7 +1,5 @@
 SUBDIRS = \
-    Foo \
     Cluttertest \
-    Foo \
 	AlarmClock \
 	Ampache \
 	AppIndicator \
