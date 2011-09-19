@@ -12,19 +12,21 @@ namespace Banshee.Cluttertest
     /// <summary>
     /// This interface is used enable storage of data
     /// </summary>
-	public interface IStorable
+	public interface IStorable<T>
     {
         //XY Coordinates are used to store objects
         Point XY { get; }
 
+        T GetMerged (T a);
        // bool NeedsUpdate { get; }
     }
+
 
     /// <summary>
     /// Wrapper class which connects a IStorable object with an owner node in
     /// the tree.
     /// </summary>
-    public class QuadTreeObject<T> where T : IStorable
+    public class QuadTreeObject<T> where T : IStorable<T>
     {
         /// <summary>
         /// The storable object
@@ -53,7 +55,7 @@ namespace Banshee.Cluttertest
     /// <summary>
     /// The main QuadTree class which handles Insertion, Deletion and Retrieval of objects.
     /// </summary>
-    public class QuadTree<T> : ICloneable where T : IStorable
+    public class QuadTree<T> : ICloneable where T : IStorable<T>
     {
         private readonly Dictionary<T, QuadTreeObject<T>> dictionary
                                             = new Dictionary<T, QuadTreeObject<T>> ();
@@ -81,6 +83,10 @@ namespace Banshee.Cluttertest
 
         public QRectangle Rectangle {
             get { return quadTreeRoot.Rectangle; }
+        }
+
+        public int Count {
+            get { return dictionary.Count; }
         }
 
         public List<T> GetAllObjects ()
@@ -152,6 +158,43 @@ namespace Banshee.Cluttertest
             return quadTreeRoot.GetNearestObjectInTree (new QCircle (item.XY, start_radius), item);
         }
 
+        public QuadTree<T> GetClusteredTree ()
+        {
+            Hyena.Log.Debug ("Cluster Tree");
+            QuadTree<T> clustered_tree = new QuadTree<T> (quadTreeRoot.Rectangle);
+            QuadTree<T> clone_tree = (QuadTree<T>)Clone ();
+
+            List<T> items = GetAllObjects ();
+            Hyena.Log.Debug ("Cluster " + items.Count + " items.");
+            T other;
+
+            foreach (T item in items) {
+                if (clone_tree.Count == 0)
+                    break;
+
+                if (!clone_tree.dictionary.ContainsKey (item))
+                    continue;
+
+                clone_tree.Remove (item);
+                other = clone_tree.GetNearest (item, double.MaxValue);
+
+                //check if item is found
+                if (other == null) {
+
+                    clustered_tree.Add (item);
+
+                } else {
+
+                    clone_tree.Remove (other);
+                    clustered_tree.Add (item.GetMerged (other));
+                }
+            }
+
+            clone_tree = null;
+            Hyena.Log.Debug ("Clustered Tree count: " + clustered_tree.GetAllObjects().Count);
+            return clustered_tree;
+        }
+
         public event OnCreateQuadEvent OnCreateQuad {
             add { create_quad_handler += value; }
             remove { create_quad_handler -= value; }
@@ -188,7 +231,7 @@ namespace Banshee.Cluttertest
     /// <summary>
     /// This class represents a node in the quadtree
     /// </summary>
-    public class QuadTreeNode<T> where T : IStorable
+    public class QuadTreeNode<T> where T : IStorable<T>
     {
 
         //number of maximum objects in a node. if exceeded subdivision is performed
@@ -666,6 +709,7 @@ namespace Banshee.Cluttertest
 
             return result;
         }
+
     }
     #region helper classes
 

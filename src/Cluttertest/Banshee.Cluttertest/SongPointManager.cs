@@ -30,25 +30,38 @@ namespace Banshee.Cluttertest
 {
     public class SongPointManager
     {
-        private QuadTree<SongPoint> tree;
+        private List<QuadTree<SongPoint>> tree_list;
+
+        private int level = 0;
+
+        public int Level {
+            get { return level; }
+            set { level = value; }
+        }
 
         public SongPointManager (double x, double y, double width, double height)
         {
-            tree = new QuadTree<SongPoint> (x, y, width, height);
+            tree_list = new List<QuadTree<SongPoint>> ();
+            tree_list.Add (new QuadTree<SongPoint> (x, y, width, height));
+        }
+
+        public void Cluster ()
+        {
+            tree_list.Add (tree_list[0].GetClusteredTree ());
         }
 
         public List<SongPoint> Points {
-            get { return tree.GetAllObjects (); }
+            get { return tree_list[level].GetAllObjects (); }
         }
 
         public void Add (double x, double y, string id)
         {
-            tree.Add (new SongPoint (x, y, id));
+            tree_list[0].Add (new SongPoint (x, y, id));
         }
 
         public List<SongPoint> GetPointsInWindow (double x, double y, double width, double height)
         {
-            return tree.GetObjects (new QRectangle (x, y, width, height));
+            return tree_list[level].GetObjects (new QRectangle (x, y, width, height));
         }
     }
 }

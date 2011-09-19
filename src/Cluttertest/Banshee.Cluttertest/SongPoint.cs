@@ -29,7 +29,7 @@ namespace Banshee.Cluttertest
     /// <summary>
     /// This class is an abstract representation of a song.
     /// </summary>
-    public class SongPoint :IStorable
+    public class SongPoint :IStorable<SongPoint>
     {
         public SongPoint (double x, double y, string id)
         {
@@ -72,6 +72,15 @@ namespace Banshee.Cluttertest
         public String ID {
             get;
             private set;
+        }
+
+        public SongPoint GetMerged (SongPoint other)
+        {
+            Point merged = new Point (X, Y);
+            merged.Add (other.X, other.Y);
+            merged.Normalize (2);
+
+            return new SongPoint (merged.X, merged.Y, ID + other.ID);
         }
 
     }

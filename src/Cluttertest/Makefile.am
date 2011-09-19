@@ -1,5 +1,4 @@
 SOURCES =  \
-	Banshee.Cluttertest/Cluster.cs \
 	Banshee.Cluttertest/ClutterHelper.cs \
 	Banshee.Cluttertest/CluttertestSource.cs \
 	Banshee.Cluttertest/ClutterView.cs \

@@ -108,7 +108,6 @@
     <Compile Include="Banshee.Cluttertest\DataHandler.cs" />
     <Compile Include="Banshee.Cluttertest\Circle.cs" />
     <Compile Include="Banshee.Cluttertest\View.cs" />
-    <Compile Include="Banshee.Cluttertest\Cluster.cs" />
     <Compile Include="Banshee.Cluttertest\Point.cs" />
     <Compile Include="Banshee.Cluttertest\Gui.cs" />
     <Compile Include="Banshee.Cluttertest\ClusteringManager.cs" />

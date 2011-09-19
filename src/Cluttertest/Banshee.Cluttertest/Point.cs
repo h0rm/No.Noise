@@ -87,14 +87,6 @@ namespace Banshee.Cluttertest
             this.y *= factor;
         }
 
-        public void AddWithNormalization (Point p, int factor)
-        {
-            Multiply (factor);
-
-            Normalize (factor+1);
-
-            //Normalize (factor);
-        }
         public void Normalize (int count)
         {
             this.x /= (double)count;

@@ -60,7 +60,7 @@ namespace Banshee.Cluttertest
             clone.Reactive = true;
             clone.Name = name;
             clone.Owner = null;
-
+            clone.Hide ();
             //OLD event handler
 //            clone.EnterEvent += delegate {
 //                FireSongEnter (new SongHighlightArgs (x, y, clone.Name, cluster_list.Count));

@@ -33,7 +33,7 @@ using Hyena;
 
 namespace Banshee.Cluttertest
 {
-    public class Cluster : Clutter.Texture, IStorable
+    public class Cluster : Clutter.Texture, IStorable<SongPoint>
     {
         #region Static Functions
 

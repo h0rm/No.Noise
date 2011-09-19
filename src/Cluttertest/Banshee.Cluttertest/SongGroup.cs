@@ -152,6 +152,13 @@ namespace Banshee.Cluttertest
             foreach (Point p in points)
                 point_manager.Add (p.X, p.Y, "test");
 
+            Stopwatch stop = new Stopwatch();
+            stop.Start ();
+            point_manager.Cluster ();
+            stop.Stop ();
+
+            Hyena.Log.Information ("Clustering time: "+stop.ElapsedMilliseconds);
+
             points_visible = new List<SongPoint> (2000);
 
             foreach (SongActor a in actor_manager.Actors) {
@@ -201,11 +208,15 @@ namespace Banshee.Cluttertest
         {
             if (inwards)
             {
-                ZoomOnCenter (true);
+//                ZoomOnCenter (true);
+                point_manager.Level = 0;
+                UpdateView ();
             }
             else
             {
-                ZoomOnCenter (false);
+//                ZoomOnCenter (false);
+                point_manager.Level = 1;
+                UpdateView ();
             }
         }
 
@@ -294,6 +305,20 @@ namespace Banshee.Cluttertest
             animation_timeline.Start();
         }
 
+        private void UpdateView ()
+        {
+            //remove all visible points
+            for (int i = 0; i < points_visible.Count; i++) {
+                actor_manager.Free (points_visible[i].Actor);
+                points_visible[i].Actor = null;
+
+                points_visible[i] = points_visible[points_visible.Count-1];
+                points_visible.RemoveAt (points_visible.Count-1);
+                i--;
+            }
+
+            UpdateClipping ();
+        }
         private void UpdateClipping ()
         {
 
