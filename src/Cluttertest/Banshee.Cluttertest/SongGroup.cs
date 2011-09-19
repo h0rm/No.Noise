@@ -209,13 +209,15 @@ namespace Banshee.Cluttertest
             if (inwards)
             {
 //                ZoomOnCenter (true);
-                point_manager.Level = 0;
+//                point_manager.Level = 0;
+                point_manager.IncreaseLevel ();
                 UpdateView ();
             }
             else
             {
 //                ZoomOnCenter (false);
-                point_manager.Level = 1;
+//                point_manager.Level = 1;
+                point_manager.DecreaseLevel ();
                 UpdateView ();
             }
         }

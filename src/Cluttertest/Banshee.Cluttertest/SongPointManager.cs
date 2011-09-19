@@ -30,24 +30,43 @@ namespace Banshee.Cluttertest
 {
     public class SongPointManager
     {
+        private const int max_clustering_level = 8;
         private List<QuadTree<SongPoint>> tree_list;
 
         private int level = 0;
 
         public int Level {
             get { return level; }
-            set { level = value; }
+            set {
+                int lvl = (value > max_clustering_level) ? max_clustering_level : value;
+                lvl = (lvl < 0) ? 0 : lvl;
+                level = lvl;
+            }
+        }
+
+        public void IncreaseLevel ()
+        {
+            Level = Level + 1;
+            Hyena.Log.Debug ("New Clustering level " + Level);
+        }
+
+        public void DecreaseLevel ()
+        {
+            Level = Level - 1;
+            Hyena.Log.Debug ("New Clustering level " + Level);
         }
 
         public SongPointManager (double x, double y, double width, double height)
         {
             tree_list = new List<QuadTree<SongPoint>> ();
+
             tree_list.Add (new QuadTree<SongPoint> (x, y, width, height));
         }
 
         public void Cluster ()
         {
-            tree_list.Add (tree_list[0].GetClusteredTree ());
+            for (int i = 0; i < max_clustering_level; i++)
+                tree_list.Add (tree_list[i].GetClusteredTree ());
         }
 
         public List<SongPoint> Points {
