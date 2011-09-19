@@ -168,12 +168,24 @@ namespace Banshee.Foo1
                 w.ShowAll();
             }
 
+            /// <summary>
+            /// Runs several database and pca tests and prints debug output and failure/success messages.
+            /// </summary>
             private void PerformTests ()
             {
                 bool succ = true;
-                succ &= DBMatrixTest ();
-                succ &= DBMirageMatrixText ();
-                succ &= DBMirageVectorTest ();
+                try {
+                    succ &= DBMatrixTest ();
+                    succ &= DBMirageMatrixText ();
+                    succ &= DBMirageVectorTest ();
+
+                    PcaEigenvectorBasisTest ();
+//                    Hyena.Log.Debug ("Should be: (-0.458468469256572, -0.355876863389135, 0.814345332645707) and " +
+//                     "(0.675628099889615, -0.734859391159327, 0.0592312912613845)");
+                } catch (Exception e) {
+                    Hyena.Log.Exception ("Foo1 - Tests failed", e);
+                    succ = false;
+                }
 
                 if (succ)
                     Hyena.Log.Debug ("Foo1 - Tests finished successfully");
@@ -181,6 +193,13 @@ namespace Banshee.Foo1
                     Hyena.Log.Debug ("Foo1 - Tests failed");
             }
 
+            /// <summary>
+            /// Test method for insert/select of a Math.Matrix into/from the database.
+            /// </summary>
+            /// <returns>
+            /// True if the matrix is still the same after inserting it into the
+            /// database and reading it from there again. False otherwise.
+            /// </returns>
             private bool DBMatrixTest ()
             {
                 Matrix m = new Matrix (20, 45);
@@ -209,6 +228,13 @@ namespace Banshee.Foo1
                 return true;
             }
 
+            /// <summary>
+            /// Test method for insert/select of a Mirage.Matrix into/from the database.
+            /// </summary>
+            /// <returns>
+            /// True if the matrix is still the same after inserting it into the
+            /// database and reading it from there again. False otherwise.
+            /// </returns>
             private bool DBMirageMatrixText ()
             {
                 Mirage.Matrix m = new Mirage.Matrix (20, 45);
@@ -237,6 +263,13 @@ namespace Banshee.Foo1
                 return true;
             }
 
+            /// <summary>
+            /// Test method for insert/select of a Mirage.Vector into/from the database.
+            /// </summary>
+            /// <returns>
+            /// True if the vector is still the same after inserting it into the
+            /// database and reading it from there again. False otherwise.
+            /// </returns>
             private bool DBMirageVectorTest ()
             {
                 Mirage.Vector v = new Mirage.Vector (20);
@@ -259,6 +292,50 @@ namespace Banshee.Foo1
                 }
 
                 return true;
+            }
+
+            /// <summary>
+            /// Test method to (manually) check if the pca computations are correct.
+            /// Prints the base vectors computed with a mirage generated covariance
+            /// matrix and with the classical self-implemented covariance computation.
+            /// </summary>
+            private void PcaEigenvectorBasisTest ()
+            {
+                Mirage.Matrix m = new Mirage.Matrix (3, 5);
+                m.d [0, 0] = 0.2f;
+                m.d [1, 0] = 14.5f;
+                m.d [2, 0] = 166.0f;
+                m.d [0, 1] = 1.5f;
+                m.d [1, 1] = 20.5f;
+                m.d [2, 1] = 233.0f;
+                m.d [0, 2] = 0.8f;
+                m.d [1, 2] = 16.2f;
+                m.d [2, 2] = 189.0f;
+                m.d [0, 3] = 2.3f;
+                m.d [1, 3] = 11.7f;
+                m.d [2, 3] = 139.0f;
+                m.d [0, 4] = 1.7f;
+                m.d [1, 4] = 17.9f;
+                m.d [2, 4] = 206.0f;
+
+                PCAnalyzer pca = new PCAnalyzer (m.Covariance (m.Mean ()));
+                pca.PcaTest ();
+
+                int i = -1;
+                double[] data = { 0.2, 14.5, 166.0 };
+                PCAnalyzer ana = new PCAnalyzer ();
+                ana.AddEntry (i--, data);
+
+                data = new double[] { 1.5, 20.5, 233.0 };
+                ana.AddEntry (i--, data);
+                data = new double[] { 0.8, 16.2, 189.0 };
+                ana.AddEntry (i--, data);
+                data = new double[] { 2.3, 11.7, 139.0 };
+                ana.AddEntry (i--, data);
+                data = new double[] { 1.7, 17.9, 206.0 };
+                ana.AddEntry (i--, data);
+
+                ana.PerformPCA ();
             }
 
             /// <summary>
@@ -503,7 +580,8 @@ namespace Banshee.Foo1
 //                        }
                     }
 
-                    Hyena.Log.Debug("Foo1 - BPM...Track ID: " + ServiceManager.SourceManager.MusicLibrary.GetTrackIdForUri(args.Uri));
+                    Hyena.Log.Debug("Foo1 - BPM...Track ID: " + ServiceManager.SourceManager.MusicLibrary
+                                    .GetTrackIdForUri(args.Uri));
 
                     Bpm = args.Bpm;
                     Hyena.Log.DebugFormat ("Foo1 - Detected BPM of {0} for {1}", Bpm, args.Uri);

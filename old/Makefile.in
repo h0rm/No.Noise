@@ -174,7 +174,7 @@ GCONF_SHARP_20_LIBS = @GCONF_SHARP_20_LIBS@
 GETTEXT_PACKAGE = @GETTEXT_PACKAGE@
 GLIB_CFLAGS = @GLIB_CFLAGS@
 GLIB_LIBS = @GLIB_LIBS@
-GMCS_FLAGS = @GMCS_FLAGS@
+GMCS_FLAGS = -unsafe
 GMOFILES = @GMOFILES@
 GMSGFMT = @GMSGFMT@
 GNOME_DOC_UTILS_CFLAGS = @GNOME_DOC_UTILS_CFLAGS@
@@ -323,7 +323,9 @@ top_build_prefix = @top_build_prefix@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
 ASSEMBLY = Banshee.Foo1
-LINK = $(BANSHEE_LIBS) $(am__append_1)
+LINK = $(BANSHEE_LIBS) \
+	-r:/home/thomas/NoNoise/MathNet.Iridium-2008.8.16.470/ForRedistribution/MathNet.Iridium.dll \
+	-r:System.Data -r:Mono.Data.SqliteClient $(am__append_1)
 SOURCES = \
 	Banshee.Foo1/Foo1Source.cs \
 	Banshee.Foo1/Foo1SourceContents.cs \
