@@ -92,7 +92,7 @@ namespace Banshee.Foo1.PCA
         }
 
         /// <summary>
-        /// Deprecated constructor
+        /// Deprecated constructor used for covariance matrix testing
         /// </summary>
         /// <param name="data">
         /// The mirage matrix which will be converted to a math matrix that should be user for the PCA

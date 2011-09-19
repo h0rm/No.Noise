@@ -407,8 +407,8 @@ namespace Banshee.Foo1
 
                 try {
                     ana.PerformPCA ();
-                    Hyena.Log.Debug(ana.GetCoordinateStrings ());
-                    List<Banshee.NoNoise.Data.DataEntry> coords = ana.Coordinates;
+//                    Hyena.Log.Debug(ana.GetCoordinateStrings ());
+                    List<DataEntry> coords = ana.Coordinates;
                     db.ClearPcaData ();
                     if (!db.InsertPcaCoordinates (coords))
                         Hyena.Log.Error ("Foo1 - PCA coord insert failed");
