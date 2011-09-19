@@ -61,6 +61,15 @@ namespace Banshee.Cluttertest
             clone.Name = name;
             clone.Owner = null;
 
+            //OLD event handler
+//            clone.EnterEvent += delegate {
+//                FireSongEnter (new SongHighlightArgs (x, y, clone.Name, cluster_list.Count));
+//            };
+//
+//            clone.EnterEvent += delegate {
+//                FireSongLeave (new SongHighlightArgs (x, y, clone.Name, cluster_list.Count));
+//            };
+
             song_actors.Add (clone);
 
             return clone;
@@ -87,6 +96,10 @@ namespace Banshee.Cluttertest
 
         public List<SongActor> Actors {
             get {return song_actors;}
+        }
+
+        public bool HasFree {
+            get { return free_actors.Count > 0; }
         }
     }
 }

@@ -61,7 +61,7 @@ namespace Banshee.Cluttertest
         /// <summary>
         /// Linked Cluster actor which is used for rendering.
         /// </summary>
-        public Cluster Actor {
+        public SongActor Actor {
             get;
             set;
         }

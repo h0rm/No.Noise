@@ -76,11 +76,11 @@ namespace Banshee.Cluttertest
         SongHighlightEvent song_leave;
 
         private const double zoom_level_mult = 2.0;
-
         private double zoom_level = 1.0;
 
-        private List<Cluster> cluster_list;
-        private List<Rectangle> debug_quad_rectangles;
+        private const int num_of_actors = 2000;
+
+//        private List<Rectangle> debug_quad_rectangles;
 
         private Alpha animation_alpha;
         private Behaviour animation_behave;
@@ -90,33 +90,10 @@ namespace Banshee.Cluttertest
         private float mouse_old_x;
         private float mouse_old_y;
 
-        private Shader shader;
-
         private Stage stage;
-        private bool clipping_enabled=false;
-        private List<DebugPoint> debug_points_visible;
-        private Stack<Cluster> debug_stack;
-        private QuadTree<DebugPoint> debug_tree;
-
-
-        class DebugPoint : IStorable
-        {
-
-            public DebugPoint (double x, double y)
-            {
-                XY = new Point (x, y);
-                Owner = null;
-            }
-            public Point XY {
-                get;
-                set;
-            }
-
-            public Cluster Owner {
-                get;
-                set;
-            }
-        }
+        private List<SongPoint> points_visible;
+        private SongPointManager point_manager;
+        private SongActorManager actor_manager;
 
        // private CairoTexture test_circle;
         #endregion
@@ -139,31 +116,9 @@ namespace Banshee.Cluttertest
             Init();
         }
 
-
-
-        public void CompileShader ()
-        {
-
-            string shader_sources = @"
-                uniform sampler2D tex;
-                void main ()
-                {
-                    vec4 color = gl_Color * texture2D(tex, gl_TexCoord[0].xy);
-                    //color.a = max(color.a,0.3);
-                    gl_FragColor = color;
-                }
-                ";
-
-            shader = new Shader ();
-            shader.FragmentSource = shader_sources;
-            shader.Compile ();
-        }
-
         public void ParseTextFile (string filename, int count)
         {
-            cluster_list = new List<Cluster> ();
-            debug_points_visible = new List<DebugPoint> ();
-            debug_stack = new Stack<Cluster> ();
+            List<Point> points = new List<Point> ();
 
 
             using (StreamReader sr = new StreamReader (filename))
@@ -182,201 +137,57 @@ namespace Banshee.Cluttertest
                     double x = Math.Abs (float.Parse (parts[1], System.Globalization.CultureInfo.InvariantCulture)) * 20.0f;
                     double y = Math.Abs (float.Parse (parts[2], System.Globalization.CultureInfo.InvariantCulture)) * 20.0f;
 
-                    if (x != 0 && y != 0) {
-                        //AddCircle ((float)x,(float)y,parts[0]);
-                        debug_points_visible.Add (new DebugPoint (x, y));
-                        Hyena.Log.Debug ("Point " + x + "," + y);
-                    }
+                    if (x != 0 && y != 0)
+                        points.Add (new Point(x, y));
+
                 }
 
             }
 
-            double max_x = debug_points_visible.Max (p => p.XY.X);
-            double max_y = debug_points_visible.Max (p => p.XY.Y);
+            double max_x = points.Max (p => p.X);
+            double max_y = points.Max (p => p.Y);
 
-            debug_tree = new QuadTree<DebugPoint> (0,0,max_x,max_y);
+            point_manager = new SongPointManager (0, 0, max_x, max_y);
 
-            foreach (DebugPoint p in debug_points_visible)
-                debug_tree.Add (p);
+            foreach (Point p in points)
+                point_manager.Add (p.X, p.Y, "test");
 
-            debug_points_visible = new List<DebugPoint> (2000);
+            points_visible = new List<SongPoint> (2000);
 
-            for (int i = 0; i < 2000; i++) {
-                AddCircle (0f, 0f, "debug");
+            foreach (SongActor a in actor_manager.Actors) {
+                this.Add (a);
+                animation_behave.Apply (a);
             }
-            foreach (Cluster c in cluster_list) {
-                debug_stack.Push (c);
-            }
-
-
-//            Cluster.KMeansInit (4, Width, Height);
-            List<QRectangle> list = Cluster.HierarchicalInit (cluster_list, Width, Height);
-
-            Hyena.Log.Debug ("Num of rectangles : " + list.Count);
-
-            debug_quad_rectangles = new List<Rectangle> ();
-            
-            foreach (QRectangle r in list) {
-                Rectangle rect = new Rectangle (new Color (1,0,0,0.1));
-                rect.SetPosition ((float)r.X, (float)r.Y);
-                rect.SetSize ((float)r.Width, (float)r.Height);
-                this.Add (rect);
-
-                debug_quad_rectangles.Add (rect);
-            }
-
-            //Hyena.Log.Debug ("True size: " + Width + "," + Height);
-        }
-        /// <summary>
-        /// A test function which generates randomly distributed circles.
-        /// </summary>
-        /// <param name="width">
-        /// A <see cref="System.Double"/> which specifies the width of the distribution.
-        /// </param>
-        /// <param name="height">
-        /// A <see cref="System.Double"/> which specifies the height of the distribution.
-        /// </param>
-        /// <param name="count">
-        /// A <see cref="System.Int32"/> which specifies the number of circles.
-        /// </param>
-        public void TestGenerateCircles (double width, double height, int count)
-        {
-            cluster_list = new List<Cluster> ();
-
-            Random r = new Random ();
-
-            for (int i=0; i<count; i++)
-                AddCircle ((float)(r.NextDouble ()*width), (float)(r.NextDouble ()*height),"");
-
-//            Cluster.KMeansInit (4, Width, Height);
-            Cluster.HierarchicalInit (cluster_list, Width, Height);
-            //CalculateClusters (4);
         }
 
-        /// <summary>
-        /// Adds a circle at the specified position.
-        /// </summary>
-        /// <param name="x">
-        /// A <see cref="System.Single"/> - x coordinate.
-        /// </param>
-        /// <param name="y">
-        /// A <see cref="System.Single"/> - y coordinate.
-        /// </param>
-        public void AddCircle (float x, float y, string name)
-        {
-            //Clone clone = new Clone (circle_prototype);
-            Cluster clone = new Cluster ();
-
-            //Random r = new Random();
-
-            //clone.CoglTexture = prototype_list[r.Next(4)].CoglTexture;
-            //clone.CoglMaterial = prototype_list[r.Next(4)].CoglMaterial;
-            //clone.SetPrototypeByNumber (r.Next(4));
-            clone.SetPrototypeByNumber (3);
-
-            clone.AnchorPointFromGravity = Gravity.Center;
-            clone.SetPosition (x, y);
-            clone.SetScaleWithGravity (1.0,1.0, Gravity.NorthWest);
-
-            //reactive damit signals geschickt werden
-            clone.Reactive = true;
-
-            if (name == "")
-                clone.Name = "Clone "+cluster_list.Count;        //Name
-            else
-                clone.Name = name;
-            clone.EnterEvent += delegate {
-                FireSongEnter (new SongHighlightArgs (x, y, clone.Name, cluster_list.Count));
-            };
-
-            clone.EnterEvent += delegate {
-                FireSongLeave (new SongHighlightArgs (x, y, clone.Name, cluster_list.Count));
-            };
-//
-//            clone.EnterEvent += delegate {
-//                clone.SetScale(1/zoom_level * 1.5, 1/zoom_level * 1.5);
-//            };
-//
-//            clone.LeaveEvent += delegate {
-//                clone.SetScale(1/zoom_level, 1/zoom_level);
-//            };
-
-            //Hyena.Log.Debug ("Added "+clone.Name + " " + clone.X + ":" + clone.Y);
-            cluster_list.Add (clone);
-
-            this.Add (clone);
-            animation_behave.Apply (clone);
-        }
 
         /// <summary>
         /// Initializes the prototype texture, the animations, and the event handler.
         /// </summary>
         public void Init ()
         {
-            Hyena.Log.Information ("Circles Start - Clusters");
+            Hyena.Log.Information ("Initializing Song Group.");
 
-            Cluster.Init ();
+            actor_manager = new SongActorManager (num_of_actors);
 
-            //CompileShader ();
-           // CalculateClusters (4);
 
             //Animation
             animation_timeline = new Timeline (1000);
             animation_alpha = new Alpha (animation_timeline, (ulong)AnimationMode.EaseOutCubic);
             animation_behave = new BehaviourScale (animation_alpha,1.0,1.0,1.2,1.2);
 
-            //circles klonen
             this.Reactive = true;
             this.ScrollEvent += HandleAdaptiveZoom;
 
-
             stage.ButtonPressEvent += HandleStageButtonPressEvent;
             stage.ButtonReleaseEvent += HandleStageButtonReleaseEvent;
-            //this.ButtonPressEvent += HandleStageButtonPressEvent;
-            //this.ButtonReleaseEvent += HandleStageButtonReleaseEvent;
             stage.MotionEvent += HandleMotionEvent;
+
             //this.LeaveEvent += HandleHandleLeaveEvent;
             //this.Stage.ButtonPressEvent += HandleGlobalButtonPressEven;
         }
 
-        void HandleHandleLeaveEvent (object o, LeaveEventArgs args)
-        {
-            mouse_down = false;
-        }
 
-        #region private Handler
-
-        /// <summary>
-        /// Handles the entering of the mouse cursor at a circle position.
-        /// </summary>
-        /// <param name="o">
-        /// A <see cref="System.Object"/>
-        /// </param>
-        /// <param name="args">
-        /// A <see cref="EnterEventArgs"/>
-        /// </param>
-        private void HandleCircleMouseEnter (object o, EnterEventArgs args)
-        {
-
-            //Maus Koordinaten holen
-            float mouse_x = 0, mouse_y = 0;
-            EventHelper.GetCoords(args.Event, out mouse_x, out mouse_y);
-
-            //Ausgabe von name + x:y (x,y) irgendwie falsch
-            //Hyena.Log.Information("Mouse Enter Clone "+(o as Clone).Name + " - " + mouse_x +":"+mouse_y);
-
-            //Punkt transformieren - damit an richtiger position mit scale und so
-            float x=0, y=0;
-            (o as Clone).GetTransformedPosition(out x,out y);
-
-            //TODO ersetzen mit handler
-            //An position von circle infobox setzen + namen
-//            info_group.SetPosition(x,y);
-//            info_text.Value = (o as Clone).Name;
-//
-//            //infobox anzeigen
-//            info_group.Show();
-        }
 
         /// <summary>
         /// This function is used cluster or decluster the data. Every time the function is
@@ -390,14 +201,11 @@ namespace Banshee.Cluttertest
         {
             if (inwards)
             {
-                //Cluster.HierarchicalNewCalculateStep (this);
                 ZoomOnCenter (true);
-                Cluster.RefineOneStep ();
             }
             else
             {
-               // ZoomOnCenter (false);
-                Cluster.ClusterOneStep ();
+                ZoomOnCenter (false);
             }
         }
 
@@ -430,9 +238,6 @@ namespace Banshee.Cluttertest
 
             //punkt auf objekt schieben
             this.SetPosition (pos_x, pos_y);
-
-            //circle_group.SetScale(zoom_level,zoom_level);
-
 
             double old_zoom_level = zoom_level;
 
@@ -474,17 +279,85 @@ namespace Banshee.Cluttertest
 
                 animation_timeline.Duration = duration;
                 animation_behave = new BehaviourScale (animation_alpha, 1.0f / old_zoom_level, 1.0f / old_zoom_level, 1.0f / zoom_level, 1.0f / zoom_level);
+
+                //update clipping every new frame
                 animation_timeline.NewFrame += delegate {
-                    UpdateClippingTreeDebug ();
+                    UpdateClipping ();
                 };
+
                 //neues behaviour an die circles andwenden
-                foreach (Actor a in cluster_list)
+                foreach (Actor a in actor_manager.Actors)
                     animation_behave.Apply(a);
             }
 
             animation_timeline.Stop();
             animation_timeline.Start();
         }
+
+        private void UpdateClipping ()
+        {
+
+            List<SongPoint> points;
+            float x, y, tx, ty;
+            double px, py, sx, sy;
+            SongActor current;
+            SongPoint p;
+            GetTransformedPosition (out tx, out ty);
+            GetScale (out sx, out sy);
+
+            x = tx;
+            y = ty;
+//            Hyena.Log.Debug ("Update Clipping " + "Stackcount " + debug_stack.Count);
+
+            points = point_manager.GetPointsInWindow (
+                        (-(float)SongActor.CircleSize-x)/sx,(-(float)SongActor.CircleSize-y)/sy,
+                         (stage.Width+2*(float)SongActor.CircleSize)/sx,(stage.Height+2*(float)SongActor.CircleSize)/sy);
+
+
+            // Check visible points
+            for (int i = 0; i < points_visible.Count; i++)
+            {
+                p = points_visible[i];
+
+                px = p.XY.X*sx + x;
+                py = p.XY.Y*sy + y;
+
+                if (px > stage.Width + SongActor.CircleSize || px < -SongActor.CircleSize ||
+                    py > stage.Height + SongActor.CircleSize || py < -SongActor.CircleSize)
+                {
+
+                    actor_manager.Free (p.Actor);
+                    p.Actor = null;
+
+                    points_visible[i] = points_visible[points_visible.Count-1];
+                    points_visible.RemoveAt (points_visible.Count-1);
+                    i--;
+                }
+            }
+
+            // Check invisible points
+            for (int i = 0; i < points.Count; i++)
+            {
+                if (!actor_manager.HasFree)
+                    continue;
+
+                p = points[i];
+
+                if (p.Actor != null)
+                    continue;
+
+                px = p.XY.X*sx + x;
+                py = p.XY.Y*sy + y;
+
+                current = actor_manager.AllocateAtPosition (p.X, p.Y);
+                p.Actor = current;
+                points_visible.Add (p);
+            }
+
+        }
+
+         #region private Handler
+
         /// <summary>
         /// Handle the zooming with the animation. This is used when for
         /// zooming with the scroll wheel.
@@ -508,12 +381,10 @@ namespace Banshee.Cluttertest
             switch (args.Event.Direction)
             {
             case ScrollDirection.Up:
-                //zoom_level *= zoom_level_mult;
                 ZoomOnPosition (true, mouse_x, mouse_y);
                 break;
 
             case ScrollDirection.Down:
-                //zoom_level /= zoom_level_mult;
                 ZoomOnPosition (false, mouse_x, mouse_y);
                 break;
             }
@@ -546,9 +417,9 @@ namespace Banshee.Cluttertest
 
             Stopwatch stop = new Stopwatch ();
             stop.Start ();
-            if (clipping_enabled)
-//                        UpdateClippingDebug ();
-                UpdateClippingTreeDebug ();
+
+            UpdateClipping ();
+
             stop.Stop ();
             Hyena.Log.Information ("Time to Update: "+stop.ElapsedTicks);
         }
@@ -568,156 +439,43 @@ namespace Banshee.Cluttertest
             mouse_down = false;
         }
 
-        private void UpdateClippingTreeDebug ()
+                void HandleHandleLeaveEvent (object o, LeaveEventArgs args)
+        {
+            mouse_down = false;
+        }
+
+        /// <summary>
+        /// Handles the entering of the mouse cursor at a circle position.
+        /// </summary>
+        /// <param name="o">
+        /// A <see cref="System.Object"/>
+        /// </param>
+        /// <param name="args">
+        /// A <see cref="EnterEventArgs"/>
+        /// </param>
+        private void HandleCircleMouseEnter (object o, EnterEventArgs args)
         {
 
-            List<DebugPoint> points;
-            float x, y, tx, ty;
-            double px, py, sx, sy;
-            Cluster current;
-            DebugPoint p;
-            GetTransformedPosition (out tx, out ty);
-            GetScale (out sx, out sy);
+            //Maus Koordinaten holen
+            float mouse_x = 0, mouse_y = 0;
+            EventHelper.GetCoords(args.Event, out mouse_x, out mouse_y);
 
-            x = tx;
-            y = ty;
-//            Hyena.Log.Debug ("Update Clipping " + "Stackcount " + debug_stack.Count);
+            //Ausgabe von name + x:y (x,y) irgendwie falsch
+            //Hyena.Log.Information("Mouse Enter Clone "+(o as Clone).Name + " - " + mouse_x +":"+mouse_y);
 
-//            Stopwatch stop = new Stopwatch ();
-            points = debug_tree.GetObjects (new QRectangle
-                        ((-(float)SongActor.CircleSize-x)/sx,(-(float)SongActor.CircleSize-y)/sy,
-                         (stage.Width+2*(float)SongActor.CircleSize)/sx,(stage.Height+2*(float)SongActor.CircleSize)/sy));
-//            stop.Stop ();
-//            Hyena.Log.Debug ("Time for treeget: "+stop.ElapsedTicks);
-//            Hyena.Log.Debug ("Area "+(stage.Width/(float)sx) + ","+(stage.Width/(float)sy) +"at "
-//                             + (--x/(float)sx)+","+(-y/(float)sy));
-//            Hyena.Log.Debug ("Debug points visible: "+debug_points_visible.Count);
-//            Hyena.Log.Debug ("Debug points hidden in range: "+points.Count);
+            //Punkt transformieren - damit an richtiger position mit scale und so
+            float x=0, y=0;
+            (o as Clone).GetTransformedPosition(out x,out y);
 
-
-//            stop.Reset ();
-//            stop.Start ();
-//            Hyena.Log.Debug ("START Visible (" + debug_points_visible.Count + ") Invisible (" + points.Count + ")");
+            //TODO ersetzen mit handler
+            //An position von circle infobox setzen + namen
+//            info_group.SetPosition(x,y);
+//            info_text.Value = (o as Clone).Name;
 //
-
-            // Check visible points
-            for (int i = 0; i < debug_points_visible.Count; i++)
-            {
-                p = debug_points_visible[i];
-
-                px = p.XY.X*sx + x;
-                py = p.XY.Y*sy + y;
-
-                if (px > stage.Width + SongActor.CircleSize || px < -SongActor.CircleSize ||
-                    py > stage.Height + SongActor.CircleSize || py < -SongActor.CircleSize)
-                {
-
-                    debug_stack.Push (p.Owner);
-                    p.Owner.Hide ();
-                    p.Owner = null;
-//                    debug_tree.Add (p);
-                    debug_points_visible[i] = debug_points_visible[debug_points_visible.Count-1];
-                    debug_points_visible.RemoveAt (debug_points_visible.Count-1);
-                    i--;
-                }
-            }
-//
-//            Hyena.Log.Debug ("MED Visible (" + debug_points_visible.Count + ") Invisible (" + points.Count + ")");
-//            Hyena.Log.Debug ("Time for visible ("+debug_points_visible.Count+") points: "+stop.ElapsedTicks);
-//
-//            stop.Reset ();
-//            stop.Start ();
-
-            // Check invisible points
-            for (int i = 0; i < points.Count; i++)
-            {
-                if (debug_stack.Count == 0)
-                    continue;
-
-                p = points[i];
-
-                if (p.Owner != null)
-                    continue;
-
-                px = p.XY.X*sx + x;
-                py = p.XY.Y*sy + y;
-
-                //Hyena.Log.Debug ("Pop");
-                current = debug_stack.Pop ();
-                current.SetPosition (p.XY.FloatX, p.XY.FloatY);
-                current.Show ();
-                p.Owner = current;
-//                debug_tree.Remove (p);
-                debug_points_visible.Add (p);
-            }
-
-//
-//            Hyena.Log.Debug ("END Visible (" + debug_points_visible.Count + ") Invisible (" + points.Count + ")");
+//            //infobox anzeigen
+//            info_group.Show();
         }
-        private void UpdateClippingDebug ()
-        {
-            float x, y, tx, ty;
-            double px, py, sx, sy;
-            Cluster current;
-            DebugPoint p;
-            GetTransformedPosition (out tx, out ty);
-            GetScale (out sx, out sy);
 
-            x = tx;
-            y = ty;
-//            Hyena.Log.Debug ("Update Clipping " + "Stackcount " + debug_stack.Count);
-            //            Hyena.Log.Debug ("Org: " + x + "," + y + " Trans:" + tx + "," + ty);
-            //            Hyena.Log.Debug ("Scale: " + sx + "," + sy + "Stackcount " + debug_stack.Count);
-
-//            Hyena.Log.Debug ("Area "+(-x+stage.Width) + ","+(-y+Stage.Height));
-
-            for (int i = 0; i < debug_points_visible.Count; i++)
-            {
-                p = debug_points_visible[i];
-                px = p.XY.X * sx + x;
-                py = p.XY.Y * sy + y;
-//                Hyena.Log.Debug ("Point "+p.XY);
-
-
-                if (px < stage.Width + SongActor.CircleSize && px > -SongActor.CircleSize &&
-                    py < stage.Height + SongActor.CircleSize && py > -SongActor.CircleSize)
-                {
-                    //Hyena.Log.Debug ("In window");
-                    if (debug_stack.Count == 0)
-                        continue;
-
-                    if (p.Owner != null)
-                        continue;
-
-                    //Hyena.Log.Debug ("Pop");
-
-                    current = debug_stack.Pop ();
-                    current.SetPosition (p.XY.FloatX, p.XY.FloatY);
-                    current.Show ();
-                    p.Owner = current;
-                } else {
-                    if (p.Owner == null)
-                        continue;
-
-                    debug_stack.Push (p.Owner);
-                    p.Owner.Hide ();
-                    p.Owner = null;
-
-                }
-            }
-        }
-        private void UpdateClipping ()
-        {
-            float x, y;
-            foreach (Cluster c in cluster_list)
-            {
-                c.GetTransformedPosition (out x, out y);
-                if (x < stage.Width && x > 0 && y < stage.Height && y > 0)
-                    c.Show ();
-                else
-                    c.Hide ();
-            }
-        }
         /// <summary>
         /// Handles the button press event for displacing the actor.
         /// </summary>
@@ -735,24 +493,10 @@ namespace Banshee.Cluttertest
             if (button != 1)
             {
                 Hyena.Log.Debug ("Rechtsklick.");
-                //UpdateCirclePrototypeColor();
 
-                //RefineClusters ();
-                //Cluster.KMeansRefineStep (cluster_list);
-                //Cluster.HierarchicalCalculateStep (this);
-                //Cluster.HierarchicalNewCalculateStep (this);
-
-                if (!clipping_enabled) {
-                    clipping_enabled = true;
-                } else {
-                    foreach (Cluster c in cluster_list)
-                        c.Show ();
-                    clipping_enabled = false;
-                }
-
-                Hyena.Log.Debug ("Clipping is now " + (clipping_enabled ? "on" : "off"));
                 return;
             }
+
             EventHelper.GetCoords (args.Event, out mouse_old_x, out mouse_old_y);
             mouse_down = true;
         }
