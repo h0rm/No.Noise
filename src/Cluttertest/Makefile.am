@@ -1,16 +1,15 @@
 SOURCES =  \
-	Banshee.Cluttertest/ClutterHelper.cs \
-	Banshee.Cluttertest/CluttertestSource.cs \
-	Banshee.Cluttertest/ClutterView.cs \
-	Banshee.Cluttertest/Gui.cs \
-	Banshee.Cluttertest/Point.cs \
-	Banshee.Cluttertest/SongGroup.cs \
-	Banshee.Cluttertest/QuadTree.cs \
-	Banshee.Cluttertest/View.cs \
-	Banshee.Cluttertest/SongActor.cs \
-	Banshee.Cluttertest/SongPoint.cs \
-	Banshee.Cluttertest/SongPointManager.cs \
-	Banshee.Cluttertest/SongActorManager.cs
+	NoNoise/Visualization/Util/ClutterHelper.cs \
+	Banshee.NoNoise/CluttertestSource.cs \
+	NoNoise/Visualization/Gui/MainGui.cs \
+	NoNoise/Visualization/Util/Point.cs \
+	NoNoise/Visualization/SongGroup.cs \
+	NoNoise/Visualization/Util/QuadTree.cs \
+	NoNoise/Visualization/View.cs \
+	NoNoise/Visualization/SongActor.cs \
+	NoNoise/Visualization/SongPoint.cs \
+	NoNoise/Visualization/SongPointManager.cs \
+	NoNoise/Visualization/SongActorManager.cs
 
 LINK =  \
 	$(BANSHEE_LIBS) \

@@ -102,21 +102,17 @@
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Banshee.Cluttertest\CluttertestSource.cs" />
-    <Compile Include="Banshee.Cluttertest\ClutterHelper.cs" />
-    <Compile Include="Banshee.Cluttertest\ClutterView.cs" />
-    <Compile Include="Banshee.Cluttertest\DataHandler.cs" />
-    <Compile Include="Banshee.Cluttertest\Circle.cs" />
-    <Compile Include="Banshee.Cluttertest\View.cs" />
-    <Compile Include="Banshee.Cluttertest\Point.cs" />
-    <Compile Include="Banshee.Cluttertest\Gui.cs" />
-    <Compile Include="Banshee.Cluttertest\ClusteringManager.cs" />
-    <Compile Include="Banshee.Cluttertest\QuadTree.cs" />
-    <Compile Include="Banshee.Cluttertest\SongPoint.cs" />
-    <Compile Include="Banshee.Cluttertest\SongGroup.cs" />
-    <Compile Include="Banshee.Cluttertest\SongActor.cs" />
-    <Compile Include="Banshee.Cluttertest\SongActorManager.cs" />
-    <Compile Include="Banshee.Cluttertest\SongPointManager.cs" />
+    <Compile Include="Banshee.NoNoise\CluttertestSource.cs" />
+    <Compile Include="NoNoise\Visualization\SongActor.cs" />
+    <Compile Include="NoNoise\Visualization\SongActorManager.cs" />
+    <Compile Include="NoNoise\Visualization\SongGroup.cs" />
+    <Compile Include="NoNoise\Visualization\SongPoint.cs" />
+    <Compile Include="NoNoise\Visualization\SongPointManager.cs" />
+    <Compile Include="NoNoise\Visualization\View.cs" />
+    <Compile Include="NoNoise\Visualization\Util\ClutterHelper.cs" />
+    <Compile Include="NoNoise\Visualization\Gui\MainGui.cs" />
+    <Compile Include="NoNoise\Visualization\Util\Point.cs" />
+    <Compile Include="NoNoise\Visualization\Util\QuadTree.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ProjectExtensions>
@@ -134,4 +130,22 @@
       </Properties>
     </MonoDevelop>
   </ProjectExtensions>
+  <ItemGroup>
+    <Folder Include="Banshee.NoNoise\" />
+    <Folder Include="Banshee.NoNoise\" />
+    <Folder Include="Banshee.NoNoise\" />
+    <Folder Include="Banshee.NoNoise\" />
+    <Folder Include="Banshee.NoNoise\" />
+    <Folder Include="Banshee.NoNoise\" />
+    <Folder Include="Banshee.NoNoise\" />
+    <Folder Include="Banshee.NoNoise\" />
+    <Folder Include="Banshee.NoNoise\" />
+    <Folder Include="Banshee.NoNoise\" />
+    <Folder Include="NoNoise\" />
+    <Folder Include="NoNoise\Visualization\" />
+    <Folder Include="NoNoise\Visualization\Util\" />
+    <Folder Include="NoNoise\Visualization\Gui\" />
+    <Folder Include="NoNoise\Visualization\" />
+    <Folder Include="NoNoise\Visualization\" />
+  </ItemGroup>
 </Project>

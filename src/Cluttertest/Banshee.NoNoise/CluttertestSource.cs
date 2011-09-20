@@ -44,7 +44,10 @@ using Gtk;
 using GLib;
 using System.Threading;
 
-namespace Banshee.Cluttertest
+using NoNoise.Visualization;
+using NoNoise.Visualization.Util;
+
+namespace Banshee.NoNoise
 {
 
     // We are inheriting from Source, the top-level, most generic type of Source.

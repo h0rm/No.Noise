@@ -28,7 +28,7 @@ using Clutter;
 using System.Collections.Generic;
 using System.Diagnostics;
 
-namespace Banshee.Cluttertest
+namespace NoNoise.Visualization
 {
     /// <summary>
     /// This class is the visible representation of a song.

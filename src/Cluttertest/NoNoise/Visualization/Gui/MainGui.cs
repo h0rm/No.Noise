@@ -25,9 +25,10 @@
 // THE SOFTWARE.
 using System;
 using Clutter;
-namespace Banshee.Cluttertest
+
+namespace NoNoise.Visualization.Gui
 {
-    public class Gui: Clutter.Group
+    public class MainGui: Clutter.Group
     {
 //        private Clutter.Rectangle zoom_in;
 //        private Clutter.Rectangle zoom_out;
@@ -38,7 +39,7 @@ namespace Banshee.Cluttertest
         private CairoTexture debug_in;
         private CairoTexture debug_out;
 
-        public Gui () : base ()
+        public MainGui () : base ()
         {
             Init ();
         }

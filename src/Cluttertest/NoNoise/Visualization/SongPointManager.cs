@@ -25,8 +25,9 @@
 // THE SOFTWARE.
 using System;
 using System.Collections.Generic;
+using NoNoise.Visualization.Util;
 
-namespace Banshee.Cluttertest
+namespace NoNoise.Visualization
 {
     public class SongPointManager
     {

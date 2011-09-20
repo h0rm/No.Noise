@@ -26,7 +26,7 @@
 using System;
 
 
-namespace Banshee.Cluttertest
+namespace NoNoise.Visualization.Util
 {
     public class Point
     {

@@ -27,7 +27,7 @@ using System;
 using Clutter;
 using System.Collections.Generic;
 
-namespace Banshee.Cluttertest
+namespace NoNoise.Visualization
 {
     public class SongActorManager
     {

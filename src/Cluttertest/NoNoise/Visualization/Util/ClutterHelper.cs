@@ -5,7 +5,7 @@ using Clutter;
 using Cogl;
 using Hyena;
 
-namespace Banshee.Cluttertest
+namespace NoNoise.Visualization.Util
 {
 	public static class ClutterHelper
 	{

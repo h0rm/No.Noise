@@ -7,7 +7,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System;
 
-namespace Banshee.Cluttertest
+namespace NoNoise.Visualization.Util
 {
     /// <summary>
     /// This interface is used enable storage of data

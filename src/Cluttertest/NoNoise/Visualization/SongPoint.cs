@@ -24,7 +24,9 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 using System;
-namespace Banshee.Cluttertest
+using NoNoise.Visualization.Util;
+
+namespace NoNoise.Visualization
 {
     /// <summary>
     /// This class is an abstract representation of a song.

@@ -26,12 +26,14 @@
 using System;
 using Clutter;
 
-namespace Banshee.Cluttertest
+using NoNoise.Visualization.Gui;
+
+namespace NoNoise.Visualization
 {
     public class View : Clutter.Embed
     {
         SongGroup point_group;
-        Gui gui;
+        MainGui gui;
 
         public View () : base ()
         {
@@ -39,7 +41,7 @@ namespace Banshee.Cluttertest
             SetSizeRequest (100,100);
             Stage.Color = new Color (0,0,0,255);
             point_group = new SongGroup (Stage);
-            gui = new Gui ();
+            gui = new MainGui ();
 
             Stage.Add (point_group);
             Stage.Add (gui);
@@ -63,12 +65,12 @@ namespace Banshee.Cluttertest
             gui.DebugButtonPressedEvent += HandleGuiDebugButtonPressedEvent;
         }
 
-        void HandleGuiDebugButtonPressedEvent  (object source, Gui.DebugEventArgs args)
+        void HandleGuiDebugButtonPressedEvent  (object source, MainGui.DebugEventArgs args)
         {
             point_group.ClusterOneStep (args.Value == 1);
         }
 
-        void HandleGuiZoomChangedEvent (object source, Gui.ZoomLevelArgs args)
+        void HandleGuiZoomChangedEvent (object source, MainGui.ZoomLevelArgs args)
         {
             point_group.ZoomOnCenter (args.Inwards);
         }
@@ -76,7 +78,7 @@ namespace Banshee.Cluttertest
         public void TestGenerateData ()
         {
             //point_group.TestGenerateCircles(5000,5000,2000);
-            point_group.ParseTextFile ("/home/horm/Downloads/16255/airport_locations.tsv", 5000);
+            point_group.ParseTextFile ("/home/horm/Downloads/16255/airport_locations.tsv", 8000);
         }
     }
 }

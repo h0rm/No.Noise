@@ -30,7 +30,9 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 
-namespace Banshee.Cluttertest
+using NoNoise.Visualization.Util;
+
+namespace NoNoise.Visualization
 {
     public class SongHighlightArgs
     {
@@ -75,7 +77,7 @@ namespace Banshee.Cluttertest
         SongHighlightEvent song_enter;
         SongHighlightEvent song_leave;
 
-        private const double zoom_level_mult = 2.0;
+        private const double zoom_level_mult = 1.5;
         private double zoom_level = 1.0;
 
         private const int num_of_actors = 2000;
@@ -85,6 +87,7 @@ namespace Banshee.Cluttertest
         private Alpha animation_alpha;
         private Behaviour animation_behave;
         private Timeline animation_timeline;
+        private uint animation_time = 1000;
 
         private bool mouse_down = false;
         private float mouse_old_x;
@@ -98,6 +101,7 @@ namespace Banshee.Cluttertest
         private Alpha clustering_animation_alpha;
         private Behaviour clustering_animation_behave;
         private Timeline clustering_animation_timeline;
+        private uint clutter_animation_time = 3000;
 
        // private CairoTexture test_circle;
         #endregion
@@ -183,15 +187,17 @@ namespace Banshee.Cluttertest
 
 
             //Animation
-            animation_timeline = new Timeline (1000);
-            animation_alpha = new Alpha (animation_timeline, (ulong)AnimationMode.EaseOutCubic);
+            animation_timeline = new Timeline (animation_time);
+//            animation_alpha = new Alpha (animation_timeline, (ulong)AnimationMode.EaseOutCubic);
+            animation_alpha = new Alpha (animation_timeline, (ulong)AnimationMode.EaseInOutSine);
             animation_behave = new BehaviourScale (animation_alpha,1.0,1.0,1.2,1.2);
 
-            clustering_animation_timeline = new Timeline (10000);
-            clustering_animation_alpha = new Alpha (clustering_animation_timeline, (ulong)AnimationMode.EaseOutCubic);
+            clustering_animation_timeline = new Timeline (clutter_animation_time);
+            clustering_animation_alpha = new Alpha (clustering_animation_timeline, (ulong)AnimationMode.EaseInOutSine);
             clustering_animation_behave = new BehaviourOpacity (clustering_animation_alpha, 255, 0);
             clustering_animation_timeline.Completed += HandleClusteringTimelineCompleted;
-
+            clustering_animation_timeline.AddMarkerAtTime ("Halftime",1);
+            clustering_animation_timeline.MarkerReached += HandleClusteringTimelineMarkerReached;
             this.Reactive = true;
             this.ScrollEvent += HandleAdaptiveZoom;
 
@@ -204,6 +210,8 @@ namespace Banshee.Cluttertest
             //this.LeaveEvent += HandleHandleLeaveEvent;
             //this.Stage.ButtonPressEvent += HandleGlobalButtonPressEven;
         }
+
+
 
 
 
@@ -224,7 +232,9 @@ namespace Banshee.Cluttertest
 //                ZoomOnCenter (true);
 //                point_manager.Level = 0;
 //                point_manager.IncreaseLevel ();
-                AnimateClustering (true);
+
+                ZoomOnCenter (true);
+                AnimateClustering (false);
 //                UpdateView ();
 //                ZoomOnCenter (false);
             }
@@ -235,7 +245,7 @@ namespace Banshee.Cluttertest
 //                ZoomOnCenter (true);
 //                point_manager.DecreaseLevel ();
 //                UpdateView ();
-                AnimateClustering (false);
+                AnimateClustering (true);
             }
         }
 
@@ -285,33 +295,36 @@ namespace Banshee.Cluttertest
                 break;
             }
 
-            uint duration = 1000;
+//            uint duration = 1000;
 
             animation_timeline.Stop();
 
-            if (animation_timeline.Progress < 0.2 && animation_timeline.IsPlaying) {
-                //case zu langsam - keine animationen
+//            if (animation_timeline.Progress < 0.2 && animation_timeline.IsPlaying) {
+//                //case zu langsam - keine animationen
+//
+//                this.Animation.Timeline.Stop ();
+//
+//                this.SetScaleFull (zoom_level, zoom_level, trans_x, trans_y);
+//
+//                animation_behave.RemoveAll ();
+//
+//                //zoom actor in andere richtung - warum center 0,0 geht weiß ich nicht ..
+//                foreach (Actor a in this)
+//                    a.SetScale (1.0 / zoom_level, 1.0 / zoom_level);
+//
+//            } else {
 
-                this.Animation.Timeline.Stop ();
+//            if (animation_timeline.IsPlaying)
 
-                this.SetScaleFull (zoom_level, zoom_level, trans_x, trans_y);
-
-                animation_behave.RemoveAll ();
-
-                //zoom actor in andere richtung - warum center 0,0 geht weiß ich nicht ..
-                foreach (Actor a in this)
-                    a.SetScale (1.0 / zoom_level, 1.0 / zoom_level);
-
-            } else {
-
+            //Umbaun dass wenn öfter reingezoomt wird ein level übersprungen wird, also wie beim clustering
                 this.SetScaleFull (old_zoom_level, old_zoom_level, trans_x, trans_y);
 
-                this.Animatev ((ulong)AnimationMode.EaseOutCubic, duration, new String[] { "scale-x" }, new GLib.Value (zoom_level));
-                this.Animatev ((ulong)AnimationMode.EaseOutCubic, duration, new String[] { "scale-y" }, new GLib.Value (zoom_level));
+                this.Animatev ((ulong)AnimationMode.EaseInOutSine, animation_time, new String[] { "scale-x" }, new GLib.Value (zoom_level));
+                this.Animatev ((ulong)AnimationMode.EaseInOutSine, animation_time, new String[] { "scale-y" }, new GLib.Value (zoom_level));
 
                 animation_behave.RemoveAll ();
 
-                animation_timeline.Duration = duration;
+                animation_timeline.Duration = animation_time;
                 animation_behave = new BehaviourScale (animation_alpha, 1.0f / old_zoom_level, 1.0f / old_zoom_level, 1.0f / zoom_level, 1.0f / zoom_level);
 
                 //update clipping every new frame
@@ -322,7 +335,7 @@ namespace Banshee.Cluttertest
                 //neues behaviour an die circles andwenden
                 foreach (Actor a in actor_manager.Actors)
                     animation_behave.Apply(a);
-            }
+//            }
 
 
             animation_timeline.Start();
@@ -330,21 +343,32 @@ namespace Banshee.Cluttertest
 
         private void AnimateClustering (bool forward)
         {
-            if (clustering_animation_timeline.IsPlaying)
-                return;
+            TimelineDirection dir = clustering_animation_timeline.Direction;
 
             clustering_animation_timeline.Direction =
                             forward ? TimelineDirection.Forward : TimelineDirection.Backward;
 
-            clustering_animation_timeline.Rewind ();
-            clustering_animation_behave.RemoveAll ();
 
-            if (!forward) {
-                clustering_animation_alpha.Mode = (ulong)AnimationMode.EaseInCubic;
+            //forward -> forward
+            if (clustering_animation_timeline.IsPlaying && dir == TimelineDirection.Forward && forward)
+                HandleClusteringTimelineCompleted (this, new EventArgs ());
+
+
+
+            //back -> back or back
+            if (!forward && (!clustering_animation_timeline.IsPlaying || dir != TimelineDirection.Forward)) {
                 point_manager.DecreaseLevel ();
                 UpdateView ();
-            } else {
-                clustering_animation_alpha.Mode = (ulong)AnimationMode.EaseOutCubic;
+            }
+
+            //rewind if direction stays the same or not playing
+            if (!clustering_animation_timeline.IsPlaying || dir ==  clustering_animation_timeline.Direction) {
+                clustering_animation_timeline.Rewind ();
+                clustering_animation_behave.RemoveAll ();
+                Hyena.Log.Information ("Rewind");
+
+//                if (!forward)
+//                    clustering_animation_timeline.Skip (2200);
             }
 
             clustering_animation_timeline.Start ();
@@ -376,6 +400,14 @@ namespace Banshee.Cluttertest
         {
             if (clustering_animation_behave.IsApplied (p.Actor))
                 clustering_animation_behave.Remove (p.Actor);
+        }
+
+        void HandleClusteringTimelineMarkerReached (object o, MarkerReachedArgs args)
+        {
+            if (clustering_animation_timeline.Direction == TimelineDirection.Forward)
+                ZoomOnCenter (false);
+//            else
+//                ZoomOnCenter (true);
         }
 
         private void HandleClusteringTimelineCompleted (object sender, EventArgs e)
