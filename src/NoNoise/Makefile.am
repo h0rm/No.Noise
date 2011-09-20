@@ -2,6 +2,7 @@ GMCS_FLAGS = -unsafe
 
 SOURCES =  \
 	Banshee.NoNoise/Bpm/BpmDetectJob.cs \
+	Banshee.NoNoise/NoNoiseSource.cs \
 	Banshee.NoNoise/NoNoiseSourceContents.cs \
 	lastfm-sharp/Lib.cs \
 	lastfm-sharp/RequestParameters.cs \

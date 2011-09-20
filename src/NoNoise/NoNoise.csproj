@@ -275,6 +275,7 @@
     <Compile Include="NoNoise\Data\DataParser.cs" />
     <Compile Include="NoNoise\Data\NoNoiseDBHandler.cs" />
     <Compile Include="NoNoise\PCA\PCAnalyzer.cs" />
+    <Compile Include="Banshee.NoNoise\NoNoiseSource.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ProjectExtensions>
@@ -292,7 +293,4 @@
       </Properties>
     </MonoDevelop>
   </ProjectExtensions>
-  <ItemGroup>
-    <None Include="Banshee.NoNoise\NoNoiseSource.cs" />
-  </ItemGroup>
 </Project>
