@@ -56,20 +56,28 @@
     <Reference Include="System.Core" />
     <Reference Include="System.Xml" />
     <Reference Include="Lastfm.Gui, Version=1.9.0.0, Culture=neutral">
+      <Package>banshee-lastfm-gui</Package>
     </Reference>
     <Reference Include="Banshee.Core, Version=1.9.0.0, Culture=neutral">
+      <Package>banshee-core</Package>
     </Reference>
     <Reference Include="Banshee.Services, Version=1.9.0.0, Culture=neutral">
+      <Package>banshee-services</Package>
     </Reference>
     <Reference Include="Banshee.ThickClient, Version=1.9.0.0, Culture=neutral">
+      <Package>banshee-thickclient</Package>
     </Reference>
     <Reference Include="Banshee.Widgets, Version=1.9.0.0, Culture=neutral">
+      <Package>banshee-thickclient</Package>
     </Reference>
     <Reference Include="Hyena, Version=1.9.0.0, Culture=neutral">
+      <Package>banshee-hyena</Package>
     </Reference>
     <Reference Include="Hyena.Gui, Version=1.9.0.0, Culture=neutral">
+      <Package>banshee-hyena-gui</Package>
     </Reference>
     <Reference Include="Lastfm, Version=1.9.0.0, Culture=neutral">
+      <Package>banshee-lastfm</Package>
     </Reference>
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />

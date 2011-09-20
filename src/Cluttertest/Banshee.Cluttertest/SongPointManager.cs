@@ -82,6 +82,15 @@ namespace Banshee.Cluttertest
         {
             return tree_list[level].GetObjects (new QRectangle (x, y, width, height));
         }
+
+        public List<SongPoint> GetPointsInWindow (double x, double y, double width, double height, int level_offset)
+        {
+
+            int lvl = (level_offset + level > max_clustering_level) ? max_clustering_level : level_offset + level;
+            lvl = (lvl < 0) ? 0 : lvl;
+
+            return tree_list[lvl].GetObjects (new QRectangle (x, y, width, height));
+        }
     }
 }
 

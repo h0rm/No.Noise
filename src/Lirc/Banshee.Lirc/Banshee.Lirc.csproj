@@ -66,15 +66,19 @@
     <Reference Include="Mono.Posix" />
     <Reference Include="Banshee.Core, Version=1.7.0.0, Culture=neutral">
       <SpecificVersion>False</SpecificVersion>
+      <Package>banshee-core</Package>
     </Reference>
     <Reference Include="Banshee.Services, Version=1.7.0.0, Culture=neutral">
       <SpecificVersion>False</SpecificVersion>
+      <Package>banshee-services</Package>
     </Reference>
     <Reference Include="Banshee.ThickClient, Version=1.7.0.0, Culture=neutral">
       <SpecificVersion>False</SpecificVersion>
+      <Package>banshee-thickclient</Package>
     </Reference>
     <Reference Include="Hyena, Version=1.7.0.0, Culture=neutral">
       <SpecificVersion>False</SpecificVersion>
+      <Package>banshee-hyena</Package>
     </Reference>
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />

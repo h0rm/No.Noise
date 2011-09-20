@@ -41,12 +41,15 @@
     <Reference Include="System" />
     <Reference Include="Banshee.Core, Version=1.7.0.0, Culture=neutral">
       <SpecificVersion>False</SpecificVersion>
+      <Package>banshee-core</Package>
     </Reference>
     <Reference Include="Banshee.Services, Version=1.7.0.0, Culture=neutral">
       <SpecificVersion>False</SpecificVersion>
+      <Package>banshee-services</Package>
     </Reference>
     <Reference Include="Hyena, Version=1.7.0.0, Culture=neutral">
       <SpecificVersion>False</SpecificVersion>
+      <Package>banshee-hyena</Package>
     </Reference>
     <Reference Include="System.Core" />
     <Reference Include="Mono.Addins, Version=0.4.0.0, Culture=neutral, PublicKeyToken=0738eb9f132ed756">

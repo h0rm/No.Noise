@@ -95,6 +95,10 @@ namespace Banshee.Cluttertest
         private SongPointManager point_manager;
         private SongActorManager actor_manager;
 
+        private Alpha clustering_animation_alpha;
+        private Behaviour clustering_animation_behave;
+        private Timeline clustering_animation_timeline;
+
        // private CairoTexture test_circle;
         #endregion
 
@@ -183,16 +187,25 @@ namespace Banshee.Cluttertest
             animation_alpha = new Alpha (animation_timeline, (ulong)AnimationMode.EaseOutCubic);
             animation_behave = new BehaviourScale (animation_alpha,1.0,1.0,1.2,1.2);
 
+            clustering_animation_timeline = new Timeline (10000);
+            clustering_animation_alpha = new Alpha (clustering_animation_timeline, (ulong)AnimationMode.EaseOutCubic);
+            clustering_animation_behave = new BehaviourOpacity (clustering_animation_alpha, 255, 0);
+            clustering_animation_timeline.Completed += HandleClusteringTimelineCompleted;
+
             this.Reactive = true;
             this.ScrollEvent += HandleAdaptiveZoom;
 
             stage.ButtonPressEvent += HandleStageButtonPressEvent;
             stage.ButtonReleaseEvent += HandleStageButtonReleaseEvent;
             stage.MotionEvent += HandleMotionEvent;
-
+            stage.AllocationChanged += delegate {
+                UpdateClipping ();
+            };
             //this.LeaveEvent += HandleHandleLeaveEvent;
             //this.Stage.ButtonPressEvent += HandleGlobalButtonPressEven;
         }
+
+
 
 
 
@@ -210,16 +223,16 @@ namespace Banshee.Cluttertest
             {
 //                ZoomOnCenter (true);
 //                point_manager.Level = 0;
-                point_manager.IncreaseLevel ();
-//                AnimateClustering ();
-                UpdateView ();
-                ZoomOnCenter (false);
+//                point_manager.IncreaseLevel ();
+                AnimateClustering ();
+//                UpdateView ();
+//                ZoomOnCenter (false);
             }
             else
             {
 //                ZoomOnCenter (false);
 //                point_manager.Level = 1;
-                ZoomOnCenter (true);
+//                ZoomOnCenter (true);
                 point_manager.DecreaseLevel ();
                 UpdateView ();
 
@@ -274,6 +287,8 @@ namespace Banshee.Cluttertest
 
             uint duration = 1000;
 
+            animation_timeline.Stop();
+
             if (animation_timeline.Progress < 0.2 && animation_timeline.IsPlaying) {
                 //case zu langsam - keine animationen
 
@@ -309,12 +324,13 @@ namespace Banshee.Cluttertest
                     animation_behave.Apply(a);
             }
 
-            animation_timeline.Stop();
+
             animation_timeline.Start();
         }
 
-        public void AnimateClustering ()
+        public void AnimateClusteringMove ()
         {
+
             SongPoint p;
 
             completed_clustering_animations = 0;
@@ -336,24 +352,123 @@ namespace Banshee.Cluttertest
 
                 p.Actor.Animation.Timeline.Completed += HandleClusteringAnimationCompleted;
             }
+        }
 
+        public void AnimateClusteringOldFade ()
+        {
+//            lock (clustering_animations_lock) {
+//                if (started_clustering_animations != 0)
+//                    return;
+//            }
+            if (clustering_animation_timeline.IsPlaying)
+                return;
+
+//            clustering_animation_timeline.Stop ();
+            clustering_animation_timeline.Rewind ();
+            clustering_animation_behave.RemoveAll ();
+            SongPoint p;
+
+            completed_clustering_animations = 0;
+//            started_clustering_animations = 0;
+
+            double x, y, width, height;
+            GetClippingWindow (out x, out y, out width, out height );
+
+//            List<SongPoint> points = point_manager.GetPointsInWindow (x, y, width, height, 1);
+
+            for (int i = 0; i < points_visible.Count; i++) {
+
+                p = points_visible[i];
+
+                if (p.Parent == null)
+                    continue;
+
+                if (p.Parent.RightChild == null)
+                    continue;
+
+                if (!p.Parent.RightChild.Equals (p))
+                    continue;
+
+                ClusteringAnimationStarted ();
+
+//                p.Actor.Animatev ((ulong)AnimationMode.EaseOutCirc,
+//                               1000,new String[]{"opacity"},new GLib.Value (0));
+
+                clustering_animation_behave.Apply (p.Actor);
+//                p.Actor.Animation.Timeline.Completed += HandleClusteringAnimationCompleted;
+            }
+
+            clustering_animation_timeline.Start ();
+        }
+
+        private void AnimateClustering ()
+        {
+            if (clustering_animation_timeline.IsPlaying)
+                return;
+
+            clustering_animation_timeline.Rewind ();
+            clustering_animation_behave.RemoveAll ();
+
+            clustering_animation_timeline.Start ();
+
+            UpdateClipping ();
+        }
+
+        private void AddClusteringAnimation (SongPoint p)
+        {
+            if (p.Parent == null)
+                return;
+
+            if (p.Parent.RightChild == null)
+                return;
+
+            if (!p.Parent.RightChild.Equals (p))
+                return;
+
+            if (clustering_animation_behave.IsApplied (p.Actor))
+                return;
+
+            clustering_animation_behave.Apply (p.Actor);
+        }
+
+        private void RemoveClusteringAnimation (SongPoint p)
+        {
+            if (clustering_animation_behave.IsApplied (p.Actor))
+                clustering_animation_behave.Remove (p.Actor);
+        }
+
+        private void HandleClusteringTimelineCompleted (object sender, EventArgs e)
+        {
+            Hyena.Log.Information ("Animations finished");
+                    point_manager.IncreaseLevel ();
+                    UpdateView ();
         }
 
         private int completed_clustering_animations, started_clustering_animations;
-        private Object completed_clustering_animations_lock = new Object ();
+        private Object clustering_animations_lock = new Object ();
 
+        void ClusteringAnimationStarted ()
+        {
+
+            lock (clustering_animations_lock) {
+
+                started_clustering_animations++;
+            }
+
+        }
         void HandleClusteringAnimationCompleted (object sender, EventArgs e)
         {
 
-            lock (completed_clustering_animations_lock) {
+            lock (clustering_animations_lock) {
 
                 completed_clustering_animations++;
 
                 if (completed_clustering_animations == started_clustering_animations) {
+                    started_clustering_animations = 0;
                     Hyena.Log.Information ("Animations finished");
                     point_manager.IncreaseLevel ();
                     UpdateView ();
-                    ZoomOnCenter (false);
+//                    ZoomOnCenter (false);
                 }
             }
         }
@@ -374,44 +489,49 @@ namespace Banshee.Cluttertest
 
             UpdateClipping ();
         }
-        private void UpdateClipping ()
-        {
 
-            List<SongPoint> points;
-            float x, y, tx, ty;
-            double px, py, sx, sy;
-            SongActor current;
-            SongPoint p;
+        private void GetClippingWindow (out double x, out double y, out double width, out double height)
+        {
+            float tx, ty;
+            double sx, sy;
             GetTransformedPosition (out tx, out ty);
             GetScale (out sx, out sy);
 
-            x = tx;
-            y = ty;
-//            Hyena.Log.Debug ("Update Clipping " + "Stackcount " + debug_stack.Count);
+            x = (-(float)SongActor.CircleSize-tx)/sx;
+            y = (-(float)SongActor.CircleSize-ty)/sy;
+            width = (stage.Width+2*(float)SongActor.CircleSize)/sx;
+            height = (stage.Height+2*(float)SongActor.CircleSize)/sy;
+        }
+        private void UpdateClipping ()
+        {
+            double x, y, width, height;
+            GetClippingWindow (out x, out y, out width, out height );
 
-            points = point_manager.GetPointsInWindow (
-                        (-(float)SongActor.CircleSize-x)/sx,(-(float)SongActor.CircleSize-y)/sy,
-                         (stage.Width+2*(float)SongActor.CircleSize)/sx,(stage.Height+2*(float)SongActor.CircleSize)/sy);
+            List<SongPoint> points;
+            SongActor current;
+            SongPoint p;
 
+            points = point_manager.GetPointsInWindow (x, y, width, height);
 
             // Check visible points
             for (int i = 0; i < points_visible.Count; i++)
             {
                 p = points_visible[i];
 
-                px = p.XY.X*sx + x;
-                py = p.XY.Y*sy + y;
-
-                if (px > stage.Width + SongActor.CircleSize || px < -SongActor.CircleSize ||
-                    py > stage.Height + SongActor.CircleSize || py < -SongActor.CircleSize)
+                if (p.X < x || p.X > x + width || p.Y < y || p.Y > y + height)
                 {
-
                     actor_manager.Free (p.Actor);
+                    RemoveClusteringAnimation (p);
+
                     p.Actor = null;
 
                     points_visible[i] = points_visible[points_visible.Count-1];
                     points_visible.RemoveAt (points_visible.Count-1);
                     i--;
+
+
+                } else {
+                    AddClusteringAnimation (p);
                 }
             }
 
@@ -426,12 +546,11 @@ namespace Banshee.Cluttertest
                 if (p.Actor != null)
                     continue;
 
-                px = p.XY.X*sx + x;
-                py = p.XY.Y*sy + y;
-
                 current = actor_manager.AllocateAtPosition (p.X, p.Y);
                 p.Actor = current;
                 points_visible.Add (p);
+
+                AddClusteringAnimation (p);
             }
 
         }

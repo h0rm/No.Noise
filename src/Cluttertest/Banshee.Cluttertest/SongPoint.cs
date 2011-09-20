@@ -96,10 +96,11 @@ namespace Banshee.Cluttertest
         {
             Point merged = this.XY;
 
-            if (other != null) {
-                merged.Add (other.XY);
-                merged.Normalize (2);
-            }
+            //fake merge, only left child
+//            if (other != null) {
+//                merged.Add (other.XY);
+//                merged.Normalize (2);
+//            }
 
             SongPoint parent = new SongPoint (merged.X, merged.Y, ID + other.ID);
             parent.LeftChild = this;
