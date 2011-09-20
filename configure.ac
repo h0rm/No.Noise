@@ -132,6 +132,7 @@ help/Makefile
 po/Makefile.in
 
 src/Makefile
+src/NoNoise/Makefile
 src/Cluttertest/Makefile
 src/Karaoke/Makefile
 src/AssemblyInfo.cs
@@ -199,6 +200,7 @@ ${PACKAGE}-${VERSION}
     User Help:           ${enable_user_help} (requires gnome-doc-utils >= 0.17.3)
 
   Extensions:
+    NoNoise:             yes
     Cluttertest:         yes
     Alarm Clock:           ${enable_AlarmClock}
     Ampache:               ${enable_Ampache}

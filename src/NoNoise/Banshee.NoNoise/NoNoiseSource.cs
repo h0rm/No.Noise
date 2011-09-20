@@ -55,19 +55,19 @@ namespace Banshee.NoNoise
     //      DatabaseSource - generic, DB-backed Track source; used by PlaylistSource
     //        PrimarySource - 'owns' tracks, used by DaapSource, DapSource
     //          LibrarySource - used by Music, Video, Podcasts, and Audiobooks
-    public class CluttertestSource : Banshee.Sources.Source
+    public class NoNoiseSource : Banshee.Sources.Source
     {
         // In the sources TreeView, sets the order value for this source, small on top
         const int sort_order = 190;
 
-        public CluttertestSource () : base (AddinManager.CurrentLocalizer.GetString ("Cluttertest"),
-                                               AddinManager.CurrentLocalizer.GetString ("Cluttertest"),
+        public NoNoiseSource () : base (AddinManager.CurrentLocalizer.GetString ("NoNoise"),
+                                               AddinManager.CurrentLocalizer.GetString ("NoNoise"),
 		                                       sort_order,
 		                                       "extension-unique-id")
         {
             Properties.Set<ISourceContents> ("Nereid.SourceContents", new CustomView ());
 
-            Hyena.Log.Information ("Testing!  Cluttertest source has been instantiated!");
+            Hyena.Log.Information ("Testing!  NoNoise source has been instantiated!");
         }
 
         // A count of 0 will be hidden in the source TreeView

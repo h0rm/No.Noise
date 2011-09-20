@@ -1,6 +1,8 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 10.00
 # Visual Studio 2008
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NoNoise", "src\NoNoise\NoNoise.csproj", "{26CE8A48-B319-4DF6-B7CD-12ADC9E527DB}"
+EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Cluttertest", "src\Cluttertest\Cluttertest.csproj", "{49C8AF5A-E258-4308-B9ED-43BA4B266CE5}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Karaoke", "src\Karaoke\Karaoke.csproj", "{2940FD14-8A3F-4E13-B904-4A3641DE6E78}"
@@ -86,6 +88,10 @@ Global
 		Windows|Any CPU = Windows|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{26CE8A48-B319-4DF6-B7CD-12ADC9E527DB}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{26CE8A48-B319-4DF6-B7CD-12ADC9E527DB}.Debug|x86.Build.0 = Debug|Any CPU
+		{26CE8A48-B319-4DF6-B7CD-12ADC9E527DB}.Release|x86.ActiveCfg = Release|Any CPU
+		{26CE8A48-B319-4DF6-B7CD-12ADC9E527DB}.Release|x86.Build.0 = Release|Any CPU
 		{04568A95-2430-41EB-82D6-939F5E7E8403}.Debug|x86.ActiveCfg = Debug|Any CPU
 		{04568A95-2430-41EB-82D6-939F5E7E8403}.Debug|x86.Build.0 = Debug|Any CPU
 		{04568A95-2430-41EB-82D6-939F5E7E8403}.Release|x86.ActiveCfg = Release|Any CPU

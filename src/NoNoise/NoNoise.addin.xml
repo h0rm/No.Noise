@@ -4,7 +4,7 @@
     version="1.0"
     compatVersion="1.0"
     copyright="Copyright © 2010 Cool Extension Author. Licensed under the MIT X11 license."
-    name="Cluttertest"
+    name="Concise Title for NoNoise"
     category="Community Extensions"
     description="Describe your extension, ideally starting with an action verb.  Keep it brief and avoid tech jargon."
     author="Cool Extension Author"
@@ -31,7 +31,7 @@
         Here is an example of how to define an extension point:
 
         <Extension path="ExtensionPointPath">
-            <ExtensionPointType class="Banshee.Cluttertest.CluttertestExtensionPointType"/>
+            <ExtensionPointType class="Banshee.NoNoise.NoNoiseExtensionPointType"/>
         </Extension>
 
         An extension must have one or more such definitions.
@@ -72,13 +72,13 @@
   <!-- Define a Service extension.  This will instantiate the specified class on startup,
        letting us do whatever we want.
   <Extension path="/Banshee/ServiceManager/Service">
-    <Service class="Banshee.Cluttertest.CluttertestService"/>
+    <Service class="Banshee.NoNoise.NoNoiseService"/>
   </Extension>-->
 
   <!-- Define a Source extension.  This will instantiate a new Source object,
        listed in the left-most Source TreeView. -->
   <Extension path="/Banshee/SourceManager/Source">
-    <Source class="Banshee.NoNoise.CluttertestSource"/>
+    <Source class="Banshee.NoNoise.NoNoiseSource"/>
   </Extension>
 
 </Addin>
