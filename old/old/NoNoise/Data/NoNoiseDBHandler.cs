@@ -32,7 +32,7 @@ using MathNet.Numerics.LinearAlgebra;
 using Hyena.Data.Sqlite;
 using Hyena;
 
-namespace Banshee.NoNoise.Data
+namespace NoNoise.Data
 {
     public class NoNoiseDBHandler
     {

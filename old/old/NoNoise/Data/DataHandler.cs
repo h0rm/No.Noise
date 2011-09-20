@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace Banshee.NoNoise.Data
+namespace NoNoise.Data
 {
     /// <summary>
     /// This class encapsulates track information used for the NoNoise plug-in.

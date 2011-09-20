@@ -182,7 +182,6 @@
     <Compile Include="lastfm-sharp\Services\WeeklyTrackChartItem.cs" />
     <Compile Include="lastfm-sharp\Services\Wiki.cs" />
     <Compile Include="lastfm-sharp\Services\XSPF.cs" />
-    <Compile Include="Bpm\BpmDetectJob.cs" />
     <Compile Include="Mirage\Analyzer.cs" />
     <Compile Include="Mirage\AudioDecoder.cs" />
     <Compile Include="Mirage\Dbg.cs" />
@@ -191,10 +190,6 @@
     <Compile Include="Mirage\Scms.cs" />
     <Compile Include="Mirage\ScmsConfiguration.cs" />
     <Compile Include="Mirage\Vector.cs" />
-    <Compile Include="PCA\PCAnalyzer.cs" />
-    <Compile Include="Data\DataHandler.cs" />
-    <Compile Include="Data\NoNoiseDBHandler.cs" />
-    <Compile Include="Data\DataParser.cs" />
     <Compile Include="MathLib\LinearAlgebra\CholeskyDecomposition.cs" />
     <Compile Include="MathLib\LinearAlgebra\ComplexMatrix.cs" />
     <Compile Include="MathLib\LinearAlgebra\ComplexVector.cs" />
@@ -270,6 +265,11 @@
     <Compile Include="MathLib\Statistics\Histogram.cs" />
     <Compile Include="Banshee.NoNoise\NoNoiseSource.cs" />
     <Compile Include="Banshee.NoNoise\NoNoiseSourceContents.cs" />
+    <Compile Include="Banshee.NoNoise\Bpm\BpmDetectJob.cs" />
+    <Compile Include="NoNoise\Data\DataHandler.cs" />
+    <Compile Include="NoNoise\Data\DataParser.cs" />
+    <Compile Include="NoNoise\Data\NoNoiseDBHandler.cs" />
+    <Compile Include="NoNoise\PCA\PCAnalyzer.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ProjectExtensions>
@@ -300,8 +300,5 @@
     <None Include="MathLib\Properties\Resources.es.resx" />
     <None Include="MathLib\Properties\Resources.fr.resx" />
     <None Include="MathLib\Properties\Resources.resx" />
-  </ItemGroup>
-  <ItemGroup>
-    <Folder Include="PCA\" />
   </ItemGroup>
 </Project>

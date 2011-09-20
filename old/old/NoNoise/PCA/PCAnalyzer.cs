@@ -31,9 +31,9 @@ using Hyena;
 using MathNet.Numerics;
 using MathNet.Numerics.LinearAlgebra;
 
-using Banshee.NoNoise.Data;
+using NoNoise.Data;
 
-namespace Banshee.NoNoise.PCA
+namespace NoNoise.PCA
 {
     /// <summary>
     /// Helper class to perform a principal component analysis.

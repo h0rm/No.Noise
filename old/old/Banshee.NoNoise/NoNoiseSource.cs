@@ -45,8 +45,8 @@ using Banshee.MediaEngine;
 using Banshee.PlaybackController;
 
 using Banshee.NoNoise.Bpm;
-using Banshee.NoNoise.PCA;
-using Banshee.NoNoise.Data;
+using NoNoise.PCA;
+using NoNoise.Data;
 
 using MathNet.Numerics.LinearAlgebra;
 
