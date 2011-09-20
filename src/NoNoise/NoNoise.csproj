@@ -80,8 +80,12 @@
     <EmbeddedResource Include="NoNoise.addin.xml">
       <LogicalName>NoNoise.addin.xml</LogicalName>
     </EmbeddedResource>
-    <EmbeddedResource Include="Mirage\Resources\dct.filter" />
-    <EmbeddedResource Include="Mirage\Resources\filterweights.filter" />
+    <EmbeddedResource Include="Mirage\Resources\dct.filter">
+      <LogicalName>dct.filter</LogicalName>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Mirage\Resources\filterweights.filter">
+      <LogicalName>filterweights.filter</LogicalName>
+    </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Banshee.NoNoise\NoNoiseSource.cs" />
