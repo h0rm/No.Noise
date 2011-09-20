@@ -178,7 +178,17 @@ SOURCES =  \
 	NoNoise/Data/DataHandler.cs \
 	NoNoise/Data/DataParser.cs \
 	NoNoise/Data/NoNoiseDBHandler.cs \
-	NoNoise/PCA/PCAnalyzer.cs
+	NoNoise/PCA/PCAnalyzer.cs \
+	NoNoise/Visualization/Gui/MainGui.cs \
+	NoNoise/Visualization/SongActor.cs \
+	NoNoise/Visualization/SongActorManager.cs \
+	NoNoise/Visualization/SongGroup.cs \
+	NoNoise/Visualization/SongPoint.cs \
+	NoNoise/Visualization/SongPointManager.cs \
+	NoNoise/Visualization/Util/ClutterHelper.cs \
+	NoNoise/Visualization/Util/Point.cs \
+	NoNoise/Visualization/Util/QuadTree.cs \
+	NoNoise/Visualization/View.cs
 	NoNoise/Visualization/Gui/MainGui.cs \
 	NoNoise/Visualization/SongActor.cs \
 	NoNoise/Visualization/SongActorManager.cs \
@@ -197,10 +207,10 @@ LINK =  \
 
 ASSEMBLY = Banshee.NoNoise
 
-RESOURCES = \
-	NoNoise.addin.xml \
+RESOURCES =  \
 	Mirage/Resources/dct.filter \
-	Mirage/Resources/filterweights.filter
+	Mirage/Resources/filterweights.filter \
+	NoNoise.addin.xml
 
 #EXTRA_DIST = \
 #	Data/airport_locations.tsv

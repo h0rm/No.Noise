@@ -3,8 +3,6 @@ Microsoft Visual Studio Solution File, Format Version 10.00
 # Visual Studio 2008
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NoNoise", "src\NoNoise\NoNoise.csproj", "{26CE8A48-B319-4DF6-B7CD-12ADC9E527DB}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Cluttertest", "src\Cluttertest\Cluttertest.csproj", "{49C8AF5A-E258-4308-B9ED-43BA4B266CE5}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Karaoke", "src\Karaoke\Karaoke.csproj", "{2940FD14-8A3F-4E13-B904-4A3641DE6E78}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Ampache", "src\Ampache\Ampache.csproj", "{AB92D9F2-74A4-4D6A-9882-9D180A544CED}"
@@ -88,10 +86,6 @@ Global
 		Windows|Any CPU = Windows|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{26CE8A48-B319-4DF6-B7CD-12ADC9E527DB}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{26CE8A48-B319-4DF6-B7CD-12ADC9E527DB}.Debug|x86.Build.0 = Debug|Any CPU
-		{26CE8A48-B319-4DF6-B7CD-12ADC9E527DB}.Release|x86.ActiveCfg = Release|Any CPU
-		{26CE8A48-B319-4DF6-B7CD-12ADC9E527DB}.Release|x86.Build.0 = Release|Any CPU
 		{04568A95-2430-41EB-82D6-939F5E7E8403}.Debug|x86.ActiveCfg = Debug|Any CPU
 		{04568A95-2430-41EB-82D6-939F5E7E8403}.Debug|x86.Build.0 = Debug|Any CPU
 		{04568A95-2430-41EB-82D6-939F5E7E8403}.Release|x86.ActiveCfg = Release|Any CPU
@@ -120,6 +114,10 @@ Global
 		{1FD50427-9F74-412E-89EB-0F33B889C6A4}.Debug|x86.Build.0 = Debug|Any CPU
 		{1FD50427-9F74-412E-89EB-0F33B889C6A4}.Release|x86.ActiveCfg = Release|Any CPU
 		{1FD50427-9F74-412E-89EB-0F33B889C6A4}.Release|x86.Build.0 = Release|Any CPU
+		{26CE8A48-B319-4DF6-B7CD-12ADC9E527DB}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{26CE8A48-B319-4DF6-B7CD-12ADC9E527DB}.Debug|x86.Build.0 = Debug|Any CPU
+		{26CE8A48-B319-4DF6-B7CD-12ADC9E527DB}.Release|x86.ActiveCfg = Release|Any CPU
+		{26CE8A48-B319-4DF6-B7CD-12ADC9E527DB}.Release|x86.Build.0 = Release|Any CPU
 		{2940FD14-8A3F-4E13-B904-4A3641DE6E78}.Debug|x86.ActiveCfg = Debug|Any CPU
 		{2940FD14-8A3F-4E13-B904-4A3641DE6E78}.Debug|x86.Build.0 = Debug|Any CPU
 		{2940FD14-8A3F-4E13-B904-4A3641DE6E78}.Release|x86.ActiveCfg = Release|Any CPU
@@ -128,12 +126,6 @@ Global
 		{31BFFB6B-357F-4BF5-B9FA-C83E6B8259A9}.Debug|x86.Build.0 = Debug|Any CPU
 		{31BFFB6B-357F-4BF5-B9FA-C83E6B8259A9}.Release|x86.ActiveCfg = Release|Any CPU
 		{31BFFB6B-357F-4BF5-B9FA-C83E6B8259A9}.Release|x86.Build.0 = Release|Any CPU
-		{49C8AF5A-E258-4308-B9ED-43BA4B266CE5}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{49C8AF5A-E258-4308-B9ED-43BA4B266CE5}.Debug|x86.Build.0 = Debug|Any CPU
-		{49C8AF5A-E258-4308-B9ED-43BA4B266CE5}.Release|x86.ActiveCfg = Debug|Any CPU
-		{49C8AF5A-E258-4308-B9ED-43BA4B266CE5}.Release|x86.Build.0 = Debug|Any CPU
-		{49C8AF5A-E258-4308-B9ED-43BA4B266CE5}.Windows|Any CPU.ActiveCfg = Windows|Any CPU
-		{49C8AF5A-E258-4308-B9ED-43BA4B266CE5}.Windows|Any CPU.Build.0 = Windows|Any CPU
 		{4EB0DA71-99AC-4A9E-AFD0-1530C5C56159}.Debug|x86.ActiveCfg = Debug|Any CPU
 		{4EB0DA71-99AC-4A9E-AFD0-1530C5C56159}.Debug|x86.Build.0 = Debug|Any CPU
 		{4EB0DA71-99AC-4A9E-AFD0-1530C5C56159}.Release|x86.ActiveCfg = Release|Any CPU
