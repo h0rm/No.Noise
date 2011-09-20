@@ -28,7 +28,7 @@ using System.Text;
 using MathNet.Numerics.LinearAlgebra;
 using Hyena;
 
-namespace Banshee.NoNoise.Data
+namespace NoNoise.Data
 {
     public class DataParser
     {

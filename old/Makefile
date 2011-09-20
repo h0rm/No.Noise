@@ -326,12 +326,9 @@ ASSEMBLY = Banshee.Foo1
 LINK = $(BANSHEE_LIBS) -r:System.Data -r:Mono.Data.SqliteClient \
 	$(am__append_1)
 SOURCES = \
+	Banshee.NoNoise/Bpm/BpmDetectJob.cs \
 	Banshee.NoNoise/NoNoiseSource.cs \
 	Banshee.NoNoise/NoNoiseSourceContents.cs \
-	Bpm/BpmDetectJob.cs \
-	Data/DataHandler.cs \
-	Data/DataParser.cs \
-	Data/NoNoiseDBHandler.cs \
 	lastfm-sharp/Lib.cs \
 	lastfm-sharp/RequestParameters.cs \
 	lastfm-sharp/Scrobbling/AuthenticationFailureException.cs \
@@ -503,7 +500,10 @@ SOURCES = \
 	Mirage/Scms.cs \
 	Mirage/ScmsConfiguration.cs \
 	Mirage/Vector.cs \
-	PCA/PCAnalyzer.cs
+	NoNoise/Data/DataHandler.cs \
+	NoNoise/Data/DataParser.cs \
+	NoNoise/Data/NoNoiseDBHandler.cs \
+	NoNoise/PCA/PCAnalyzer.cs
 
 RESOURCES = \
 	Foo1.addin.xml \
