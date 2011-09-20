@@ -1,5 +1,5 @@
 //
-// Foo1Source.cs
+// NoNoiseSource.cs
 //
 // Authors:
 //   Cool Extension Author <cool.extension@author.com>
@@ -44,9 +44,8 @@ using Banshee.Preferences;
 using Banshee.MediaEngine;
 using Banshee.PlaybackController;
 
-using Banshee.Foo1.Bpm;
-using Banshee.Foo1.PCA;
-
+using Banshee.NoNoise.Bpm;
+using Banshee.NoNoise.PCA;
 using Banshee.NoNoise.Data;
 
 using MathNet.Numerics.LinearAlgebra;
@@ -58,28 +57,28 @@ using Hyena.Collections;
 using Lastfm.Services;
 using Lastfm;
 
-namespace Banshee.Foo1
+namespace Banshee.NoNoise
 {
     // We are inheriting from Source, the top-level, most generic type of Source.
     // Other types include (inheritance indicated by indentation):
     //      DatabaseSource - generic, DB-backed Track source; used by PlaylistSource
     //        PrimarySource - 'owns' tracks, used by DaapSource, DapSource
     //          LibrarySource - used by Music, Video, Podcasts, and Audiobooks
-    public class Foo1Source : Source
+    public class NoNoiseSource : Source
     {
         // In the sources TreeView, sets the order value for this source, small on top
         const int sort_order = 190;
 
 
-        public Foo1Source () : base (AddinManager.CurrentLocalizer.GetString ("Foo1"),
-                                               AddinManager.CurrentLocalizer.GetString ("Foo1"),
+        public NoNoiseSource () : base (AddinManager.CurrentLocalizer.GetString ("NoNoise"),
+                                               AddinManager.CurrentLocalizer.GetString ("NoNoise"),
 		                                       sort_order,
 		                                       "extension-unique-id")
         {
             Properties.Set<ISourceContents> ("Nereid.SourceContents", new CustomView ());
             this.OnUpdated();
 
-            Hyena.Log.Information ("Testing!  Foo1 source has been instantiated!");
+            Hyena.Log.Information ("Testing!  NoNoise source has been instantiated!");
         }
 
         // A count of 0 will be hidden in the source TreeView
@@ -89,18 +88,19 @@ namespace Banshee.Foo1
 
         private class CustomView : ISourceContents
         {
-            Gtk.Label label = new Gtk.Label ("Custom view for Foo1 extension is working!\nTopAlbums: " + topalbums);
-            Gtk.Label emptylabel = new Gtk.Label("Shake your head it's empty!");
-            Gtk.Box w = new Gtk.HBox(true, 4);
-            Gtk.ScrolledWindow sw = new Gtk.ScrolledWindow();
-            Gtk.Box bw = new Gtk.VButtonBox();
-            Gtk.Button button = new Gtk.Button();
-            Gtk.Label working = new Gtk.Label("retrieving artist information...");
-            Session session;
-            Gtk.ThreadNotify ready;
+			#region Members
+            private Gtk.Label label = new Gtk.Label ("Custom view for NoNoise extension is working!\nTopAlbums: " + topalbums);
+            private Gtk.Label emptylabel = new Gtk.Label("Shake your head it's empty!");
+            private Gtk.Box w = new Gtk.HBox(true, 4);
+            private Gtk.ScrolledWindow sw = new Gtk.ScrolledWindow();
+            private Gtk.Box bw = new Gtk.VButtonBox();
+            private Gtk.Button button = new Gtk.Button();
+            private Gtk.Label working = new Gtk.Label("retrieving artist information...");
+            private Session session;
+            private Gtk.ThreadNotify ready;
 
             private bool painintheassdummy = false;
-            private bool dotests = true;
+            private bool dotests = false;
 //            private bool gatherMIRdata = false;
             private bool saveTrackInfosToDB = true;
             private bool dopca = true;
@@ -111,12 +111,13 @@ namespace Banshee.Foo1
             private IBpmDetector detector;
             private int Bpm;
 
-            string API_KEY =  "b6f3f5f1a92987f58a3ae75516c967a5";
-            string API_SECRET =   "1022d8e3a796243f8105fe97d1156803";
-            static string topalbums = "";
+            private string API_KEY =  "b6f3f5f1a92987f58a3ae75516c967a5";
+            private string API_SECRET =   "1022d8e3a796243f8105fe97d1156803";
+            private static string topalbums = "";
+			#endregion
 
             public CustomView() {
-                Hyena.Log.Debug("Foo1 - CustomView constructor");
+                Hyena.Log.Debug("NoNoise - CustomView constructor");
                 session = new Session(API_KEY, API_SECRET);
 
                 db = new NoNoiseDBHandler ();
@@ -136,7 +137,7 @@ namespace Banshee.Foo1
                 detector = BpmDetectJob.GetDetector ();
                 if (detector != null) {
                     detector.FileFinished += OnFileFinished;
-                    Hyena.Log.Debug("Foo1 - Detector is not null");
+                    Hyena.Log.Debug("NoNoise - Detector is not null");
                 }
 
                 // using Active Source
@@ -144,9 +145,9 @@ namespace Banshee.Foo1
                 ITrackModelSource track_source = source as ITrackModelSource;
 
                 if (track_source != null) {
-                    Hyena.Log.Debug("Foo1 - TS name: " + track_source.Name);
-                    Hyena.Log.Debug("Foo1 - TS count: " + track_source.Count);
-                    Hyena.Log.Debug("Foo1 - TS generic name: " + track_source.GenericName);
+                    Hyena.Log.Debug("NoNoise - TS name: " + track_source.Name);
+                    Hyena.Log.Debug("NoNoise - TS count: " + track_source.Count);
+                    Hyena.Log.Debug("NoNoise - TS generic name: " + track_source.GenericName);
                 }
 
                 // using MusicLibrary
@@ -168,6 +169,8 @@ namespace Banshee.Foo1
                 w.ShowAll();
             }
 
+			#region Tests
+			
             /// <summary>
             /// Runs several database and pca tests and prints debug output and failure/success messages.
             /// </summary>
@@ -183,14 +186,14 @@ namespace Banshee.Foo1
 //                    Hyena.Log.Debug ("Should be: (-0.458468469256572, -0.355876863389135, 0.814345332645707) and " +
 //                     "(0.675628099889615, -0.734859391159327, 0.0592312912613845)");
                 } catch (Exception e) {
-                    Hyena.Log.Exception ("Foo1 - Tests failed", e);
+                    Hyena.Log.Exception ("NoNoise - Tests failed", e);
                     succ = false;
                 }
 
                 if (succ)
-                    Hyena.Log.Debug ("Foo1 - Tests finished successfully");
+                    Hyena.Log.Debug ("NoNoise - Tests finished successfully");
                 else
-                    Hyena.Log.Debug ("Foo1 - Tests failed");
+                    Hyena.Log.Debug ("NoNoise - Tests failed");
             }
 
             /// <summary>
@@ -212,13 +215,13 @@ namespace Banshee.Foo1
 
                 Matrix m2 = DataParser.ParseMatrix (DataParser.MatrixToString (m));
                 if (m.RowCount != m2.RowCount || m.ColumnCount != m2.ColumnCount) {
-                    Hyena.Log.Warning ("Foo1/Testing - matrices don't have the same size");
+                    Hyena.Log.Warning ("NoNoise/Testing - matrices don't have the same size");
                     return false;
                 }
                 for (int i = 0; i < m.RowCount; i++) {
                     for (int j = 0; j < m.ColumnCount; j++) {
                         if (!m [i, j].ToString ().Equals (m2 [i, j].ToString ())) {     // string precision
-                            Hyena.Log.WarningFormat ("Foo1/Testing - values at pos ({0}, {1}) are not the same ({2} | {3})",
+                            Hyena.Log.WarningFormat ("NoNoise/Testing - values at pos ({0}, {1}) are not the same ({2} | {3})",
                                                      i, j, m [i, j], m2 [i, j]);
                             return false;
                         }
@@ -247,13 +250,13 @@ namespace Banshee.Foo1
 
                 Mirage.Matrix m2 = DataParser.ParseMirageMatrix (DataParser.MirageMatrixToString (m));
                 if (m.rows != m2.rows || m.columns != m2.columns) {
-                    Hyena.Log.Warning ("Foo1/Testing - mirage matrices don't have the same size");
+                    Hyena.Log.Warning ("NoNoise/Testing - mirage matrices don't have the same size");
                     return false;
                 }
                 for (int i = 0; i < m.rows; i++) {
                     for (int j = 0; j < m.columns; j++) {
                         if (!m.d [i, j].ToString ().Equals (m2.d [i, j].ToString ())) {     // string precision
-                            Hyena.Log.WarningFormat ("Foo1/Testing - values at pos ({0}, {1}) are not the same ({2} | {3})",
+                            Hyena.Log.WarningFormat ("NoNoise/Testing - values at pos ({0}, {1}) are not the same ({2} | {3})",
                                                      i, j, m.d [i, j], m2.d [i, j]);
                             return false;
                         }
@@ -280,12 +283,12 @@ namespace Banshee.Foo1
 
                 Mirage.Vector v2 = DataParser.ParseMirageVector (DataParser.MirageVectorToString (v));
                 if (v.rows != v2.rows) {
-                    Hyena.Log.Warning ("Foo1/Testing - mirage vectors don't have the same length");
+                    Hyena.Log.Warning ("NoNoise/Testing - mirage vectors don't have the same length");
                     return false;
                 }
                 for (int i = 0; i < v.rows; i++) {
                     if (!v.d [i, 0].ToString ().Equals (v2.d [i, 0].ToString ())) {     // string precision
-                        Hyena.Log.WarningFormat ("Foo1/Testing - values at pos {0} are not the same ({1} | {2})",
+                        Hyena.Log.WarningFormat ("NoNoise/Testing - values at pos {0} are not the same ({1} | {2})",
                                                  i, v.d [i, 0], v2.d [i, 0]);
                         return false;
                     }
@@ -337,6 +340,7 @@ namespace Banshee.Foo1
 
                 ana.PerformPCA ();
             }
+			#endregion
 
             /// <summary>
             /// Prints debug information for an MFCC matrix.
@@ -378,7 +382,7 @@ namespace Banshee.Foo1
                             mfcc = Mirage.Analyzer.AnalyzeMFCC (absPath);
 
                             if (!db.InsertMatrix (mfcc, bid))
-                                Hyena.Log.Error ("Foo1 - Matrix insert failed");
+                                Hyena.Log.Error ("NoNoise - Matrix insert failed");
                         } else
                             mfcc = mfccMap[bid];
 
@@ -389,7 +393,7 @@ namespace Banshee.Foo1
 //                        if (!ana.AddEntry (bid, null, ti.Bpm, ti.Duration.TotalSeconds))
 //                            throw new Exception("AddEntry failed!");
                     } catch (Exception e) {
-                        Hyena.Log.Exception("Foo1 - MFCC/DB Problem", e);
+                        Hyena.Log.Exception("NoNoise - MFCC/DB Problem", e);
                     }
                 }
 //                } else {
@@ -400,7 +404,7 @@ namespace Banshee.Foo1
 //                            if (!ana.AddEntry (key, ConvertMfccMean (mfccMap[key].Mean ())))
 //                                throw new Exception ("AddEntry failed!");
 //                        } catch (Exception e) {
-//                            Hyena.Log.Exception ("Foo1 - PCA Problem", e);
+//                            Hyena.Log.Exception ("NoNoise - PCA Problem", e);
 //                        }
 //                    }
 //                }
@@ -411,7 +415,7 @@ namespace Banshee.Foo1
                     List<DataEntry> coords = ana.Coordinates;
                     db.ClearPcaData ();
                     if (!db.InsertPcaCoordinates (coords))
-                        Hyena.Log.Error ("Foo1 - PCA coord insert failed");
+                        Hyena.Log.Error ("NoNoise - PCA coord insert failed");
                 } catch (Exception e) {
                     Hyena.Log.Exception("PCA Problem", e);
                 }
@@ -446,9 +450,9 @@ namespace Banshee.Foo1
                 Banshee.Library.MusicLibrarySource ml = ServiceManager.SourceManager.MusicLibrary;
 //                try {
 //                    TrackInfo dti = ml.TrackModel[154];
-//                    Hyena.Log.Debug ("Foo1 - DBTrackInfo, id 154, artist: " + dti.ArtistName);
+//                    Hyena.Log.Debug ("NoNoise - DBTrackInfo, id 154, artist: " + dti.ArtistName);
 //                } catch (Exception e) {
-//                    Hyena.Log.Exception ("Foo1 - no ti with id 154", e);
+//                    Hyena.Log.Exception ("NoNoise - no ti with id 154", e);
 //                }
 
                 for (int i = 0; i < ml.TrackModel.Count; i++) {
@@ -460,10 +464,10 @@ namespace Banshee.Foo1
                             if (!db.InsertTrackInfo (new TrackData (
                                                        bid, ti.ArtistName, ti.TrackTitle,
                                                        ti.AlbumTitle, (int)ti.Duration.TotalSeconds)))
-                                Hyena.Log.Error ("Foo1 - TrackInfo insert failed");
+                                Hyena.Log.Error ("NoNoise - TrackInfo insert failed");
                         }
                     } catch (Exception e) {
-                        Hyena.Log.Exception("Foo1 - DB Problem", e);
+                        Hyena.Log.Exception("NoNoise - DB Problem", e);
                     }
                 }
             }
@@ -473,16 +477,16 @@ namespace Banshee.Foo1
             /// </summary>
             private void PrintMusicLibrary() {
                 Banshee.Library.MusicLibrarySource ml = ServiceManager.SourceManager.MusicLibrary;
-                Hyena.Log.Debug("Foo1 - ML count: " + ml.Count);
-                Hyena.Log.Debug("Foo1 - ML child count: " + ml.Children.Count);
-                Hyena.Log.Debug("Foo1 - ML TM count: " + ml.TrackModel.Count);
-                Hyena.Log.Debug("\nFoo1 - ===========================================================");
+                Hyena.Log.Debug("NoNoise - ML count: " + ml.Count);
+                Hyena.Log.Debug("NoNoise - ML child count: " + ml.Children.Count);
+                Hyena.Log.Debug("NoNoise - ML TM count: " + ml.TrackModel.Count);
+                Hyena.Log.Debug("\nNoNoise - ===========================================================");
 
                 for (int i = 0; i < ServiceManager.SourceManager.MusicLibrary.TrackModel.Count; i++) {
                     Hyena.Log.Debug(GetMetaData(i));
                 }
 
-                Hyena.Log.Debug("Foo1 - ===========================================================\n");
+                Hyena.Log.Debug("NoNoise - ===========================================================\n");
             }
 
             /// <summary>
@@ -499,7 +503,7 @@ namespace Banshee.Foo1
                 ti.Copyright = "(c) No.Noise";
                 ti.Update();
 
-                return "Foo1 - ML entry " + index + ": " +
+                return "NoNoise - ML entry " + index + ": " +
                         ti.ArtistName + " - " +
                         ti.TrackTitle + " (" +
                         ti.AlbumTitle + ")" + "\n" +
@@ -525,7 +529,7 @@ namespace Banshee.Foo1
                 ModelSelection<TrackInfo> ms = new ModelSelection<TrackInfo>(ServiceManager.SourceManager.MusicLibrary.TrackModel, s);
 
                 foreach (TrackInfo ti in ms) {
-                    Hyena.Log.Debug("Foo1 - Selection: " + ti.ArtistName + " - " + ti.TrackTitle + " (" + ti.AlbumTitle + ")");
+                    Hyena.Log.Debug("NoNoise - Selection: " + ti.ArtistName + " - " + ti.TrackTitle + " (" + ti.AlbumTitle + ")");
                 }
             }
 
@@ -541,12 +545,12 @@ namespace Banshee.Foo1
             private void QueryTopAlbums(string artist, Session session) {
                 Artist art = new Artist(artist, session);
                 TopAlbum[] ta = art.GetTopAlbums();
-                Hyena.Log.Debug("Foo1 - LastFM Albums queried");
+                Hyena.Log.Debug("NoNoise - LastFM Albums queried");
 
                 if (ta.Length <= 0)
-                    Hyena.Log.Debug("Foo1 - Album list empty");
+                    Hyena.Log.Debug("NoNoise - Album list empty");
                 else
-                    Hyena.Log.Debug("Foo1 - Album list filled");
+                    Hyena.Log.Debug("NoNoise - Album list filled");
 
                 foreach (TopAlbum t in ta) {
                     topalbums += t.Item.Name + "\n";
@@ -570,7 +574,7 @@ namespace Banshee.Foo1
                     int id = DatabaseTrackInfo.GetTrackIdForUri(args.Uri);
                     if (id >= 0) {
 //                        int index = (int)TrackCache.IndexOf ((long)id); // auch nicht accessible...?
-                        Hyena.Log.Debug("Foo1 - BPM...Track index: " +
+                        Hyena.Log.Debug("NoNoise - BPM...Track index: " +
                                         ServiceManager.SourceManager.MusicLibrary.GetTrackIdForUri(args.Uri));
 //                        if (index >= 0) {
 //                            TrackInfo track = TrackModel[index];
@@ -580,28 +584,34 @@ namespace Banshee.Foo1
 //                        }
                     }
 
-                    Hyena.Log.Debug("Foo1 - BPM...Track ID: " + ServiceManager.SourceManager.MusicLibrary
+                    Hyena.Log.Debug("NoNoise - BPM...Track ID: " + ServiceManager.SourceManager.MusicLibrary
                                     .GetTrackIdForUri(args.Uri));
 
                     Bpm = args.Bpm;
-                    Hyena.Log.DebugFormat ("Foo1 - Detected BPM of {0} for {1}", Bpm, args.Uri);
+                    Hyena.Log.DebugFormat ("NoNoise - Detected BPM of {0} for {1}", Bpm, args.Uri);
                 });
             }
 
-            public bool SetSource (ISource source) { return true; }
-            public void ResetSource () { }
-            public Gtk.Widget Widget { get {
-//                    if (sw.Children.Length == 0) {
-//                        if (w.Children.Length == 0)
-//                            w.Add(label);
-//                            w.PackStart(label, true, false, 0);
-//                        sw.AddWithViewport(w);
-//                    }
-                    return w; } }
-            public ISource Source { get { return null; } }
+            public bool SetSource (ISource source) 
+			{ 
+				return true; 
+			}
+			
+            public void ResetSource () 
+			{ 
+				
+			}
+			
+            public Gtk.Widget Widget { 
+				get { return w; } 
+			}
+			
+            public ISource Source { 
+				get { return null; } 
+			}
 
             public void ButtonPushHandler (object obj, EventArgs args) {
-                Hyena.Log.Debug("Foo1 - Button pressed");
+                Hyena.Log.Debug("NoNoise - Button pressed");
 
                 Thread thr = new Thread (new ThreadStart(ThreadRoutine));
                 thr.Start();
@@ -610,12 +620,12 @@ namespace Banshee.Foo1
                 w.Remove(bw);
                 w.Add(working);
                 w.ShowAll();
-                Hyena.Log.Debug("Foo1 - working...");
+                Hyena.Log.Debug("NoNoise - busy...");
             }
 
             private void Ready ()
             {
-                label.Text = "Custom view for Foo1 extension is working!\nTopAlbums: " + topalbums;
+                label.Text = "Custom view for NoNoise extension is working!\nTopAlbums: " + topalbums;
                 w.Remove(working);
                 sw.AddWithViewport(label);
                 w.Add(sw);

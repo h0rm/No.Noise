@@ -326,8 +326,8 @@ ASSEMBLY = Banshee.Foo1
 LINK = $(BANSHEE_LIBS) -r:System.Data -r:Mono.Data.SqliteClient \
 	$(am__append_1)
 SOURCES = \
-	Banshee.Foo1/Foo1Source.cs \
-	Banshee.Foo1/Foo1SourceContents.cs \
+	Banshee.NoNoise/NoNoiseSource.cs \
+	Banshee.NoNoise/NoNoiseSourceContents.cs \
 	Bpm/BpmDetectJob.cs \
 	Data/DataHandler.cs \
 	Data/DataParser.cs \

@@ -33,7 +33,7 @@ using MathNet.Numerics.LinearAlgebra;
 
 using Banshee.NoNoise.Data;
 
-namespace Banshee.Foo1.PCA
+namespace Banshee.NoNoise.PCA
 {
     /// <summary>
     /// Helper class to perform a principal component analysis.
@@ -115,7 +115,7 @@ namespace Banshee.Foo1.PCA
         /// </returns>
         private Matrix ConvertMatrix (Mirage.Matrix mat)
         {
-            Log.Debug("Foo1/PCA - converting mirage matrix");
+            Log.Debug("NoNoise/PCA - converting mirage matrix");
             double[][] d = Matrix.CreateMatrixData(mat.rows, mat.columns);
 
             for (int i = 0; i < mat.rows; i++)
@@ -123,7 +123,7 @@ namespace Banshee.Foo1.PCA
                     d[i][j] = mat.d[i,j];
             num_columns = mat.columns;
 
-            Log.Debug("Foo1/PCA - conversion complete");
+            Log.Debug("NoNoise/PCA - conversion complete");
 
             return new Matrix (d);
         }
@@ -189,7 +189,7 @@ namespace Banshee.Foo1.PCA
             } else
                 comb = args;
 
-            Log.Debug ("Foo1/PCA - combined vector: " + GetValues (comb));
+            Log.Debug ("NoNoise/PCA - combined vector: " + GetValues (comb));
 
             return AddEntry (bid, comb);
         }
@@ -231,7 +231,7 @@ namespace Banshee.Foo1.PCA
 
             foreach (Complex c in eigenValues) {
                 if (!c.IsReal)
-                    Log.Warning("Foo1/PCA - complex is not real!");
+                    Log.Warning("NoNoise/PCA - complex is not real!");
 
                 double tmp = c.Real;
                 if (tmp > maxVals[0]) {
@@ -251,7 +251,7 @@ namespace Banshee.Foo1.PCA
             Matrix eigenVectors = eigen.EigenVectors;
             base1 = eigenVectors.GetColumnVector(maxInds[0]).Normalize();
             base2 = eigenVectors.GetColumnVector(maxInds[1]).Normalize();
-            Log.Debug ("Foo1/PCA - base vectors: " + base1 + " and " + base2);
+            Log.Debug ("NoNoise/PCA - base vectors: " + base1 + " and " + base2);
         }
 
         /// <summary>
@@ -266,7 +266,7 @@ namespace Banshee.Foo1.PCA
             if (num_columns == 0)
                 throw new Exception ("No features added!");
 
-            Log.Information ("Foo1/PCA - performing PCA");
+            Log.Information ("NoNoise/PCA - performing PCA");
 
             // calc mean
             mean = mean / num_columns;
@@ -294,17 +294,17 @@ namespace Banshee.Foo1.PCA
 
             cov.Multiply(1.0/(double)(num_columns - 1));
 
-//            Log.Debug("Foo1/PCA - cov cols: " + cov.ColumnCount);
-//            Log.Debug("Foo1/PCA - cov rows: " + cov.RowCount);
+//            Log.Debug("NoNoise/PCA - cov cols: " + cov.ColumnCount);
+//            Log.Debug("NoNoise/PCA - cov rows: " + cov.RowCount);
             EigenvalueDecomposition eigen = cov.EigenvalueDecomposition;
 
             Complex[] eigenValues = eigen.EigenValues;
-//            Log.Debug("Foo1/PCA - Num of Eigenvalues: " + eigenValues.Length);
+//            Log.Debug("NoNoise/PCA - Num of Eigenvalues: " + eigenValues.Length);
             string evals = "";
             foreach (Complex c in eigenValues)
                 evals += c + "; ";
 
-//            Log.Debug("Foo1/PCA - Eigenvalues: " + evals);
+//            Log.Debug("NoNoise/PCA - Eigenvalues: " + evals);
 
             double[] maxVals = new double[2];
             maxVals[0] = maxVals[1] = double.NegativeInfinity;
@@ -316,7 +316,7 @@ namespace Banshee.Foo1.PCA
 
                 foreach (Complex c in eigenValues) {
                     if (!c.IsReal)
-                        Log.Warning("Foo1/PCA - complex is not real!");
+                        Log.Warning("NoNoise/PCA - complex is not real!");
     
                     double tmp = c.Real;
                     if (tmp > maxVals[0]) {
@@ -335,17 +335,17 @@ namespace Banshee.Foo1.PCA
 
             Debug.Assert(maxInds[0] > -1 && maxInds[1] > -1);
 
-//            Log.Debug("Foo1/PCA - max eigenvalues: " + maxVals[0] + "; " + maxVals[1]);
+//            Log.Debug("NoNoise/PCA - max eigenvalues: " + maxVals[0] + "; " + maxVals[1]);
 
             Matrix eigenVectors = eigen.EigenVectors;
-//            Log.Debug("Foo1/PCA - Num of Eigenvectors: " + eigenVectors.ColumnCount);
+//            Log.Debug("NoNoise/PCA - Num of Eigenvectors: " + eigenVectors.ColumnCount);
 
-//            Log.Debug("Foo1/PCA - max eigenvectors: " + eigenVectors.GetColumnVector(maxInds[0])
+//            Log.Debug("NoNoise/PCA - max eigenvectors: " + eigenVectors.GetColumnVector(maxInds[0])
 //                      + ";\n" + eigenVectors.GetColumnVector(maxInds[1]));
 
             base1 = eigenVectors.GetColumnVector(maxInds[0]).Normalize();
             base2 = eigenVectors.GetColumnVector(maxInds[1]).Normalize();
-            Log.Debug ("Foo1/PCA - base vectors: " + base1 + " and " + base2);
+            Log.Debug ("NoNoise/PCA - base vectors: " + base1 + " and " + base2);
 
             ComputeCoordinates ();
         }

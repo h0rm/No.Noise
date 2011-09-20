@@ -92,7 +92,6 @@
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Banshee.Foo1\Foo1Source.cs" />
     <Compile Include="lastfm-sharp\Lib.cs" />
     <Compile Include="lastfm-sharp\RequestParameters.cs" />
     <Compile Include="lastfm-sharp\Utilities.cs" />
@@ -183,7 +182,6 @@
     <Compile Include="lastfm-sharp\Services\WeeklyTrackChartItem.cs" />
     <Compile Include="lastfm-sharp\Services\Wiki.cs" />
     <Compile Include="lastfm-sharp\Services\XSPF.cs" />
-    <Compile Include="Banshee.Foo1\Foo1SourceContents.cs" />
     <Compile Include="Bpm\BpmDetectJob.cs" />
     <Compile Include="Mirage\Analyzer.cs" />
     <Compile Include="Mirage\AudioDecoder.cs" />
@@ -270,6 +268,8 @@
     <Compile Include="MathLib\RandomSources\XorShiftRandomSource.cs" />
     <Compile Include="MathLib\Statistics\Accumulator.cs" />
     <Compile Include="MathLib\Statistics\Histogram.cs" />
+    <Compile Include="Banshee.NoNoise\NoNoiseSource.cs" />
+    <Compile Include="Banshee.NoNoise\NoNoiseSourceContents.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ProjectExtensions>

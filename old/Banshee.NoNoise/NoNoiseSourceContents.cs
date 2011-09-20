@@ -26,11 +26,11 @@
 using System;
 using Banshee.Sources;
 
-namespace Foo
+namespace Banshee.NoNoise
 {
-    public class Foo1SourceContents : Banshee.Sources.Gui.ISourceContents
+    public class NoNoiseSourceContents : Banshee.Sources.Gui.ISourceContents
     {
-        public Foo1SourceContents ()
+        public NoNoiseSourceContents ()
         {
         }
 

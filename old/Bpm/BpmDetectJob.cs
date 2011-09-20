@@ -47,7 +47,7 @@ using Banshee.MediaEngine;
 using Banshee.ServiceStack;
 using Banshee.Library;
 
-namespace Banshee.Foo1.Bpm
+namespace Banshee.NoNoise.Bpm
 {
     public class BpmDetectJob : DbIteratorJob
     {
