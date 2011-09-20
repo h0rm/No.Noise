@@ -160,7 +160,7 @@ namespace Banshee.NoNoise.Data
                     }
                 }
             } catch (Exception e) {
-                Log.Exception("Foo1/DB - Matrix parse exception", e);
+                Log.Exception("NoNoise/DB - Matrix parse exception", e);
             }
             return new Matrix (d);
         }
@@ -192,7 +192,7 @@ namespace Banshee.NoNoise.Data
                     }
                 }
             } catch (Exception e) {
-                Log.Exception("Foo1/DB - Mirage.Matrix parse exception", e);
+                Log.Exception("NoNoise/DB - Mirage.Matrix parse exception", e);
                 return null;
             }
             return m;
@@ -217,7 +217,7 @@ namespace Banshee.NoNoise.Data
                     v.d [i, 0] = float.Parse(rows [i]);
                 }
             } catch (Exception e) {
-                Log.Exception("Foo1/DB - Mirage.Vector parse exception", e);
+                Log.Exception("NoNoise/DB - Mirage.Vector parse exception", e);
                 return null;
             }
             return v;

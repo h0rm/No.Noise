@@ -38,7 +38,7 @@ namespace Banshee.NoNoise.Data
     {
         #region Constants
         // TODO change connection string to final db
-        private readonly string CONNECTION_STRING = "URI=file:/home/thomas/test.db,version=3";
+        private readonly string CONNECTION_STRING = "URI=file:nonoise.db,version=3";
         private readonly string CREATE_TABLE_MIRDATA =
             "CREATE TABLE IF NOT EXISTS MIRData (banshee_id INTEGER, data CLOB, id INTEGER PRIMARY KEY)";
         private readonly string CREATE_TABLE_PCADATA =
@@ -82,7 +82,7 @@ namespace Banshee.NoNoise.Data
                 dbcmd.CommandText = CREATE_TABLE_TRACKDATA;
                 dbcmd.ExecuteNonQuery ();
             } catch (Exception e) {
-                Log.Exception("Foo1/DB - Schema creation failed", e);
+                Log.Exception("NoNoise/DB - Schema creation failed", e);
                 throw new Exception ("Unable to create DB schema!", e);
             } finally {
                 if (dbcmd != null)
@@ -119,7 +119,7 @@ namespace Banshee.NoNoise.Data
                                                   bid, DataParser.MatrixToString (m));
                 dbcmd.ExecuteNonQuery ();
             } catch (Exception e) {
-                Log.Exception("Foo1/DB - Matrix insert failed", e);
+                Log.Exception("NoNoise/DB - Matrix insert failed", e);
                 return false;
             } finally {
                 if (dbcmd != null)
@@ -163,7 +163,7 @@ namespace Banshee.NoNoise.Data
                                                     " '{2}')", bid, DataParser.MatrixToString (m), primaryKey);
                 dbcmd.ExecuteNonQuery ();
             } catch (Exception e) {
-                Log.Exception("Foo1/DB - Matrix insert failed for id: " + primaryKey, e);
+                Log.Exception("NoNoise/DB - Matrix insert failed for id: " + primaryKey, e);
                 return false;
             } finally {
                 if (dbcmd != null)
@@ -197,7 +197,7 @@ namespace Banshee.NoNoise.Data
         /// </returns>
         private bool UpdateMatrix (Matrix m, int bid, int primaryKey, IDbCommand dbcmd)
         {
-            Log.Debug("Foo1/DB - Updating id " + primaryKey);
+            Log.Debug("NoNoise/DB - Updating id " + primaryKey);
             dbcmd.CommandText = string.Format("UPDATE MIRData SET data = '{0}', banshee_id = '{1}' WHERE id = '{2}'",
                                               DataParser.MatrixToString (m), bid, primaryKey);
             dbcmd.ExecuteNonQuery ();
@@ -228,7 +228,7 @@ namespace Banshee.NoNoise.Data
 
                 return ret;
             } catch (Exception e) {
-                Log.Exception("Foo1/DB - Matrix read failed", e);
+                Log.Exception("NoNoise/DB - Matrix read failed", e);
                 return null;
             } finally {
                 if (dbcmd != null)
@@ -265,7 +265,7 @@ namespace Banshee.NoNoise.Data
                                                   bid, DataParser.MirageMatrixToString(m));
                 dbcmd.ExecuteNonQuery ();
             } catch (Exception e) {
-                Log.Exception("Foo1/DB - Mirage.Matrix insert failed", e);
+                Log.Exception("NoNoise/DB - Mirage.Matrix insert failed", e);
                 return false;
             } finally {
                 if (dbcmd != null)
@@ -289,7 +289,7 @@ namespace Banshee.NoNoise.Data
                                                   bid, DataParser.MirageVectorToString(v));
                 dbcmd.ExecuteNonQuery ();
             } catch (Exception e) {
-                Log.Exception("Foo1/DB - Mirage.Vector insert failed", e);
+                Log.Exception("NoNoise/DB - Mirage.Vector insert failed", e);
                 return false;
             } finally {
                 if (dbcmd != null)
@@ -326,7 +326,7 @@ namespace Banshee.NoNoise.Data
                     if (mat != null)
                         ret.Add (bid, mat);
                     else {
-                        Log.Warning ("Foo1/DBNull - Matrix with id " + reader.GetInt32 (1) + " is null!");
+                        Log.Warning ("NoNoise/DBNull - Matrix with id " + reader.GetInt32 (1) + " is null!");
                         Log.Debug (reader.GetString (0));
                         CheckMatrix (reader.GetString (0));
                     }
@@ -334,7 +334,7 @@ namespace Banshee.NoNoise.Data
 
                 return ret;
             } catch (Exception e) {
-                Log.Exception("Foo1/DB - Mirage.Matrix read failed", e);
+                Log.Exception("NoNoise/DB - Mirage.Matrix read failed", e);
                 return null;
             } finally {
                 if (dbcmd != null)
@@ -362,14 +362,14 @@ namespace Banshee.NoNoise.Data
                     if (vec != null)
                         ret.Add (bid, vec);
                     else {
-                        Log.Warning ("Foo1/DBNull - Vector with id " + reader.GetInt32 (1) + " is null!");
+                        Log.Warning ("NoNoise/DBNull - Vector with id " + reader.GetInt32 (1) + " is null!");
                         Log.Debug (reader.GetString (0));
                     }
                 }
 
                 return ret;
             } catch (Exception e) {
-                Log.Exception("Foo1/DB - Mirage.Vector read failed", e);
+                Log.Exception("NoNoise/DB - Mirage.Vector read failed", e);
                 return null;
             } finally {
                 if (dbcmd != null)
@@ -417,7 +417,7 @@ namespace Banshee.NoNoise.Data
                 dbcmd.CommandText = string.Format ("SELECT id FROM MIRData WHERE banshee_id = '{0}'", bid);
                 return (dbcmd.ExecuteScalar () != null);
             } catch (Exception e) {
-                Log.Exception("Foo1/DB - Contains MIRData query failed for Banshee_id: " + bid, e);
+                Log.Exception("NoNoise/DB - Contains MIRData query failed for Banshee_id: " + bid, e);
                 return false;
             } finally {
                 if (dbcmd != null)
@@ -471,7 +471,7 @@ namespace Banshee.NoNoise.Data
                         de.ID, de.X, de.Y);
                 dbcmd.ExecuteNonQuery ();
             } catch (Exception e) {
-                Log.Exception("Foo1/DB - DataEntry insert failed for DE: " + de, e);
+                Log.Exception("NoNoise/DB - DataEntry insert failed for DE: " + de, e);
                 return false;
             } finally {
                 if (dbcmd != null)
@@ -522,7 +522,7 @@ namespace Banshee.NoNoise.Data
 
                 dbcmd.ExecuteNonQuery ();
             } catch (Exception e) {
-                Log.Exception("Foo1/DB - TrackInfo insert failed for TI: " + ti, e);
+                Log.Exception("NoNoise/DB - TrackInfo insert failed for TI: " + ti, e);
                 return false;
             } finally {
                 if (dbcmd != null)
@@ -555,7 +555,7 @@ namespace Banshee.NoNoise.Data
                 dbcmd.CommandText = string.Format ("SELECT id FROM TrackData WHERE banshee_id = '{0}'", bid);
                 return (dbcmd.ExecuteScalar () != null);
             } catch (Exception e) {
-                Log.Exception("Foo1/DB - Contains TrackInfo query failed for banshee_id: " + bid, e);
+                Log.Exception("NoNoise/DB - Contains TrackInfo query failed for banshee_id: " + bid, e);
                 return false;
             } finally {
                 if (dbcmd != null)
@@ -585,7 +585,7 @@ namespace Banshee.NoNoise.Data
                 dbcmd.CommandText = CREATE_TABLE_MIRDATA;
                 dbcmd.ExecuteNonQuery ();
             } catch (Exception e) {
-                Log.Exception("Foo1/DB - Clear MIR Data failed", e);
+                Log.Exception("NoNoise/DB - Clear MIR Data failed", e);
                 throw new Exception ("Clear MIR Data failed!", e);
             } finally {
                 if (dbcmd != null)
@@ -612,7 +612,7 @@ namespace Banshee.NoNoise.Data
                 dbcmd.CommandText = CREATE_TABLE_PCADATA;
                 dbcmd.ExecuteNonQuery ();
             } catch (Exception e) {
-                Log.Exception("Foo1/DB - Clear PCA Data failed", e);
+                Log.Exception("NoNoise/DB - Clear PCA Data failed", e);
                 throw new Exception ("Clear PCA Data failed!", e);
             } finally {
                 if (dbcmd != null)
@@ -639,7 +639,7 @@ namespace Banshee.NoNoise.Data
                 dbcmd.CommandText = CREATE_TABLE_TRACKDATA;
                 dbcmd.ExecuteNonQuery ();
             } catch (Exception e) {
-                Log.Exception("Foo1/DB - Clear Track Data failed", e);
+                Log.Exception("NoNoise/DB - Clear Track Data failed", e);
                 throw new Exception ("Clear Track Data failed!", e);
             } finally {
                 if (dbcmd != null)
