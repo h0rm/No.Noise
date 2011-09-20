@@ -14,8 +14,8 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <CheckForOverflowUnderflow>true</CheckForOverflowUnderflow>
-    <RootNamespace>Foo</RootNamespace>
     <AssemblyOriginatorKeyFile>.</AssemblyOriginatorKeyFile>
+    <RootNamespace>NoNoise</RootNamespace>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -80,11 +80,14 @@
     <EmbeddedResource Include="NoNoise.addin.xml">
       <LogicalName>NoNoise.addin.xml</LogicalName>
     </EmbeddedResource>
-    <EmbeddedResource Include="Mirage\Resources\dct.filter" />
-    <EmbeddedResource Include="Mirage\Resources\filterweights.filter" />
+    <EmbeddedResource Include="Mirage\Resources\dct.filter">
+      <LogicalName>dct.filter</LogicalName>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Mirage\Resources\filterweights.filter">
+      <LogicalName>filterweights.filter</LogicalName>
+    </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Banshee.NoNoise\NoNoiseSource.cs" />
     <Compile Include="NoNoise\Visualization\Gui\MainGui.cs" />
     <Compile Include="NoNoise\Visualization\SongActor.cs" />
     <Compile Include="NoNoise\Visualization\SongActorManager.cs" />
@@ -289,4 +292,7 @@
       </Properties>
     </MonoDevelop>
   </ProjectExtensions>
+  <ItemGroup>
+    <None Include="Banshee.NoNoise\NoNoiseSource.cs" />
+  </ItemGroup>
 </Project>

@@ -69,7 +69,6 @@ namespace Banshee.NoNoise
         // In the sources TreeView, sets the order value for this source, small on top
         const int sort_order = 190;
 
-
         public NoNoiseSource () : base (AddinManager.CurrentLocalizer.GetString ("NoNoise"),
                                                AddinManager.CurrentLocalizer.GetString ("NoNoise"),
 		                                       sort_order,
