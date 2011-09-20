@@ -107,7 +107,7 @@ namespace Banshee.Foo1
             private bool doprintlib = false;
             private bool doprintselection = false;
 
-            private Banshee.NoNoise.Data.NoNoiseDBHandler db;
+            private NoNoiseDBHandler db;
             private IBpmDetector detector;
             private int Bpm;
 
@@ -119,7 +119,7 @@ namespace Banshee.Foo1
                 Hyena.Log.Debug("Foo1 - CustomView constructor");
                 session = new Session(API_KEY, API_SECRET);
 
-                db = new Banshee.NoNoise.Data.NoNoiseDBHandler ();
+                db = new NoNoiseDBHandler ();
 
                 if (dotests)
                     PerformTests ();
