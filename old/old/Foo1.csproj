@@ -77,10 +77,6 @@
       <Package>banshee-hyena-gui</Package>
     </Reference>
     <Reference Include="System.Core" />
-    <Reference Include="MathNet.Iridium, Version=2008.8.16.470, Culture=neutral, PublicKeyToken=c061a3ec32cc0c6f">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\..\NoNoise\MathNet.Iridium-2008.8.16.470\ForRedistribution\MathNet.Iridium.dll</HintPath>
-    </Reference>
     <Reference Include="System.Data" />
     <Reference Include="Mono.Data.SqliteClient" />
   </ItemGroup>
@@ -201,6 +197,79 @@
     <Compile Include="Data\DataHandler.cs" />
     <Compile Include="Data\NoNoiseDBHandler.cs" />
     <Compile Include="Data\DataParser.cs" />
+    <Compile Include="MathLib\LinearAlgebra\CholeskyDecomposition.cs" />
+    <Compile Include="MathLib\LinearAlgebra\ComplexMatrix.cs" />
+    <Compile Include="MathLib\LinearAlgebra\ComplexVector.cs" />
+    <Compile Include="MathLib\LinearAlgebra\EigenvalueDecomposition.cs" />
+    <Compile Include="MathLib\LinearAlgebra\IMatrix.cs" />
+    <Compile Include="MathLib\LinearAlgebra\IVector.cs" />
+    <Compile Include="MathLib\LinearAlgebra\LUDecomposition.cs" />
+    <Compile Include="MathLib\LinearAlgebra\Matrix.cs" />
+    <Compile Include="MathLib\LinearAlgebra\NamespaceDoc.cs" />
+    <Compile Include="MathLib\LinearAlgebra\QRDecomposition.cs" />
+    <Compile Include="MathLib\LinearAlgebra\SingularValueDecomposition.cs" />
+    <Compile Include="MathLib\LinearAlgebra\Vector.cs" />
+    <Compile Include="MathLib\Distributions\ContinuousDistribution.cs" />
+    <Compile Include="MathLib\Distributions\CumulativeNormalDistribution.cs" />
+    <Compile Include="MathLib\Distributions\DiscreteDistribution.cs" />
+    <Compile Include="MathLib\Distributions\IContinuousGenerator.cs" />
+    <Compile Include="MathLib\Distributions\IContinuousProbabilityDistribution.cs" />
+    <Compile Include="MathLib\Distributions\IDiscreteGenerator.cs" />
+    <Compile Include="MathLib\Distributions\IDiscreteProbabilityDistribution.cs" />
+    <Compile Include="MathLib\Distributions\InvCumulativeNormalDistribution.cs" />
+    <Compile Include="MathLib\Distributions\Continuous\BetaDistribution.cs" />
+    <Compile Include="MathLib\Distributions\Continuous\CauchyLorentzDistribution.cs" />
+    <Compile Include="MathLib\Distributions\Continuous\ChiDistribution.cs" />
+    <Compile Include="MathLib\Distributions\Continuous\ChiSquareDistribution.cs" />
+    <Compile Include="MathLib\Distributions\Continuous\ContinuousUniformDistribution.cs" />
+    <Compile Include="MathLib\Distributions\Continuous\ErlangDistribution.cs" />
+    <Compile Include="MathLib\Distributions\Continuous\ExponentialDistribution.cs" />
+    <Compile Include="MathLib\Distributions\Continuous\FisherSnedecorDistribution.cs" />
+    <Compile Include="MathLib\Distributions\Continuous\GammaDistribution.cs" />
+    <Compile Include="MathLib\Distributions\Continuous\LaplaceDistribution.cs" />
+    <Compile Include="MathLib\Distributions\Continuous\LognormalDistribution.cs" />
+    <Compile Include="MathLib\Distributions\Continuous\NormalDistribution.cs" />
+    <Compile Include="MathLib\Distributions\Continuous\ParetoDistribution.cs" />
+    <Compile Include="MathLib\Distributions\Continuous\StableDistribution.cs" />
+    <Compile Include="MathLib\Distributions\Continuous\StandardDistribution.cs" />
+    <Compile Include="MathLib\Distributions\Continuous\StudentsTDistribution.cs" />
+    <Compile Include="MathLib\Distributions\Continuous\TriangularDistribution.cs" />
+    <Compile Include="MathLib\Distributions\Discrete\ArbitraryDistribution.cs" />
+    <Compile Include="MathLib\Distributions\Discrete\BernoulliDistribution.cs" />
+    <Compile Include="MathLib\Distributions\Discrete\BinomialDistribution.cs" />
+    <Compile Include="MathLib\Distributions\Discrete\DiscreteUniformDistribution.cs" />
+    <Compile Include="MathLib\Distributions\Discrete\GeometricDistribution.cs" />
+    <Compile Include="MathLib\Distributions\Discrete\HypergeometricDistribution.cs" />
+    <Compile Include="MathLib\Distributions\Discrete\PoissonDistribution.cs" />
+    <Compile Include="MathLib\Distributions\Discrete\ZipfDistribution.cs" />
+    <Compile Include="MathLib\Properties\Resources.Designer.cs" />
+    <Compile Include="MathLib\Collection.cs" />
+    <Compile Include="MathLib\Combinatorics.cs" />
+    <Compile Include="MathLib\Complex.cs" />
+    <Compile Include="MathLib\Constants.cs" />
+    <Compile Include="MathLib\IRealFunction.cs" />
+    <Compile Include="MathLib\Natural.cs" />
+    <Compile Include="MathLib\Number.cs" />
+    <Compile Include="MathLib\OnDemandComputation.cs" />
+    <Compile Include="MathLib\Polynomial.cs" />
+    <Compile Include="MathLib\Quaternion.cs" />
+    <Compile Include="MathLib\Rational.cs" />
+    <Compile Include="MathLib\Ratios.cs" />
+    <Compile Include="MathLib\SampleList.cs" />
+    <Compile Include="MathLib\Set.cs" />
+    <Compile Include="MathLib\SiConstants.cs" />
+    <Compile Include="MathLib\SiPrefixes.cs" />
+    <Compile Include="MathLib\Sorting.cs" />
+    <Compile Include="MathLib\SpecialFunctions.cs" />
+    <Compile Include="MathLib\Trigonometry.cs" />
+    <Compile Include="MathLib\Tuple.cs" />
+    <Compile Include="MathLib\RandomSources\AdditiveLaggedFibonacciRandomSource.cs" />
+    <Compile Include="MathLib\RandomSources\MersenneTwisterRandomSource.cs" />
+    <Compile Include="MathLib\RandomSources\RandomSource.cs" />
+    <Compile Include="MathLib\RandomSources\SystemRandomSource.cs" />
+    <Compile Include="MathLib\RandomSources\XorShiftRandomSource.cs" />
+    <Compile Include="MathLib\Statistics\Accumulator.cs" />
+    <Compile Include="MathLib\Statistics\Histogram.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ProjectExtensions>
@@ -226,6 +295,11 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="Mirage\Resources\writefilters.m" />
+    <None Include="MathLib\Properties\mathnet_public.snk" />
+    <None Include="MathLib\Properties\Resources.de.resx" />
+    <None Include="MathLib\Properties\Resources.es.resx" />
+    <None Include="MathLib\Properties\Resources.fr.resx" />
+    <None Include="MathLib\Properties\Resources.resx" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="PCA\" />

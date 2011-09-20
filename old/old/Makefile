@@ -105,7 +105,7 @@ DIST_SOURCES =
 DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
 ACLOCAL = ${SHELL} /home/thomas/banshee-community-extensions/missing --run aclocal-1.11
 ACLOCAL_AMFLAGS = -I build/m4/shamrock -I build/m4/shave -I build/m4/extensions ${ACLOCAL_FLAGS}
-ALL_LINGUAS = de el es fi fr it pt ru_RU
+ALL_LINGUAS = de el es fi fr it pt ru_RU sk uk_UA
 AMTAR = ${SHELL} /home/thomas/banshee-community-extensions/missing --run tar
 AM_MAKEFLAGS = `test -z $V && echo -s`
 APPINDICATORSHARP_CFLAGS = 
@@ -127,9 +127,9 @@ BANSHEE_WEBBROWSER_CFLAGS = -I:/usr/lib/pkgconfig/../../share/gapi-2.0/glib-api.
 BANSHEE_WEBBROWSER_LIBS = -r:/usr/lib/banshee/Banshee.WebBrowser.dll -r:/usr/lib/banshee/Banshee.Services.dll -r:Mono.Cairo -r:/usr/lib/banshee/Hyena.Gui.dll -r:/usr/lib/banshee/Banshee.Widgets.dll -r:/usr/lib/banshee/Banshee.ThickClient.dll -r:/usr/lib/banshee/Banshee.Core.dll -r:System -r:/usr/lib/banshee/Mono.Media.dll -r:/usr/lib/cli/NDesk.DBus-1.0/NDesk.DBus.dll -r:/usr/lib/cli/NDesk.DBus.GLib-1.0/NDesk.DBus.GLib.dll -r:/usr/lib/pkgconfig/../../lib/cli/glib-sharp-2.0/glib-sharp.dll -r:/usr/lib/cli/Mono.Addins-0.2/Mono.Addins.dll -r:Mono.Posix -r:/usr/lib/banshee/Hyena.dll -r:/usr/lib/banshee/Hyena.Data.Sqlite.dll -r:/usr/lib/banshee/MusicBrainz.dll -r:/usr/lib/pkgconfig/../../lib/cli/pango-sharp-2.0/pango-sharp.dll -r:/usr/lib/pkgconfig/../../lib/cli/atk-sharp-2.0/atk-sharp.dll -r:/usr/lib/pkgconfig/../../lib/cli/gdk-sharp-2.0/gdk-sharp.dll -r:/usr/lib/pkgconfig/../../lib/cli/gtk-sharp-2.0/gtk-sharp.dll -r:/usr/lib/cli/taglib-sharp-2.0/taglib-sharp.dll  
 BUILD_HOST_CPU = i686
 BUILD_HOST_OS = linux-gnu
-BUILD_TIME = 2011-04-26 16:19:13 CEST
+BUILD_TIME = 2011-09-20 11:42:49 CEST
 BUILD_VENDOR_ID = git-checkout
-CATALOGS =  de.gmo el.gmo es.gmo fi.gmo fr.gmo it.gmo pt.gmo ru_RU.gmo
+CATALOGS =  de.gmo el.gmo es.gmo fi.gmo fr.gmo it.gmo pt.gmo ru_RU.gmo sk.gmo uk_UA.gmo
 CATOBJEXT = .gmo
 CC = /bin/bash /home/thomas/banshee-community-extensions/build/m4/shave/shave cc gcc
 CCDEPMODE = depmode=gcc3
@@ -175,7 +175,7 @@ GETTEXT_PACKAGE = banshee-community-extensions
 GLIB_CFLAGS = -I/usr/include/glib-2.0 -I/usr/lib/glib-2.0/include  
 GLIB_LIBS = -lglib-2.0  
 GMCS_FLAGS = -unsafe
-GMOFILES =  de.gmo el.gmo es.gmo fi.gmo fr.gmo it.gmo pt.gmo ru_RU.gmo
+GMOFILES =  de.gmo el.gmo es.gmo fi.gmo fr.gmo it.gmo pt.gmo ru_RU.gmo sk.gmo uk_UA.gmo
 GMSGFMT = /usr/bin/msgfmt
 GNOME_DOC_UTILS_CFLAGS =  
 GNOME_DOC_UTILS_LIBS =  
@@ -237,13 +237,13 @@ OTOOL64 =
 PACKAGE = banshee-community-extensions
 PACKAGE_BUGREPORT = http://bugzilla.gnome.org/enter_bug.cgi?product=banshee&component=Community%20Extensions
 PACKAGE_NAME = banshee-community-extensions
-PACKAGE_STRING = banshee-community-extensions 2.0.0
+PACKAGE_STRING = banshee-community-extensions 2.0.1
 PACKAGE_TARNAME = banshee-community-extensions
 PACKAGE_URL = 
-PACKAGE_VERSION = 2.0.0
+PACKAGE_VERSION = 2.0.1
 PATH_SEPARATOR = :
 PKG_CONFIG = /usr/bin/pkg-config
-POFILES =  de.po el.po es.po fi.po fr.po it.po pt.po ru_RU.po
+POFILES =  de.po el.po es.po fi.po fr.po it.po pt.po ru_RU.po sk.po uk_UA.po
 POSUB = po
 PO_IN_DATADIR_FALSE = 
 PO_IN_DATADIR_TRUE = 
@@ -261,7 +261,7 @@ TAO_SDL_CFLAGS =
 TAO_SDL_LIBS = 
 USE_NLS = yes
 V = @
-VERSION = 2.0.0
+VERSION = 2.0.1
 XGETTEXT = /usr/bin/xgettext
 ZEITGEIST_SHARP_CFLAGS = 
 ZEITGEIST_SHARP_LIBS = 
@@ -323,9 +323,8 @@ top_build_prefix = ../../
 top_builddir = ../..
 top_srcdir = ../..
 ASSEMBLY = Banshee.Foo1
-LINK = $(BANSHEE_LIBS) \
-	-r:/home/thomas/NoNoise/MathNet.Iridium-2008.8.16.470/ForRedistribution/MathNet.Iridium.dll \
-	-r:System.Data -r:Mono.Data.SqliteClient $(am__append_1)
+LINK = $(BANSHEE_LIBS) -r:System.Data -r:Mono.Data.SqliteClient \
+	$(am__append_1)
 SOURCES = \
 	Banshee.Foo1/Foo1Source.cs \
 	Banshee.Foo1/Foo1SourceContents.cs \
@@ -423,6 +422,79 @@ SOURCES = \
 	lastfm-sharp/Services/Wiki.cs \
 	lastfm-sharp/Services/XSPF.cs \
 	lastfm-sharp/Utilities.cs \
+	MathLib/Collection.cs \
+	MathLib/Combinatorics.cs \
+	MathLib/Complex.cs \
+	MathLib/Constants.cs \
+	MathLib/Distributions/Continuous/BetaDistribution.cs \
+	MathLib/Distributions/Continuous/CauchyLorentzDistribution.cs \
+	MathLib/Distributions/Continuous/ChiDistribution.cs \
+	MathLib/Distributions/Continuous/ChiSquareDistribution.cs \
+	MathLib/Distributions/Continuous/ContinuousUniformDistribution.cs \
+	MathLib/Distributions/Continuous/ErlangDistribution.cs \
+	MathLib/Distributions/Continuous/ExponentialDistribution.cs \
+	MathLib/Distributions/Continuous/FisherSnedecorDistribution.cs \
+	MathLib/Distributions/Continuous/GammaDistribution.cs \
+	MathLib/Distributions/Continuous/LaplaceDistribution.cs \
+	MathLib/Distributions/Continuous/LognormalDistribution.cs \
+	MathLib/Distributions/Continuous/NormalDistribution.cs \
+	MathLib/Distributions/Continuous/ParetoDistribution.cs \
+	MathLib/Distributions/Continuous/StableDistribution.cs \
+	MathLib/Distributions/Continuous/StandardDistribution.cs \
+	MathLib/Distributions/Continuous/StudentsTDistribution.cs \
+	MathLib/Distributions/Continuous/TriangularDistribution.cs \
+	MathLib/Distributions/ContinuousDistribution.cs \
+	MathLib/Distributions/CumulativeNormalDistribution.cs \
+	MathLib/Distributions/Discrete/ArbitraryDistribution.cs \
+	MathLib/Distributions/Discrete/BernoulliDistribution.cs \
+	MathLib/Distributions/Discrete/BinomialDistribution.cs \
+	MathLib/Distributions/Discrete/DiscreteUniformDistribution.cs \
+	MathLib/Distributions/Discrete/GeometricDistribution.cs \
+	MathLib/Distributions/Discrete/HypergeometricDistribution.cs \
+	MathLib/Distributions/Discrete/PoissonDistribution.cs \
+	MathLib/Distributions/Discrete/ZipfDistribution.cs \
+	MathLib/Distributions/DiscreteDistribution.cs \
+	MathLib/Distributions/IContinuousGenerator.cs \
+	MathLib/Distributions/IContinuousProbabilityDistribution.cs \
+	MathLib/Distributions/IDiscreteGenerator.cs \
+	MathLib/Distributions/IDiscreteProbabilityDistribution.cs \
+	MathLib/Distributions/InvCumulativeNormalDistribution.cs \
+	MathLib/IRealFunction.cs \
+	MathLib/LinearAlgebra/CholeskyDecomposition.cs \
+	MathLib/LinearAlgebra/ComplexMatrix.cs \
+	MathLib/LinearAlgebra/ComplexVector.cs \
+	MathLib/LinearAlgebra/EigenvalueDecomposition.cs \
+	MathLib/LinearAlgebra/IMatrix.cs \
+	MathLib/LinearAlgebra/IVector.cs \
+	MathLib/LinearAlgebra/LUDecomposition.cs \
+	MathLib/LinearAlgebra/Matrix.cs \
+	MathLib/LinearAlgebra/NamespaceDoc.cs \
+	MathLib/LinearAlgebra/QRDecomposition.cs \
+	MathLib/LinearAlgebra/SingularValueDecomposition.cs \
+	MathLib/LinearAlgebra/Vector.cs \
+	MathLib/Natural.cs \
+	MathLib/Number.cs \
+	MathLib/OnDemandComputation.cs \
+	MathLib/Polynomial.cs \
+	MathLib/Properties/Resources.Designer.cs \
+	MathLib/Quaternion.cs \
+	MathLib/RandomSources/AdditiveLaggedFibonacciRandomSource.cs \
+	MathLib/RandomSources/MersenneTwisterRandomSource.cs \
+	MathLib/RandomSources/RandomSource.cs \
+	MathLib/RandomSources/SystemRandomSource.cs \
+	MathLib/RandomSources/XorShiftRandomSource.cs \
+	MathLib/Rational.cs \
+	MathLib/Ratios.cs \
+	MathLib/SampleList.cs \
+	MathLib/Set.cs \
+	MathLib/SiConstants.cs \
+	MathLib/SiPrefixes.cs \
+	MathLib/Sorting.cs \
+	MathLib/SpecialFunctions.cs \
+	MathLib/Statistics/Accumulator.cs \
+	MathLib/Statistics/Histogram.cs \
+	MathLib/Trigonometry.cs \
+	MathLib/Tuple.cs \
 	Mirage/Analyzer.cs \
 	Mirage/AudioDecoder.cs \
 	Mirage/Dbg.cs \
