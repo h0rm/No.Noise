@@ -38,9 +38,14 @@ namespace Banshee.NoNoise
     {
         private static BansheeLibraryAnalyzer bla = null;
         private NoNoiseDBHandler db;
+        private PCAnalyzer ana;
 
         public static BansheeLibraryAnalyzer Singleton {
             get { return bla; }
+        }
+
+        public List<DataEntry> PcaCoordinates {
+            get { return ana.Coordinates; }
         }
 
         private BansheeLibraryAnalyzer ()
@@ -64,7 +69,7 @@ namespace Banshee.NoNoise
         /// </summary>
         private void PcaForMusicLibrary ()
         {
-            PCAnalyzer ana = new PCAnalyzer();
+            ana = new PCAnalyzer();
 
 //                if (gatherMIRdata) {
             Banshee.Library.MusicLibrarySource ml = ServiceManager.SourceManager.MusicLibrary;
