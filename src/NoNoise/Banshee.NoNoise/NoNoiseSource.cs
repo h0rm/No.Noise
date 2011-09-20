@@ -121,16 +121,18 @@ namespace Banshee.NoNoise
 
                 db = new NoNoiseDBHandler ();
 
+                BansheeLibraryAnalyzer bla = BansheeLibraryAnalyzer.Init ();
+
                 if (dotests)
                     PerformTests ();
 
                 // PCA
-                if (dopca)
-                    PcaForMusicLibrary ();
+//                if (dopca)
+//                    PcaForMusicLibrary ();
 
                 // TrackInfo in NoNoise DB
-                if (saveTrackInfosToDB)
-                    WriteTrackInfosToDB ();
+//                if (saveTrackInfosToDB)
+//                    WriteTrackInfosToDB ();
 
                 // BPM detector
                 detector = BpmDetectJob.GetDetector ();
