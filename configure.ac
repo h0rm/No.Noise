@@ -133,7 +133,6 @@ po/Makefile.in
 
 src/Makefile
 src/NoNoise/Makefile
-src/Cluttertest/Makefile
 src/Karaoke/Makefile
 src/AssemblyInfo.cs
 
@@ -201,7 +200,6 @@ ${PACKAGE}-${VERSION}
 
   Extensions:
     NoNoise:             yes
-    Cluttertest:         yes
     Alarm Clock:           ${enable_AlarmClock}
     Ampache:               ${enable_Ampache}
     AppIndicator:          ${enable_AppIndicator}

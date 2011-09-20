@@ -1,6 +1,5 @@
 SUBDIRS = \
     NoNoise \
-    Cluttertest \
 	AlarmClock \
 	Ampache \
 	AppIndicator \
