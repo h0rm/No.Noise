@@ -75,7 +75,12 @@
       <Package>banshee-hyena-gui</Package>
     </Reference>
     <Reference Include="System.Core" />
-    <Reference Include="System.Xml" />
+    <Reference Include="clutter-gtk-sharp, Version=1.0.0.0, Culture=neutral, PublicKeyToken=87b7d16e3a31768b">
+      <Package>clutter-gtk-sharp</Package>
+    </Reference>
+    <Reference Include="clutter-sharp, Version=1.0.0.0, Culture=neutral, PublicKeyToken=87b7d16e3a31768b">
+      <Package>clutter-sharp</Package>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="NoNoise.addin.xml">

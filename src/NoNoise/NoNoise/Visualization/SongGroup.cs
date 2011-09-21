@@ -85,7 +85,7 @@ namespace NoNoise.Visualization
 //        private List<Rectangle> debug_quad_rectangles;
 
         private Alpha animation_alpha;
-        private Behaviour animation_behave;
+        private BehaviourScale animation_behave;
         private Timeline animation_timeline;
         private uint animation_time = 1000;
 
@@ -102,6 +102,8 @@ namespace NoNoise.Visualization
         private Behaviour clustering_animation_behave;
         private Timeline clustering_animation_timeline;
         private uint clutter_animation_time = 3000;
+
+        private BehaviourScale zoom_animation_behave;
 
        // private CairoTexture test_circle;
         #endregion
@@ -190,7 +192,7 @@ namespace NoNoise.Visualization
             animation_timeline = new Timeline (animation_time);
 //            animation_alpha = new Alpha (animation_timeline, (ulong)AnimationMode.EaseOutCubic);
             animation_alpha = new Alpha (animation_timeline, (ulong)AnimationMode.EaseInOutSine);
-            animation_behave = new BehaviourScale (animation_alpha,1.0,1.0,1.2,1.2);
+            animation_behave = new BehaviourScale (animation_alpha,1.0,1.0,1.0,1.0);
 
             clustering_animation_timeline = new Timeline (clutter_animation_time);
             clustering_animation_alpha = new Alpha (clustering_animation_timeline, (ulong)AnimationMode.EaseInOutSine);
@@ -198,6 +200,10 @@ namespace NoNoise.Visualization
             clustering_animation_timeline.Completed += HandleClusteringTimelineCompleted;
             clustering_animation_timeline.AddMarkerAtTime ("Halftime",1);
             clustering_animation_timeline.MarkerReached += HandleClusteringTimelineMarkerReached;
+
+            zoom_animation_behave = new BehaviourScale (animation_alpha, 1.0,1.0,1.0,1.0);
+
+            zoom_animation_behave.Apply (this);
             this.Reactive = true;
             this.ScrollEvent += HandleAdaptiveZoom;
 
@@ -229,22 +235,15 @@ namespace NoNoise.Visualization
         {
             if (inwards)
             {
-//                ZoomOnCenter (true);
-//                point_manager.Level = 0;
-//                point_manager.IncreaseLevel ();
+
 
                 ZoomOnCenter (true);
                 AnimateClustering (false);
-//                UpdateView ();
-//                ZoomOnCenter (false);
+
             }
             else
             {
-//                ZoomOnCenter (false);
-//                point_manager.Level = 1;
-//                ZoomOnCenter (true);
-//                point_manager.DecreaseLevel ();
-//                UpdateView ();
+
                 AnimateClustering (true);
             }
         }
@@ -269,7 +268,9 @@ namespace NoNoise.Visualization
             float trans_x = 0, trans_y = 0;
             this.TransformStagePoint (x, y, out trans_x, out trans_y);
 
-            //raus zoomen
+            double scale_x, scale_y;
+            this.GetScale (out scale_x, out scale_y);
+//            //raus zoomen
             this.SetScale (1.0, 1.0);
 
             float trans_x_unif = 0, trans_y_unif = 0;
@@ -295,51 +296,27 @@ namespace NoNoise.Visualization
                 break;
             }
 
-//            uint duration = 1000;
+            if (animation_timeline.IsPlaying)
+                old_zoom_level = scale_x;
 
             animation_timeline.Stop();
+            animation_timeline.Rewind ();
 
-//            if (animation_timeline.Progress < 0.2 && animation_timeline.IsPlaying) {
-//                //case zu langsam - keine animationen
-//
-//                this.Animation.Timeline.Stop ();
-//
-//                this.SetScaleFull (zoom_level, zoom_level, trans_x, trans_y);
-//
-//                animation_behave.RemoveAll ();
-//
-//                //zoom actor in andere richtung - warum center 0,0 geht weiß ich nicht ..
-//                foreach (Actor a in this)
-//                    a.SetScale (1.0 / zoom_level, 1.0 / zoom_level);
-//
-//            } else {
+            this.SetScaleFull (old_zoom_level, old_zoom_level, trans_x, trans_y);
 
-//            if (animation_timeline.IsPlaying)
 
-            //Umbaun dass wenn öfter reingezoomt wird ein level übersprungen wird, also wie beim clustering
-                this.SetScaleFull (old_zoom_level, old_zoom_level, trans_x, trans_y);
+            zoom_animation_behave.SetBounds (old_zoom_level, old_zoom_level, zoom_level, zoom_level);
+            animation_behave.SetBounds (1.0f / old_zoom_level, 1.0f /
+                                        old_zoom_level, 1.0f / zoom_level, 1.0f / zoom_level);
 
-                this.Animatev ((ulong)AnimationMode.EaseInOutSine, animation_time, new String[] { "scale-x" }, new GLib.Value (zoom_level));
-                this.Animatev ((ulong)AnimationMode.EaseInOutSine, animation_time, new String[] { "scale-y" }, new GLib.Value (zoom_level));
-
-                animation_behave.RemoveAll ();
-
-                animation_timeline.Duration = animation_time;
-                animation_behave = new BehaviourScale (animation_alpha, 1.0f / old_zoom_level, 1.0f / old_zoom_level, 1.0f / zoom_level, 1.0f / zoom_level);
-
-                //update clipping every new frame
-                animation_timeline.NewFrame += delegate {
-                    UpdateClipping ();
-                };
-
-                //neues behaviour an die circles andwenden
-                foreach (Actor a in actor_manager.Actors)
-                    animation_behave.Apply(a);
-//            }
-
+            //update clipping every new frame
+            animation_timeline.NewFrame += delegate {
+                UpdateClipping ();
+            };
 
             animation_timeline.Start();
         }
+
 
         private void AnimateClustering (bool forward)
         {
@@ -348,27 +325,33 @@ namespace NoNoise.Visualization
             clustering_animation_timeline.Direction =
                             forward ? TimelineDirection.Forward : TimelineDirection.Backward;
 
+            bool playing = clustering_animation_timeline.IsPlaying;
+
+            //forward -> backward
+//            if (playing && dir == TimelineDirection.Forward && !forward)
+//                ZoomOnCenter (true);
+
+            //backward -> forward
+            if (playing && dir == TimelineDirection.Backward && forward)
+                ZoomOnCenter (false);
 
             //forward -> forward
-            if (clustering_animation_timeline.IsPlaying && dir == TimelineDirection.Forward && forward)
+            if (playing && dir == TimelineDirection.Forward && forward)
                 HandleClusteringTimelineCompleted (this, new EventArgs ());
 
 
 
             //back -> back or back
-            if (!forward && (!clustering_animation_timeline.IsPlaying || dir != TimelineDirection.Forward)) {
+            if (!forward && (!playing || dir != TimelineDirection.Forward)) {
                 point_manager.DecreaseLevel ();
                 UpdateView ();
             }
 
             //rewind if direction stays the same or not playing
-            if (!clustering_animation_timeline.IsPlaying || dir ==  clustering_animation_timeline.Direction) {
+            if (!playing || dir ==  clustering_animation_timeline.Direction) {
                 clustering_animation_timeline.Rewind ();
                 clustering_animation_behave.RemoveAll ();
                 Hyena.Log.Information ("Rewind");
-
-//                if (!forward)
-//                    clustering_animation_timeline.Skip (2200);
             }
 
             clustering_animation_timeline.Start ();
@@ -563,13 +546,13 @@ namespace NoNoise.Visualization
             mouse_old_x = x;
             mouse_old_y = y;
 
-            Stopwatch stop = new Stopwatch ();
-            stop.Start ();
+//            Stopwatch stop = new Stopwatch ();
+//            stop.Start ();
 
             UpdateClipping ();
 
-            stop.Stop ();
-            Hyena.Log.Information ("Time to Update: "+stop.ElapsedTicks);
+//            stop.Stop ();
+//            Hyena.Log.Information ("Time to Update: "+stop.ElapsedTicks);
         }
 
         /// <summary>
@@ -583,11 +566,11 @@ namespace NoNoise.Visualization
         /// </param>
         private void HandleStageButtonReleaseEvent (object o, ButtonReleaseEventArgs args)
         {
-            //Hyena.Log.Information ("Mouse Up.");
+//            Hyena.Log.Information ("Mouse Up.");
             mouse_down = false;
         }
 
-                void HandleHandleLeaveEvent (object o, LeaveEventArgs args)
+        void HandleHandleLeaveEvent (object o, LeaveEventArgs args)
         {
             mouse_down = false;
         }
