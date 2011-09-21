@@ -92,6 +92,9 @@
     <EmbeddedResource Include="Mirage\Resources\filterweights.filter">
       <LogicalName>filterweights.filter</LogicalName>
     </EmbeddedResource>
+    <EmbeddedResource Include="Resources\tool_menu.xml">
+      <LogicalName>tool_menu.xml</LogicalName>
+    </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="NoNoise\Visualization\Gui\MainGui.cs" />
@@ -302,4 +305,8 @@
       </Properties>
     </MonoDevelop>
   </ProjectExtensions>
+  <ItemGroup>
+    <Folder Include="Resources\" />
+    <Folder Include="NoNoise\" />
+  </ItemGroup>
 </Project>

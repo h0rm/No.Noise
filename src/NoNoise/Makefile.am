@@ -213,7 +213,8 @@ ASSEMBLY = Banshee.NoNoise
 RESOURCES =  \
 	Mirage/Resources/dct.filter \
 	Mirage/Resources/filterweights.filter \
-	NoNoise.addin.xml
+	NoNoise.addin.xml \
+	Resources/tool_menu.xml
 
 #EXTRA_DIST = \
 #	Data/airport_locations.tsv

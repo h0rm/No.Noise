@@ -55,6 +55,16 @@ namespace Banshee.NoNoise
         private PreferenceService preference_service;
 
 		private ISourceContents no_noise_contents;
+        private bool scan_action_enabled = false;
+
+        private Gtk.Action scan_action;
+        protected Gtk.Action ScanAction {
+            get {
+                if (scan_action == null)
+                    scan_action = (Gtk.Action) action_service.FindAction ("NoNoiseScan.NoNoiseScanAction");
+                return scan_action;
+            }
+        }
 
         private ToggleAction no_noise_action;
         protected ToggleAction NoNoiseAction {
@@ -64,6 +74,8 @@ namespace Banshee.NoNoise
                 return no_noise_action;
             }
         }
+
+
 
         private static string menu_xml = @"
             <ui>
@@ -121,6 +133,8 @@ namespace Banshee.NoNoise
             SetupSourceContents ();
         }
 
+
+
         private bool SetupInterfaceActions ()
         {
             if (action_service.FindActionGroup ("NoNoiseView") == null) {
@@ -137,8 +151,43 @@ namespace Banshee.NoNoise
                 action_service.UIManager.AddUiFromString (menu_xml);
             }
 
+
+            if (action_service.FindActionGroup ("NoNoiseScan") == null) {
+                ActionGroup scan_actions = new ActionGroup ("NoNoiseScan");
+
+                scan_actions.Add (new ActionEntry [] {
+                    new ActionEntry ("NoNoiseScanAction", null,
+                    Catalog.GetString ("Start No.Noise scan"), null,
+                    Catalog.GetString ("Start or pause the No.Noise scan"),
+                    null)
+                });
+
+                action_service.AddActionGroup (scan_actions);
+                action_service.UIManager.AddUiFromResource ("tool_menu.xml");
+            }
+
             NoNoiseAction.Activated += OnNoNoiseToggle;
+            ScanAction.Activated += OnScanAction;
             return true;
+        }
+
+        void OnScanAction (object sender, EventArgs e)
+        {
+            Hyena.Log.Information ("Scan action activated");
+            if (scan_action_enabled) {
+                ScanAction.Label = "Start no.Noise scan";
+                if (scan_action_event != null)
+                    scan_action_event (this, new ScanActionEventArgs
+                                       (ScanActionEventArgs.Command.Pause,"Scan paused"));
+            } else {
+                ScanAction.Label = "Pause no.Noise scan";
+
+                if (scan_action_event != null)
+                    scan_action_event (this, new ScanActionEventArgs
+                                       (ScanActionEventArgs.Command.Start,"Scan started"));
+            }
+
+            scan_action_enabled = !scan_action_enabled;
         }
 
         void OnNoNoiseToggle (object sender, EventArgs e)
@@ -217,6 +266,38 @@ namespace Banshee.NoNoise
                 Catalog.GetString ("Enable No.Noise on startup"),
                 Catalog.GetString ("Enable or disable the No.Noise visualization on startup")
             );
+        }
+
+        public delegate void ScanActionEvent (object source, ScanActionEventArgs args);
+
+        private ScanActionEvent scan_action_event;
+
+        public class ScanActionEventArgs
+        {
+            public enum Command{Start, Pause};
+
+            private String info;
+            private Command val;
+
+            public ScanActionEventArgs (Command val, string info)
+            {
+                this.info = info;
+                this.val = val;
+            }
+
+            public Command Value {
+                get {return val;}
+            }
+
+            public string Info {
+                get {return info;}
+            }
+        }
+
+        //Event Handler which is called when the zoom level has changed
+        public event ScanActionEvent OnScanActionEvent {
+            add { scan_action_event += value; }
+            remove { scan_action_event -= value; }
         }
     }
 }
