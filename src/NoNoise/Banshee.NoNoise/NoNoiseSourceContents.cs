@@ -73,6 +73,9 @@ namespace Banshee.NoNoise
         private IBpmDetector detector;
         private int Bpm;
 
+        public delegate void ScanFinishedEvent (object source, ScanFinishedEventArgs args);
+        private ScanFinishedEvent scan_event;
+
         private string API_KEY =  "b6f3f5f1a92987f58a3ae75516c967a5";
         private string API_SECRET =   "1022d8e3a796243f8105fe97d1156803";
         private static string topalbums = "";
@@ -85,7 +88,7 @@ namespace Banshee.NoNoise
 
             db = new NoNoiseDBHandler ();
 
-            BansheeLibraryAnalyzer bla = BansheeLibraryAnalyzer.Init ();
+            BansheeLibraryAnalyzer bla = BansheeLibraryAnalyzer.Init (this);
 
             if (dotests)
                 PerformTests ();
@@ -134,36 +137,19 @@ namespace Banshee.NoNoise
             w.ShowAll();
         }
 
-        #region Tests
-
-        public delegate void ScanFinishedEvent (object source, ScanFinishedEventArgs args);
-
-        private ScanFinishedEvent scan_event;
-
-        public class ScanFinishedEventArgs
-        {
-            public ScanFinishedEventArgs (string info)
-            {
-                Info = info;
-            }
-
-            public string Info {
-                get;
-                private set;
-            }
-        }
-
-        //Event Handler which is called when the zoom level has changed
-        public event ScanFinishedEvent OnScanFinished {
-            add { scan_event += value; }
-            remove { scan_event -= value; }
-        }
-
         public void Scan (bool start)
         {
-            Hyena.Log.Information ("Scan " + (start ? "started.":"paused."));
-            scan_event (this, new ScanFinishedEventArgs("supi"));
+            Hyena.Log.Information ("NoNoise - Scan " + (start ? "started." : "paused."));
+            BansheeLibraryAnalyzer.Singleton.Scan (start);
         }
+
+        public void ScanFinished ()
+        {
+            Hyena.Log.Information ("NoNoise - Scan finished.");
+            scan_event (this, new ScanFinishedEventArgs ("supi"));
+        }
+
+        #region Tests
 
         /// <summary>
         /// Runs several database and pca tests and prints debug output and failure/success messages.
@@ -632,6 +618,25 @@ namespace Banshee.NoNoise
             TrackInfo ti = ServiceManager.SourceManager.MusicLibrary.TrackModel[0];
             DetectBPMs(ti);
             ready.WakeupMain();
+        }
+
+        public class ScanFinishedEventArgs
+        {
+            public ScanFinishedEventArgs (string info)
+            {
+                Info = info;
+            }
+
+            public string Info {
+                get;
+                private set;
+            }
+        }
+
+        //Event Handler which is called when the zoom level has changed
+        public event ScanFinishedEvent OnScanFinished {
+            add { scan_event += value; }
+            remove { scan_event -= value; }
         }
     }
 }

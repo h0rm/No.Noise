@@ -25,6 +25,7 @@
 // THE SOFTWARE.
 using System;
 using System.Collections.Generic;
+using System.Threading;
 
 using Banshee.Collection;
 using Banshee.ServiceStack;
@@ -37,9 +38,18 @@ namespace Banshee.NoNoise
     public class BansheeLibraryAnalyzer
     {
         private static BansheeLibraryAnalyzer bla = null;
+        private NoNoiseSourceContents sc;
         private NoNoiseDBHandler db;
         private PCAnalyzer ana;
         private List<DataEntry> coords;
+        private bool analyzing_lib;
+        private bool lib_scanned;
+        private bool data_up_to_date;
+        private bool stop_scan;
+        private Gtk.ThreadNotify finished;
+        private Thread thr;
+        private object scan_synch;
+        private object db_synch;
 
         public static BansheeLibraryAnalyzer Singleton {
             get { return bla; }
@@ -49,19 +59,104 @@ namespace Banshee.NoNoise
             get { return coords; }
         }
 
+        public bool IsScanning {
+            get { return analyzing_lib; }
+        }
+
         private BansheeLibraryAnalyzer ()
         {
             db = new NoNoiseDBHandler ();
             coords = db.GetPcaCoordinates ();
+            thr = new Thread (new ThreadStart(ScanMusicLibrary));
+            finished = new Gtk.ThreadNotify (new Gtk.ReadyEvent(Finished));
+
+            analyzing_lib = false;
+            lib_scanned = false;    // TODO proper check!
+            data_up_to_date = false; // TODO proper check!
+
+            scan_synch = new object ();
+            db_synch = new object ();
         }
 
-        public static BansheeLibraryAnalyzer Init ()
+        public static BansheeLibraryAnalyzer Init (NoNoiseSourceContents sc)
         {
             bla = new BansheeLibraryAnalyzer ();
+            bla.sc = sc;
             bla.PcaForMusicLibrary ();
             bla.WriteTrackInfosToDB ();
 
             return bla;
+        }
+
+        public void Scan (bool start)
+        {
+            if (start == analyzing_lib)
+                return;
+
+            if (start) {
+                lock (scan_synch) {
+                    analyzing_lib = true;
+                    stop_scan = false;
+                }
+                thr = new Thread (new ThreadStart(ScanMusicLibrary));
+                thr.Start();
+            } else {
+                lock (scan_synch) {
+                    stop_scan = true;
+                }
+            }
+            Hyena.Log.Information ("Scan " + (start ? "started." : "paused."));
+        }
+
+        private void ScanMusicLibrary ()
+        {
+            Banshee.Library.MusicLibrarySource ml = ServiceManager.SourceManager.MusicLibrary;
+            Mirage.Matrix mfcc;
+            Dictionary<int, Mirage.Matrix> mfccMap = null;
+            lock (db_synch) {
+                mfccMap = db.GetMirageMatrices ();
+            }
+            if (mfccMap == null)
+                Hyena.Log.Error ("NoNoise/DB - mfccMap is null!");
+
+            for (int i = 0; i < ml.TrackModel.Count; i++) {
+                if (stop_scan) {
+                    lock (scan_synch) {
+                        analyzing_lib = false;
+                    }
+                    return;
+                }
+
+                try {
+                    TrackInfo ti = ml.TrackModel [i];
+                    string absPath = ti.Uri.AbsolutePath;
+                    int bid = ml.GetTrackIdForUri (ti.Uri);
+
+                    // WARN: A bid could theoretically be inserted/deleted between GetMirageMatrices ()
+                    // and CointainsMirDataForTrack () such that if and else fail
+                    if (!mfccMap.ContainsKey (bid)) {
+                        mfcc = Mirage.Analyzer.AnalyzeMFCC (absPath);
+
+                        lock (db_synch) {
+                            if (!db.InsertMatrix (mfcc, bid))
+                                Hyena.Log.Error ("NoNoise - Matrix insert failed");
+                        }
+                    }
+                } catch (Exception e) {
+                    Hyena.Log.Exception("NoNoise - MFCC/DB Problem", e);
+                }
+            }
+
+            finished.WakeupMain();
+        }
+
+        private void Finished ()
+        {
+            lock (scan_synch) {
+                lib_scanned = true;
+                analyzing_lib = false;
+            }
+            sc.ScanFinished ();
         }
 
         /// <summary>
@@ -71,67 +166,48 @@ namespace Banshee.NoNoise
         /// </summary>
         private void PcaForMusicLibrary ()
         {
+            if (data_up_to_date)
+                return;
+
+            if (analyzing_lib)
+                return;     // TODO react!
+
+            if (!lib_scanned)
+                return;     // TODO something clever!
+
             ana = new PCAnalyzer();
+            Dictionary<int, Mirage.Matrix> mfccMap = null;
+            lock (db_synch) {
+                mfccMap = db.GetMirageMatrices ();
+            }
+            if (mfccMap == null)
+                Hyena.Log.Error ("NoNoise/DB - mfccMap is null!");
 
-//                if (gatherMIRdata) {
-            Banshee.Library.MusicLibrarySource ml = ServiceManager.SourceManager.MusicLibrary;
-            Mirage.Matrix mfcc;
-            Dictionary<int, Mirage.Matrix> mfccMap = db.GetMirageMatrices ();
-            bool doPca = false;
-
-            for (int i = 0; i < ml.TrackModel.Count; i++) {
+            foreach (int bid in mfccMap.Keys) {
                 try {
-                    TrackInfo ti = ml.TrackModel [i];
-                    string absPath = ti.Uri.AbsolutePath;
-                    int bid = ml.GetTrackIdForUri (ti.Uri);
-
-                    // WARN: A bid could theoretically be inserted/deleted between GetMirageMatrices ()
-                    // and CointainsMirDataForTrack () such that if and else fail
-                    if (!db.ContainsMirDataForTrack (bid)) {
-                        doPca = true;
-                        mfcc = Mirage.Analyzer.AnalyzeMFCC (absPath);
-
-                        if (!db.InsertMatrix (mfcc, bid))
-                            Hyena.Log.Error ("NoNoise - Matrix insert failed");
-                    } else
-                        mfcc = mfccMap[bid];
-
-                    if (!ana.AddEntry (bid, ConvertMfccMean (mfcc.Mean ())))
+                    if (!ana.AddEntry (bid, ConvertMfccMean (mfccMap[bid].Mean ())))
                         throw new Exception("AddEntry failed!");
 //                        if (!ana.AddEntry (bid, ConvertMfccMean(mfcc.Mean()), ti.Duration.TotalSeconds))
 //                            throw new Exception("AddEntry failed!");
 //                        if (!ana.AddEntry (bid, null, ti.Bpm, ti.Duration.TotalSeconds))
 //                            throw new Exception("AddEntry failed!");
                 } catch (Exception e) {
-                    Hyena.Log.Exception("NoNoise - MFCC/DB Problem", e);
+                    Hyena.Log.Exception("NoNoise - PCA Problem", e);
                 }
             }
-//                } else {
-//                    Dictionary<int, Matrix> mfccMap = db.GetMirageMatrices ();
-//
-//                    foreach (int key in mfccMap.Keys) {
-//                        try {
-//                            if (!ana.AddEntry (key, ConvertMfccMean (mfccMap[key].Mean ())))
-//                                throw new Exception ("AddEntry failed!");
-//                        } catch (Exception e) {
-//                            Hyena.Log.Exception ("NoNoise - PCA Problem", e);
-//                        }
-//                    }
-//                }
 
-            if (doPca) {
-                try {
-                    ana.PerformPCA ();
-    //                    Hyena.Log.Debug(ana.GetCoordinateStrings ());
-                    coords = ana.Coordinates;
+            try {
+                ana.PerformPCA ();
+//                    Hyena.Log.Debug(ana.GetCoordinateStrings ());
+                coords = ana.Coordinates;
+
+                lock (db_synch) {
                     db.ClearPcaData ();
                     if (!db.InsertPcaCoordinates (coords))
                         Hyena.Log.Error ("NoNoise - PCA coord insert failed");
-                } catch (Exception e) {
-                    Hyena.Log.Exception("PCA Problem", e);
                 }
-            } else {
-                coords = db.GetPcaCoordinates ();
+            } catch (Exception e) {
+                Hyena.Log.Exception("PCA Problem", e);
             }
         }
 
@@ -161,6 +237,9 @@ namespace Banshee.NoNoise
         /// </summary>
         private void WriteTrackInfosToDB ()
         {
+            if (data_up_to_date)
+                return;
+
             Banshee.Library.MusicLibrarySource ml = ServiceManager.SourceManager.MusicLibrary;
 
             for (int i = 0; i < ml.TrackModel.Count; i++) {
@@ -168,11 +247,13 @@ namespace Banshee.NoNoise
                     TrackInfo ti = ml.TrackModel [i];
                     int bid = ml.GetTrackIdForUri (ti.Uri);
 
-                    if (!db.ContainsInfoForTrack (bid)) {
-                        if (!db.InsertTrackInfo (new TrackData (
-                                                   bid, ti.ArtistName, ti.TrackTitle,
-                                                   ti.AlbumTitle, (int)ti.Duration.TotalSeconds)))
-                            Hyena.Log.Error ("NoNoise - TrackInfo insert failed");
+                    lock (db_synch) {
+                        if (!db.ContainsInfoForTrack (bid)) {
+                            if (!db.InsertTrackInfo (new TrackData (
+                                                       bid, ti.ArtistName, ti.TrackTitle,
+                                                       ti.AlbumTitle, (int)ti.Duration.TotalSeconds)))
+                                Hyena.Log.Error ("NoNoise - TrackInfo insert failed");
+                        }
                     }
                 } catch (Exception e) {
                     Hyena.Log.Exception("NoNoise - DB Problem", e);
