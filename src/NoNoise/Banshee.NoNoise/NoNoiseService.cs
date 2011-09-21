@@ -127,8 +127,10 @@ namespace Banshee.NoNoise
         }
         void OnSourceAdded (SourceAddedArgs args)
         {
-            if (args.Source is MusicLibrarySource)
+            if (args.Source is MusicLibrarySource) {
                 music_library = args.Source as MusicLibrarySource;
+                Hyena.Log.Debug ("NoNoise/Serv - ml added, cnt: " + music_library.TrackModel.Count);
+            }
 
             SetupSourceContents ();
         }
@@ -266,7 +268,7 @@ namespace Banshee.NoNoise
 //            Clutter.Threads.Leave ();
 
             NoNoiseAction.Activated -= OnNoNoiseToggle;
-            source_manager.SourceAdded -= OnSourceAdded;;
+            source_manager.SourceAdded -= OnSourceAdded;
         }
 
         public static class Schemas {

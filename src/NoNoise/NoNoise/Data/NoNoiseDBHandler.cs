@@ -39,6 +39,7 @@ namespace NoNoise.Data
         #region Constants
         // TODO change connection string to final db
         private readonly string CONNECTION_STRING = "URI=file:nonoise.db,version=3";
+
         private readonly string CREATE_TABLE_MIRDATA =
             "CREATE TABLE IF NOT EXISTS MIRData (banshee_id INTEGER, data CLOB, id INTEGER PRIMARY KEY)";
         private readonly string CREATE_TABLE_PCADATA =
@@ -47,6 +48,10 @@ namespace NoNoise.Data
         private readonly string CREATE_TABLE_TRACKDATA =
             "CREATE TABLE IF NOT EXISTS TrackData (album VARCHAR, artist VARCHAR, banshee_id INTEGER, " +
             "duration INTEGER, id INTEGER PRIMARY KEY, title VARCHAR)";
+
+        private readonly string SELECT_MIRDATA_COUNT = "SELECT COUNT(*) FROM MIRData";
+        private readonly string SELECT_PCADATA_COUNT = "SELECT COUNT(*) FROM PCAData";
+        private readonly string SELECT_TRACKDATA_COUNT = "SELECT COUNT(*) FROM TrackData";
         #endregion
 
         #region Members
@@ -587,6 +592,72 @@ namespace NoNoise.Data
             } catch (Exception e) {
                 Log.Exception("NoNoise/DB - Contains TrackInfo query failed for banshee_id: " + bid, e);
                 return false;
+            } finally {
+                if (dbcmd != null)
+                    dbcmd.Dispose();
+                dbcmd = null;
+                if (dbcon != null)
+                    dbcon.Close();
+            }
+        }
+        #endregion
+
+        #region Info Queries
+
+        public int GetMirDataCount ()
+        {
+            IDbCommand dbcmd = null;
+            try {
+                dbcon.Open();
+                dbcmd = dbcon.CreateCommand();
+
+                dbcmd.CommandText = SELECT_MIRDATA_COUNT;
+                return int.Parse (dbcmd.ExecuteScalar ().ToString ());
+            } catch (Exception e) {
+                Log.Exception("NoNoise/DB - MIRData COUNT query failed", e);
+                return -1;
+            } finally {
+                if (dbcmd != null)
+                    dbcmd.Dispose();
+                dbcmd = null;
+                if (dbcon != null)
+                    dbcon.Close();
+            }
+        }
+
+        public int GetPcaDataCount ()
+        {
+            IDbCommand dbcmd = null;
+            try {
+                dbcon.Open();
+                dbcmd = dbcon.CreateCommand();
+
+                dbcmd.CommandText = SELECT_PCADATA_COUNT;
+                return int.Parse (dbcmd.ExecuteScalar ().ToString ());
+            } catch (Exception e) {
+                Log.Exception("NoNoise/DB - PCAData COUNT query failed", e);
+                return -1;
+            } finally {
+                if (dbcmd != null)
+                    dbcmd.Dispose();
+                dbcmd = null;
+                if (dbcon != null)
+                    dbcon.Close();
+            }
+        }
+
+        public int GetTrackDataCount ()
+        {
+            IDbCommand dbcmd = null;
+            try {
+                dbcon.Open();
+                dbcmd = dbcon.CreateCommand();
+
+                dbcmd.CommandText = SELECT_TRACKDATA_COUNT;
+                return int.Parse (dbcmd.ExecuteScalar ().ToString ());
+            } catch (Exception e) {
+                Log.Exception("NoNoise/DB - TrackData COUNT query failed", e);
+                return -1;
             } finally {
                 if (dbcmd != null)
                     dbcmd.Dispose();

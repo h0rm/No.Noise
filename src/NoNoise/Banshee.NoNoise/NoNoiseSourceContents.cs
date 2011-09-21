@@ -29,6 +29,7 @@ using System.Threading;
 
 using Banshee.Collection;
 using Banshee.Collection.Database;
+using Banshee.Library;
 using Banshee.MediaEngine;
 using Banshee.ServiceStack;
 using Banshee.Sources;
@@ -60,6 +61,8 @@ namespace Banshee.NoNoise
         private Gtk.Label working = new Gtk.Label("retrieving artist information...");
         private Session session;
         private Gtk.ThreadNotify ready;
+        private Banshee.Library.MusicLibrarySource ml;
+        private MusicLibrarySource source;
 
         private bool painintheassdummy = false;
         private bool dotests = false;
@@ -573,8 +576,47 @@ namespace Banshee.NoNoise
         }
 
         public bool SetSource (ISource source)
-        { 
-            return true; 
+        {
+//            if (source is Banshee.Library.MusicLibrarySource) {
+////                Hyena.Log.Debug ("NoNoise - ml set");
+//                ml = source as Banshee.Library.MusicLibrarySource;
+////                Hyena.Log.Debug ("NoNoise - ml count: " + ml.TrackModel.Count);
+//                return true;
+//            }
+//            return false;
+
+            if ((source as MusicLibrarySource) == null)
+                return false;
+//            if ((source as MusicLibrarySource)==this.source) {
+//                SelectAllTracks ();
+//                return true;
+//            } else
+//                ResetSource ();
+            try {
+                Hyena.Log.Debug ("" + this.source.TrackModel.Count);
+            } catch (Exception e) {
+                return false;
+            }
+
+            this.source = (source as MusicLibrarySource);
+            this.source.TrackModel.Selection.Clear (false);
+            Hyena.Log.Debug ("NoNoise - setsource - tm count: " + this.source.TrackModel.Count);
+//            this.source.TracksAdded += HandleTracksAdded;
+//            this.source.TracksDeleted += HandleTracksDeleted;
+
+//            foreach (IFilterListModel list_model in this.source.CurrentFilters) {
+//                list_model.Clear (); //clear selections, we need all albums!!
+//                if (list_model is FilterListModel<AlbumInfo>) {
+//                    external_filter = list_model as FilterListModel<AlbumInfo>;
+//                    break;
+//                }
+//            }
+            
+//            main_view.SetModel (TrackModel);
+//            FilterView.SetModel (external_filter);
+            BansheeLibraryAnalyzer.Singleton.TrackModel = this.source.TrackModel;
+            
+            return true;
         }
         
         public void ResetSource () 
@@ -586,7 +628,7 @@ namespace Banshee.NoNoise
         }
         
         public ISource Source { 
-            get { return null; } 
+            get { return ml; }
         }
 
         public void ButtonPushHandler (object obj, EventArgs args) {
