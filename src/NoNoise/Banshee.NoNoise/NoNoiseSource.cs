@@ -65,7 +65,25 @@ namespace Banshee.NoNoise
 		                                       sort_order,
 		                                       "extension-unique-id")
         {
-            Properties.Set<ISourceContents> ("Nereid.SourceContents", new CustomView ());
+            bool startViz = false;
+            try {
+                using (System.IO.StreamReader sr = new System.IO.StreamReader ("../../NoNoise.starter"))
+                {
+                    string line;
+                    if ((line = sr.ReadLine ()) != null && int.Parse(line) == 1)
+                        startViz = true;
+                    else
+                        startViz = false;
+                }
+            } catch (Exception e) {
+                Hyena.Log.Exception ("NoNoise - startup error", e);
+            }
+            
+            if (startViz) {
+                Properties.Set<ISourceContents> ("Nereid.SourceContents", new CustomView ());
+            } else {
+                Hyena.Log.Information ("NoNoise - startViz is false");
+            }
 
             Hyena.Log.Information ("Testing!  NoNoise source has been instantiated!");
         }
