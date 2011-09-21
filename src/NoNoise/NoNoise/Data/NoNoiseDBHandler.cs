@@ -483,6 +483,36 @@ namespace NoNoise.Data
 
             return true;
         }
+
+        public List<DataEntry> GetPcaCoordinates ()
+        {
+            List<DataEntry> ret = new List<DataEntry> ();
+
+            IDbCommand dbcmd = null;
+            try {
+                dbcon.Open();
+                dbcmd = dbcon.CreateCommand();
+
+                dbcmd.CommandText = "SELECT pca_x, pca_y, banshee_id FROM PCAData";
+                System.Data.IDataReader reader = dbcmd.ExecuteReader();
+                while(reader.Read()) {
+                    DataEntry de = new DataEntry (reader.GetInt32 (2), reader.GetDouble (0),
+                                                  reader.GetDouble (1), null);
+                    ret.Add (de);
+                }
+
+                return ret;
+            } catch (Exception e) {
+                Log.Exception("NoNoise/DB - PCA data read failed", e);
+                return null;
+            } finally {
+                if (dbcmd != null)
+                    dbcmd.Dispose();
+                dbcmd = null;
+                if (dbcon != null)
+                    dbcon.Close();
+            }
+        }
         #endregion
 
         #region TrackData

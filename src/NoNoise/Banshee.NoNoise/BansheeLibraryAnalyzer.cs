@@ -39,18 +39,20 @@ namespace Banshee.NoNoise
         private static BansheeLibraryAnalyzer bla = null;
         private NoNoiseDBHandler db;
         private PCAnalyzer ana;
+        private List<DataEntry> coords;
 
         public static BansheeLibraryAnalyzer Singleton {
             get { return bla; }
         }
 
         public List<DataEntry> PcaCoordinates {
-            get { return ana.Coordinates; }
+            get { return coords; }
         }
 
         private BansheeLibraryAnalyzer ()
         {
             db = new NoNoiseDBHandler ();
+            coords = db.GetPcaCoordinates ();
         }
 
         public static BansheeLibraryAnalyzer Init ()
@@ -75,6 +77,7 @@ namespace Banshee.NoNoise
             Banshee.Library.MusicLibrarySource ml = ServiceManager.SourceManager.MusicLibrary;
             Mirage.Matrix mfcc;
             Dictionary<int, Mirage.Matrix> mfccMap = db.GetMirageMatrices ();
+            bool doPca = false;
 
             for (int i = 0; i < ml.TrackModel.Count; i++) {
                 try {
@@ -85,6 +88,7 @@ namespace Banshee.NoNoise
                     // WARN: A bid could theoretically be inserted/deleted between GetMirageMatrices ()
                     // and CointainsMirDataForTrack () such that if and else fail
                     if (!db.ContainsMirDataForTrack (bid)) {
+                        doPca = true;
                         mfcc = Mirage.Analyzer.AnalyzeMFCC (absPath);
 
                         if (!db.InsertMatrix (mfcc, bid))
@@ -115,15 +119,19 @@ namespace Banshee.NoNoise
 //                    }
 //                }
 
-            try {
-                ana.PerformPCA ();
-//                    Hyena.Log.Debug(ana.GetCoordinateStrings ());
-                List<DataEntry> coords = ana.Coordinates;
-                db.ClearPcaData ();
-                if (!db.InsertPcaCoordinates (coords))
-                    Hyena.Log.Error ("NoNoise - PCA coord insert failed");
-            } catch (Exception e) {
-                Hyena.Log.Exception("PCA Problem", e);
+            if (doPca) {
+                try {
+                    ana.PerformPCA ();
+    //                    Hyena.Log.Debug(ana.GetCoordinateStrings ());
+                    coords = ana.Coordinates;
+                    db.ClearPcaData ();
+                    if (!db.InsertPcaCoordinates (coords))
+                        Hyena.Log.Error ("NoNoise - PCA coord insert failed");
+                } catch (Exception e) {
+                    Hyena.Log.Exception("PCA Problem", e);
+                }
+            } else {
+                coords = db.GetPcaCoordinates ();
             }
         }
 
