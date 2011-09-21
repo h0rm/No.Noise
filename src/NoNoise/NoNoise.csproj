@@ -283,6 +283,8 @@
     <Compile Include="NoNoise\PCA\PCAnalyzer.cs" />
     <Compile Include="Banshee.NoNoise\NoNoiseSource.cs" />
     <Compile Include="Banshee.NoNoise\BansheeLibraryAnalyzer.cs" />
+    <Compile Include="Banshee.NoNoise\NoNoiseService.cs" />
+    <Compile Include="Banshee.NoNoise\NoNoiseClutterSourceContents.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ProjectExtensions>

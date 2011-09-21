@@ -3,6 +3,8 @@ GMCS_FLAGS = -unsafe
 SOURCES =  \
 	Banshee.NoNoise/BansheeLibraryAnalyzer.cs \
 	Banshee.NoNoise/Bpm/BpmDetectJob.cs \
+	Banshee.NoNoise/NoNoiseClutterSourceContents.cs \
+	Banshee.NoNoise/NoNoiseService.cs \
 	Banshee.NoNoise/NoNoiseSource.cs \
 	Banshee.NoNoise/NoNoiseSourceContents.cs \
 	lastfm-sharp/Lib.cs \
