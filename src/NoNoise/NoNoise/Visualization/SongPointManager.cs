@@ -31,10 +31,19 @@ namespace NoNoise.Visualization
 {
     public class SongPointManager
     {
-        private const int max_clustering_level = 8;
+        private int max_clustering_level = 8;
         private List<QuadTree<SongPoint>> tree_list;
+        private const int min_points = 100;
 
-        private int level = 0;
+        private int level = 2;
+
+        public bool IsMaxLevel {
+            get { return max_clustering_level == level; }
+        }
+
+        public bool IsMinLevel {
+            get { return level == 0; }
+        }
 
         public int Level {
             get { return level; }
@@ -66,8 +75,22 @@ namespace NoNoise.Visualization
 
         public void Cluster ()
         {
-            for (int i = 0; i < max_clustering_level; i++)
+            QuadTree<SongPoint> tree;
+
+            int i;
+            for (i = 0; i < max_clustering_level; i++) {
+                tree = tree_list[i].GetClusteredTree ();
+
+                //check if number of points is above minimum
+                if (tree.Count < min_points)
+                    break;
+
                 tree_list.Add (tree_list[i].GetClusteredTree ());
+            }
+
+            max_clustering_level = i-1 > 0 ? i-1 : 0;
+
+            Hyena.Log.Information ("Max clustering level " + max_clustering_level);
         }
 
         public List<SongPoint> Points {
@@ -91,6 +114,19 @@ namespace NoNoise.Visualization
             lvl = (lvl < 0) ? 0 : lvl;
 
             return tree_list[lvl].GetObjects (new QRectangle (x, y, width, height));
+        }
+
+        public void SetDefaultLevel (int numofpoints)
+        {
+            int i;
+
+            //get lowest level with Count < numofpoints
+            for (i = 0; i <= max_clustering_level; i++) {
+                if (tree_list[i].Count > numofpoints)
+                    break;
+            }
+
+            Level = i-1;
         }
     }
 }

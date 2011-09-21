@@ -104,7 +104,12 @@ namespace NoNoise.Visualization
         private uint clutter_animation_time = 3000;
 
         private BehaviourScale zoom_animation_behave;
+        private int diff_zoom_clustering = 0;
 
+        private CairoTexture selection;
+        private bool selection_enabled = false;
+//        private Cogl.Clip.
+//        private int clustering_level
        // private CairoTexture test_circle;
         #endregion
 
@@ -148,7 +153,7 @@ namespace NoNoise.Visualization
                     double y = Math.Abs (float.Parse (parts[2], System.Globalization.CultureInfo.InvariantCulture)) * 20.0f;
 
                     if (x != 0 && y != 0)
-                        points.Add (new Point(x, y));
+                        points.Add (new Point(y, x));
 
                 }
 
@@ -199,7 +204,7 @@ namespace NoNoise.Visualization
             clustering_animation_behave = new BehaviourOpacity (clustering_animation_alpha, 255, 0);
             clustering_animation_timeline.Completed += HandleClusteringTimelineCompleted;
             clustering_animation_timeline.AddMarkerAtTime ("Halftime",1);
-            clustering_animation_timeline.MarkerReached += HandleClusteringTimelineMarkerReached;
+//            clustering_animation_timeline.MarkerReached += HandleClusteringTimelineMarkerReached;
 
             zoom_animation_behave = new BehaviourScale (animation_alpha, 1.0,1.0,1.0,1.0);
 
@@ -207,21 +212,22 @@ namespace NoNoise.Visualization
             this.Reactive = true;
             this.ScrollEvent += HandleAdaptiveZoom;
 
+            selection = new CairoTexture (1000,1000);
+            selection.SetPosition (0,0);
+            stage.Add (selection);
+//            selection.Show ();
+
             stage.ButtonPressEvent += HandleStageButtonPressEvent;
             stage.ButtonReleaseEvent += HandleStageButtonReleaseEvent;
             stage.MotionEvent += HandleMotionEvent;
             stage.AllocationChanged += delegate {
+                selection.SetSurfaceSize ((uint)Math.Ceiling(stage.Width), (uint)Math.Ceiling (stage.Height));
+                selection.SetSize ((float)Math.Ceiling(stage.Width), (float)Math.Ceiling (stage.Height));
                 UpdateClipping ();
             };
             //this.LeaveEvent += HandleHandleLeaveEvent;
             //this.Stage.ButtonPressEvent += HandleGlobalButtonPressEven;
         }
-
-
-
-
-
-
 
         /// <summary>
         /// This function is used cluster or decluster the data. Every time the function is
@@ -233,23 +239,16 @@ namespace NoNoise.Visualization
         /// </param>
         public void ClusterOneStep (bool inwards)
         {
+            SelectionClear ();
             if (inwards)
             {
-
-
-                ZoomOnCenter (true);
                 AnimateClustering (false);
-
             }
             else
             {
-
                 AnimateClustering (true);
             }
         }
-
-
-
 
         /// <summary>
         /// This function is used to zoom in or out.
@@ -259,8 +258,10 @@ namespace NoNoise.Visualization
         /// </param>
         public void ZoomOnCenter (bool inwards)
         {
+            SelectionClear ();
             ZoomOnPosition (inwards, Stage.Width/2.0f, Stage.Height/2.0f);
         }
+
 
         public void ZoomOnPosition (bool inwards, float x, float y)
         {
@@ -322,30 +323,64 @@ namespace NoNoise.Visualization
         {
             TimelineDirection dir = clustering_animation_timeline.Direction;
 
-            clustering_animation_timeline.Direction =
-                            forward ? TimelineDirection.Forward : TimelineDirection.Backward;
-
             bool playing = clustering_animation_timeline.IsPlaying;
+
+            //forward -> forward
+            if (playing && dir == TimelineDirection.Forward && forward) {
+                HandleClusteringTimelineCompleted (this, new EventArgs ());
+                clustering_animation_timeline.Stop ();
+            }
+
 
             //forward -> backward
 //            if (playing && dir == TimelineDirection.Forward && !forward)
 //                ZoomOnCenter (true);
 
             //backward -> forward
-            if (playing && dir == TimelineDirection.Backward && forward)
+//            if (playing && dir == TimelineDirection.Backward && forward)
+//                ZoomOnCenter (false);
+            if (forward)
                 ZoomOnCenter (false);
 
-            //forward -> forward
-            if (playing && dir == TimelineDirection.Forward && forward)
-                HandleClusteringTimelineCompleted (this, new EventArgs ());
+            if (!forward)
+                ZoomOnCenter (true);
 
+            // nach vorne aber kein clustering mehr
+            if (forward && point_manager.IsMaxLevel) {
+                diff_zoom_clustering ++;
+                Hyena.Log.Information ("Diff ++" + diff_zoom_clustering);
+                return;
+            }
 
+            // nach vorne aber kein clustering mehr
+            if (!forward && point_manager.IsMinLevel) {
+                diff_zoom_clustering --;
+                Hyena.Log.Information ("Diff --" + diff_zoom_clustering);
+                return;
+            }
+
+            if (forward && diff_zoom_clustering != 0) {
+                diff_zoom_clustering ++;
+                Hyena.Log.Information ("Diff --" + diff_zoom_clustering);
+                return;
+            }
+
+            if (!forward && diff_zoom_clustering != 0) {
+                diff_zoom_clustering --;
+                Hyena.Log.Information ("Diff ++" + diff_zoom_clustering);
+                return;
+            }
+
+//            Hyena.Log.Information ("Diff " + diff_zoom_clustering);
 
             //back -> back or back
             if (!forward && (!playing || dir != TimelineDirection.Forward)) {
                 point_manager.DecreaseLevel ();
                 UpdateView ();
             }
+
+            clustering_animation_timeline.Direction =
+                            forward ? TimelineDirection.Forward : TimelineDirection.Backward;
 
             //rewind if direction stays the same or not playing
             if (!playing || dir ==  clustering_animation_timeline.Direction) {
@@ -532,29 +567,74 @@ namespace NoNoise.Visualization
         /// </param>
         private void HandleMotionEvent (object o, MotionEventArgs args)
         {
-            if (!mouse_down)
+            if (!mouse_down && !selection_enabled)
                 //wenn nicht geklickt
                 return;
 
             float x, y;
+
+//            args.Event.X
             EventHelper.GetCoords (args.Event, out x, out y);
+
+            Hyena.Log.Information ("Mouse (" + args.Event.X + "," + args.Event.Y + ")");
 
             float newx = this.X + x - mouse_old_x;
             float newy = this.Y + y - mouse_old_y;
 
-            this.SetPosition (newx, newy);
+            if (mouse_down) {
+
+                this.SetPosition (newx, newy);
+                UpdateClipping ();
+
+            } else if (selection_enabled){
+
+//                Hyena.Log.Information ("Paint line");
+
+                SelectionPaintLine (mouse_old_x, mouse_old_y, x, y);
+            }
+
             mouse_old_x = x;
             mouse_old_y = y;
-
-//            Stopwatch stop = new Stopwatch ();
-//            stop.Start ();
-
-            UpdateClipping ();
-
-//            stop.Stop ();
-//            Hyena.Log.Information ("Time to Update: "+stop.ElapsedTicks);
         }
 
+        private int count = 0;
+
+        private void SelectionPaintLine (float x, float y, float to_x, float to_y)
+        {
+
+            Hyena.Log.Information ("Paint line " + count );
+
+            Cairo.Context context = selection.Create();
+
+            context.Color = new Cairo.Color (1,0,0,0.9);
+            context.LineWidth = 5;
+            context.MoveTo (x, y);
+            context.LineTo (to_x, to_y);
+            context.Stroke ();
+
+            ((IDisposable) context.Target).Dispose ();
+            ((IDisposable) context).Dispose ();
+//            selection.QueueRedraw ();
+
+            count ++;
+        }
+
+        private void SelectionClear ()
+        {
+            count = 0;
+            selection.Clear ();
+            Cairo.Context context = selection.Create();
+
+            ((IDisposable) context.Target).Dispose ();
+            ((IDisposable) context).Dispose ();
+            Hyena.Log.Information ("Clear Selection");
+        }
+
+        private void SelectionEnd ()
+        {
+            Hyena.Log.Information ("End Selection");
+
+        }
         /// <summary>
         /// Handles the button release event for displacing the actor.
         /// </summary>
@@ -567,6 +647,10 @@ namespace NoNoise.Visualization
         private void HandleStageButtonReleaseEvent (object o, ButtonReleaseEventArgs args)
         {
 //            Hyena.Log.Information ("Mouse Up.");
+            uint button = EventHelper.GetButton (args.Event);
+
+            selection_enabled = false;
+//            SelectionEnd ();
             mouse_down = false;
         }
 
@@ -621,15 +705,19 @@ namespace NoNoise.Visualization
 
             uint button = EventHelper.GetButton (args.Event);
 
+            SelectionClear ();
+
             if (button != 1)
             {
                 Hyena.Log.Debug ("Rechtsklick.");
 
-                return;
-            }
+                selection_enabled = true;
 
+            }
+            else {
+                mouse_down = true;
+            }
             EventHelper.GetCoords (args.Event, out mouse_old_x, out mouse_old_y);
-            mouse_down = true;
         }
 
         private void FireSongEnter (SongHighlightArgs args)

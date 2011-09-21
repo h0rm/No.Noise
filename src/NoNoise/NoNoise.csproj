@@ -289,6 +289,7 @@
     <Compile Include="Banshee.NoNoise\BansheeLibraryAnalyzer.cs" />
     <Compile Include="Banshee.NoNoise\NoNoiseService.cs" />
     <Compile Include="Banshee.NoNoise\NoNoiseClutterSourceContents.cs" />
+    <Compile Include="NoNoise\Visualization\SelectionActor.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ProjectExtensions>
