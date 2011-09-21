@@ -228,6 +228,12 @@ namespace Banshee.NoNoise
             Clutter.Threads.Leave ();
 
             source_manager.SourceAdded -= OnSourceAdded;
+
+            Hyena.Log.Information ("Service Foo Initialized: "
+                                   + "\naction_service " + (action_service == null ? "Null" : "OK")
+                                   + "\nsource_manager " + (source_manager == null ? "Null" : "OK")
+                                   + "\nmusic_library " + (music_library == null ? "Null" : "OK")
+                                   + "\npreference_service " + (music_library == null ? "Null" : "OK"));
             return true;
         }
 

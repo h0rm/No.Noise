@@ -183,6 +183,7 @@ SOURCES =  \
 	NoNoise/Data/NoNoiseDBHandler.cs \
 	NoNoise/PCA/PCAnalyzer.cs \
 	NoNoise/Visualization/Gui/MainGui.cs \
+	NoNoise/Visualization/SelectionActor.cs \
 	NoNoise/Visualization/SongActor.cs \
 	NoNoise/Visualization/SongActorManager.cs \
 	NoNoise/Visualization/SongGroup.cs \
