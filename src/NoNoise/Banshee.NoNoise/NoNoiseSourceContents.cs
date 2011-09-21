@@ -135,7 +135,36 @@ namespace Banshee.NoNoise
         }
 
         #region Tests
-        
+
+        public delegate void ScanFinishedEvent (object source, ScanFinishedEventArgs args);
+
+        private ScanFinishedEvent scan_event;
+
+        public class ScanFinishedEventArgs
+        {
+            public ScanFinishedEventArgs (string info)
+            {
+                Info = info;
+            }
+
+            public string Info {
+                get;
+                private set;
+            }
+        }
+
+        //Event Handler which is called when the zoom level has changed
+        public event ScanFinishedEvent OnScanFinished {
+            add { scan_event += value; }
+            remove { scan_event -= value; }
+        }
+
+        public void Scan (bool start)
+        {
+            Hyena.Log.Information ("Scan " + (start ? "started.":"paused."));
+            scan_event (this, new ScanFinishedEventArgs("supi"));
+        }
+
         /// <summary>
         /// Runs several database and pca tests and prints debug output and failure/success messages.
         /// </summary>

@@ -176,15 +176,14 @@ namespace Banshee.NoNoise
             Hyena.Log.Information ("Scan action activated");
             if (scan_action_enabled) {
                 ScanAction.Label = "Start no.Noise scan";
-                if (scan_action_event != null)
-                    scan_action_event (this, new ScanActionEventArgs
-                                       (ScanActionEventArgs.Command.Pause,"Scan paused"));
+
+                if (no_noise_contents is NoNoiseSourceContents)
+                    ((NoNoiseSourceContents)no_noise_contents).Scan (false);
             } else {
                 ScanAction.Label = "Pause no.Noise scan";
 
-                if (scan_action_event != null)
-                    scan_action_event (this, new ScanActionEventArgs
-                                       (ScanActionEventArgs.Command.Start,"Scan started"));
+                if (no_noise_contents is NoNoiseSourceContents)
+                    ((NoNoiseSourceContents)no_noise_contents).Scan (true);
             }
 
             scan_action_enabled = !scan_action_enabled;
@@ -205,12 +204,23 @@ namespace Banshee.NoNoise
             }
         }
 
+        private void ScanFinished (object source, NoNoiseSourceContents.ScanFinishedEventArgs args)
+        {
+            scan_action_enabled = false;
+            ScanAction.Label = "Start no.Noise scan";
+            ScanAction.Sensitive = false;
+        }
+
         private bool SetupSourceContents ()
         {
             if (music_library == null || action_service == null)
                 return false;
 
             no_noise_contents = GetSourceContents ();
+
+            if (no_noise_contents is NoNoiseSourceContents)
+                (no_noise_contents as NoNoiseSourceContents).OnScanFinished += ScanFinished;
+
             no_noise_contents.SetSource(music_library);
 
             Clutter.Threads.Enter ();
@@ -268,37 +278,7 @@ namespace Banshee.NoNoise
             );
         }
 
-        public delegate void ScanActionEvent (object source, ScanActionEventArgs args);
 
-        private ScanActionEvent scan_action_event;
-
-        public class ScanActionEventArgs
-        {
-            public enum Command{Start, Pause};
-
-            private String info;
-            private Command val;
-
-            public ScanActionEventArgs (Command val, string info)
-            {
-                this.info = info;
-                this.val = val;
-            }
-
-            public Command Value {
-                get {return val;}
-            }
-
-            public string Info {
-                get {return info;}
-            }
-        }
-
-        //Event Handler which is called when the zoom level has changed
-        public event ScanActionEvent OnScanActionEvent {
-            add { scan_action_event += value; }
-            remove { scan_action_event -= value; }
-        }
     }
 }
 
