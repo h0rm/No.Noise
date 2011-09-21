@@ -14,8 +14,8 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <CheckForOverflowUnderflow>true</CheckForOverflowUnderflow>
-    <RootNamespace>Foo</RootNamespace>
     <AssemblyOriginatorKeyFile>.</AssemblyOriginatorKeyFile>
+    <RootNamespace>NoNoise</RootNamespace>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -94,7 +94,6 @@
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Banshee.NoNoise\NoNoiseSource.cs" />
     <Compile Include="NoNoise\Visualization\Gui\MainGui.cs" />
     <Compile Include="NoNoise\Visualization\SongActor.cs" />
     <Compile Include="NoNoise\Visualization\SongActorManager.cs" />
@@ -282,6 +281,8 @@
     <Compile Include="NoNoise\Data\DataParser.cs" />
     <Compile Include="NoNoise\Data\NoNoiseDBHandler.cs" />
     <Compile Include="NoNoise\PCA\PCAnalyzer.cs" />
+    <Compile Include="Banshee.NoNoise\NoNoiseSource.cs" />
+    <Compile Include="Banshee.NoNoise\BansheeLibraryAnalyzer.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ProjectExtensions>

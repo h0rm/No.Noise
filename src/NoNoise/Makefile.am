@@ -1,6 +1,7 @@
 GMCS_FLAGS = -unsafe
 
 SOURCES =  \
+	Banshee.NoNoise/BansheeLibraryAnalyzer.cs \
 	Banshee.NoNoise/Bpm/BpmDetectJob.cs \
 	Banshee.NoNoise/NoNoiseSource.cs \
 	Banshee.NoNoise/NoNoiseSourceContents.cs \

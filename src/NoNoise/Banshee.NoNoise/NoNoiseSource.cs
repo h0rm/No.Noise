@@ -1,5 +1,5 @@
 //
-// CluttertestSource.cs
+// NoNoiseSource.cs
 //
 // Authors:
 //   Cool Extension Author <cool.extension@author.com>
@@ -30,19 +30,11 @@ using System;
 
 using Mono.Addins;
 
-using Banshee.Base;
 using Banshee.Sources;
 using Banshee.Sources.Gui;
 
 // Other namespaces you might want:
-using Banshee.ServiceStack;
-using Banshee.Preferences;
-using Banshee.MediaEngine;
-using Banshee.PlaybackController;
-using Clutter;
 using Gtk;
-using GLib;
-using System.Threading;
 
 using NoNoise.Visualization;
 using NoNoise.Visualization.Util;
@@ -55,7 +47,7 @@ namespace Banshee.NoNoise
     //      DatabaseSource - generic, DB-backed Track source; used by PlaylistSource
     //        PrimarySource - 'owns' tracks, used by DaapSource, DapSource
     //          LibrarySource - used by Music, Video, Podcasts, and Audiobooks
-    public class NoNoiseSource : Banshee.Sources.Source
+    public class NoNoiseSource : Source
     {
         // In the sources TreeView, sets the order value for this source, small on top
         const int sort_order = 190;
@@ -81,7 +73,10 @@ namespace Banshee.NoNoise
             
             if (startViz) {
                 Properties.Set<ISourceContents> ("Nereid.SourceContents", new CustomView ());
+                Hyena.Log.Information ("NoNoise - startViz is true");
             } else {
+                Properties.Set<ISourceContents> ("Nereid.SourceContents", new NoNoiseSourceContents ());
+//                this.OnUpdated();
                 Hyena.Log.Information ("NoNoise - startViz is false");
             }
 
