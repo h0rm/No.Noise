@@ -42,8 +42,14 @@ namespace NoNoise.Visualization
             Parent = null;
             LeftChild = null;
             RightChild = null;
+            Selected = false;
         }
 
+        public bool Selected {
+            get;
+            set;
+        }
+        
         /// <summary>
         /// The X position in the 2D space
         /// </summary>

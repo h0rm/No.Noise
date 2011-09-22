@@ -106,8 +106,11 @@ namespace NoNoise.Visualization
         private BehaviourScale zoom_animation_behave;
         private int diff_zoom_clustering = 0;
 
-        private CairoTexture selection;
+        private SelectionActor selection;
+
         private bool selection_enabled = false;
+        private List<SongPoint> points_selected = new List<SongPoint> ();
+
 //        private Cogl.Clip.
 //        private int clustering_level
        // private CairoTexture test_circle;
@@ -164,8 +167,10 @@ namespace NoNoise.Visualization
 
             point_manager = new SongPointManager (0, 0, max_x, max_y);
 
-            foreach (Point p in points)
-                point_manager.Add (p.X, p.Y, "test");
+            for (int i=0; i < points.Count; i ++)
+                point_manager.Add (points[i].X, points[i].Y, "SongPoint "+i);
+
+
 
             Stopwatch stop = new Stopwatch();
             stop.Start ();
@@ -212,7 +217,8 @@ namespace NoNoise.Visualization
             this.Reactive = true;
             this.ScrollEvent += HandleAdaptiveZoom;
 
-            selection = new CairoTexture (1000,1000);
+//            selection = new CairoTexture (1000,1000);
+            selection = new SelectionActor (1000,1000, new Cairo.Color (1,0,0,0.8));
             selection.SetPosition (0,0);
             stage.Add (selection);
 //            selection.Show ();
@@ -221,8 +227,7 @@ namespace NoNoise.Visualization
             stage.ButtonReleaseEvent += HandleStageButtonReleaseEvent;
             stage.MotionEvent += HandleMotionEvent;
             stage.AllocationChanged += delegate {
-                selection.SetSurfaceSize ((uint)Math.Ceiling(stage.Width), (uint)Math.Ceiling (stage.Height));
-                selection.SetSize ((float)Math.Ceiling(stage.Width), (float)Math.Ceiling (stage.Height));
+                selection.SetSize (stage.Width, stage.Height);
                 UpdateClipping ();
             };
             //this.LeaveEvent += HandleHandleLeaveEvent;
@@ -239,7 +244,7 @@ namespace NoNoise.Visualization
         /// </param>
         public void ClusterOneStep (bool inwards)
         {
-            SelectionClear ();
+            selection.Reset ();
             if (inwards)
             {
                 AnimateClustering (false);
@@ -258,7 +263,7 @@ namespace NoNoise.Visualization
         /// </param>
         public void ZoomOnCenter (bool inwards)
         {
-            SelectionClear ();
+            selection.Reset ();
             ZoomOnPosition (inwards, Stage.Width/2.0f, Stage.Height/2.0f);
         }
 
@@ -475,7 +480,6 @@ namespace NoNoise.Visualization
             GetClippingWindow (out x, out y, out width, out height );
 
             List<SongPoint> points;
-            SongActor current;
             SongPoint p;
 
             points = point_manager.GetPointsInWindow (x, y, width, height);
@@ -513,8 +517,8 @@ namespace NoNoise.Visualization
                 if (p.Actor != null)
                     continue;
 
-                current = actor_manager.AllocateAtPosition (p.X, p.Y);
-                p.Actor = current;
+                p.Actor = actor_manager.AllocateAtPosition (p);
+
                 points_visible.Add (p);
 
                 AddClusteringAnimation (p);
@@ -576,8 +580,6 @@ namespace NoNoise.Visualization
 //            args.Event.X
             EventHelper.GetCoords (args.Event, out x, out y);
 
-            Hyena.Log.Information ("Mouse (" + args.Event.X + "," + args.Event.Y + ")");
-
             float newx = this.X + x - mouse_old_x;
             float newy = this.Y + y - mouse_old_y;
 
@@ -588,8 +590,8 @@ namespace NoNoise.Visualization
 
             } else if (selection_enabled){
 
-//                Hyena.Log.Information ("Paint line");
-                SelectionPaintLine (x, y);
+
+                selection.LineTo (x, y);
 
             }
 
@@ -597,54 +599,28 @@ namespace NoNoise.Visualization
             mouse_old_y = y;
         }
 
-        private int count = 0;
-        private float line_end_x, line_end_y;
-
-        private void SelectionPaintLine (float x, float y)
+        private void ClearSelection ()
         {
-            if (count%10 != 0) {
-                count++;
-                return;
+            foreach (SongPoint p in points_selected)
+            {
+                if (p.Actor != null)
+                    p.Actor.SetPrototypeByColor (SongActor.Color.White);
+                p.Selected = false;
             }
 
-            Hyena.Log.Information ("Paint line " + count );
-
-            Cairo.Context context = selection.Create();
-
-            context.Color = new Cairo.Color (1,0,0,0.9);
-            context.LineWidth = 5;
-            context.MoveTo (line_end_x, line_end_y);
-            context.LineTo (x, y);
-            context.Stroke ();
-
-            ((IDisposable) context.Target).Dispose ();
-            ((IDisposable) context).Dispose ();
-//            selection.QueueRedraw ();
-
-            line_end_x = x;
-            line_end_y = y;
-
-            count ++;
+            points_selected = new List<SongPoint> ();
         }
 
-        private void SelectionClear ()
+        private void UpdateSelection ()
         {
-            count = 0;
-            line_end_x = mouse_old_x;
-            line_end_y = mouse_old_y;
+            points_selected = selection.GetPointsInside (points_visible);
+            for (int i = 0; i < points_selected.Count; i ++)
+            {
+                points_selected[i].Selected = true;
+                points_selected[i].Actor.SetPrototypeByColor (SongActor.Color.Red);
+            }
 
-            selection.Clear ();
-            Cairo.Context context = selection.Create();
-
-            ((IDisposable) context.Target).Dispose ();
-            ((IDisposable) context).Dispose ();
-            Hyena.Log.Information ("Clear Selection");
-        }
-
-        private void SelectionEnd ()
-        {
-            Hyena.Log.Information ("End Selection");
-
+            UpdateClipping ();
         }
         /// <summary>
         /// Handles the button release event for displacing the actor.
@@ -660,8 +636,14 @@ namespace NoNoise.Visualization
 //            Hyena.Log.Information ("Mouse Up.");
             uint button = EventHelper.GetButton (args.Event);
 
+            if (selection_enabled) {
+                selection.Stop ();
+                UpdateSelection ();
+            }
+
             selection_enabled = false;
 //            SelectionEnd ();
+
             mouse_down = false;
         }
 
@@ -717,14 +699,20 @@ namespace NoNoise.Visualization
             uint button = EventHelper.GetButton (args.Event);
 
             EventHelper.GetCoords (args.Event, out mouse_old_x, out mouse_old_y);
-            SelectionClear ();
+            selection.Reset ();
 
             if (button != 1)
             {
                 Hyena.Log.Debug ("Rechtsklick.");
 
+                ClearSelection ();
                 selection_enabled = true;
+                double scale;
+                GetScale (out scale, out scale);
+                float tx, ty;
+                GetTransformedPosition (out tx, out ty);
 
+                selection.Start (mouse_old_x, mouse_old_y, scale, -tx, -ty);
             }
             else {
                 mouse_down = true;

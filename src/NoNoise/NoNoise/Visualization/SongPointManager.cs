@@ -35,7 +35,7 @@ namespace NoNoise.Visualization
         private List<QuadTree<SongPoint>> tree_list;
         private const int min_points = 100;
 
-        private int level = 2;
+        private int level = 0;
 
         public bool IsMaxLevel {
             get { return max_clustering_level == level; }

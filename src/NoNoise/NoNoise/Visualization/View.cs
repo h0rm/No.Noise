@@ -42,6 +42,7 @@ namespace NoNoise.Visualization
             Stage.Color = new Color (0,0,0,255);
             point_group = new SongGroup (Stage);
             gui = new MainGui ();
+            point_group.LowerBottom ();
 
             Stage.Add (point_group);
             Stage.Add (gui);

@@ -24,22 +24,191 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 using System;
-namespace NoNoise
-{
-    public class SelectionActor : Clutter.CairoTexture
-    {
-        Cairo.Context context;
+using System.Collections.Generic;
+using NoNoise.Visualization.Util;
+using Hyena;
 
-        public SelectionActor (uint width, uint height) : base (width, height)
+namespace NoNoise.Visualization
+{
+    public class SelectionActor : Clutter.Group
+    {
+        private double old_x, old_y, segment_x, segment_y, shift_x, shift_y, scale;
+        private int count = 0;
+        private Clutter.CairoTexture texture;
+        private double start_x, start_y;
+
+        private List<Point> vertices;
+
+        public SelectionActor (uint width, uint height, Cairo.Color color)
         {
-            Cairo.Context context = Create();
-            context.LineWidth = 5;
+            Color = color;
+            texture = new Clutter.CairoTexture (width, height);
+            texture.SetSize (width, height);
+            this.Add (texture);
         }
 
-        public void LineTo (double x, double y, double a, double b)
+        public new void SetSize (float width, float height)
         {
-            context.MoveTo (x, y);
-            context.LineTo (a, b);
+            texture.SetSurfaceSize ((uint)Math.Ceiling(width), (uint)Math.Ceiling (height));
+            texture.SetSize ((float)Math.Ceiling(width), (float)Math.Ceiling (height));
+        }
+        public Cairo.Color Color {
+            get;
+            set;
+        }
+        public void Reset ()
+        {
+            texture.Clear ();
+            Cairo.Context context = texture.Create();
+
+            ((IDisposable) context.Target).Dispose ();
+            ((IDisposable) context).Dispose ();
+
+            vertices = new List<Point> ();
+
+            count = 0;
+        }
+
+
+        public void Start (double x, double y, double scale, double shift_x, double shift_y)
+        {
+            old_x = x;
+            old_y = y;
+
+            this.scale = scale;
+            this.shift_x = shift_x;
+            this.shift_y = shift_y;
+
+            start_x = x;
+            start_y = y;
+
+            segment_x = x;
+            segment_y = y;
+
+            vertices.Add (GetTransformedPoint (x,y));
+        }
+
+        public void Stop ()
+        {
+            if (vertices.Count > 0) {
+
+                AddSegment (old_x,old_y);
+                vertices.Add (GetTransformedPoint (start_x,start_y));
+
+                DrawLine (start_x, start_y);
+                DebugDrawSegment (start_x, start_y);
+            }
+        }
+
+        public void LineTo (double x, double y)
+        {
+            DrawLine (x,y);
+
+            Point p = new Point (x,y);
+
+            if (p.DistanceTo (new Point (segment_x, segment_y)) > 20) {
+//            if (count == 5) {
+                AddSegment (x, y);
+                count = 0;
+            } else {
+                count ++;
+            }
+
+        }
+
+        private void DrawLine (double x, double y)
+        {
+//            Hyena.Log.Information ("Paint line " + count );
+
+            Cairo.Context context = texture.Create();
+            context.LineWidth = 5;
+            context.Color = new Cairo.Color (1,0,0,0.9);
+
+            context.MoveTo (old_x, old_y);
+            context.LineTo (x, y);
+            context.Stroke ();
+
+            ((IDisposable) context.Target).Dispose ();
+            ((IDisposable) context).Dispose ();
+
+            old_x = x;
+            old_y = y;
+        }
+
+        private Point GetTransformedPoint (double x, double y)
+        {
+            return new Point ((x+shift_x)/scale, (y+shift_y)/scale);
+//            return new Point (x, y);
+        }
+        private void AddSegment (double x, double y)
+        {
+            if (vertices == null)
+                return;
+
+            DebugDrawSegment (x, y);
+
+            vertices.Add (GetTransformedPoint (x,y));
+
+            segment_x = x;
+            segment_y = y;
+        }
+
+        private void DebugDrawSegment (double x, double y)
+        {
+            Cairo.Context context = texture.Create();
+            context.LineWidth = 5;
+            context.Color = new Cairo.Color (0,1,0,0.9);
+
+            context.MoveTo (segment_x, segment_y);
+            context.LineTo (x, y);
+            context.Stroke ();
+
+            ((IDisposable) context.Target).Dispose ();
+            ((IDisposable) context).Dispose ();
+        }
+
+        public List<SongPoint> GetPointsInside (List<SongPoint> points)
+        {
+            List<SongPoint> inside = new List<SongPoint> ();
+
+            foreach (SongPoint p in points) {
+
+                if (IsPointInside (p.XY))
+                    inside.Add (p);
+            }
+
+            Hyena.Log.Information ("Inside : " + inside.Count);
+            return inside;
+        }
+
+        private bool IsPointInside (Point P)
+        {
+            int wn = 0;
+
+             // loop through all edges of the polygon
+            for (int i=0; i<vertices.Count-1; i++) {   // edge from V[i] to V[i+1]
+                if (vertices[i].Y <= P.Y) {         // start y <= P.y
+                    if (vertices[i+1].Y > P.Y)      // an upward crossing
+                        if (isLeft( vertices[i], vertices[i+1], P) > 0)  // P left of edge
+                            ++wn;            // have a valid up intersect
+                }
+                else {                       // start y > P.y (no test needed)
+                    if (vertices[i+1].Y <= P.Y)     // a downward crossing
+                        if (isLeft( vertices[i], vertices[i+1], P) < 0)  // P right of edge
+                            --wn;            // have a valid down intersect
+                }
+            }
+            return wn != 0;
+        }
+
+        private double isLeft ( Point P0, Point P1, Point P2)
+        {
+            double erg =  ( (P1.X - P0.X) * (P2.Y - P0.Y)
+                            - (P2.X - P0.X) * (P1.Y - P0.Y) );
+            if (Math.Abs (erg) < 0.001)
+                erg = 0;
+
+            return erg;
         }
     }
 }

@@ -40,7 +40,8 @@ namespace NoNoise.Visualization
         static private uint circle_size = 50;
         static private int max_prototypes = 4;
 
-        public enum Color {Green, Red, Blue, White};
+        public enum Color {Green, Red, Blue, White, NoColor};
+
 
         static public uint CircleSize {
             get { return circle_size; }
@@ -148,10 +149,12 @@ namespace NoNoise.Visualization
             ((IDisposable) context).Dispose ();
         }
 
+        private Color current_color = SongActor.Color.NoColor;
+        
         #endregion
         private CairoTexture prototype;
 
-        public CairoTexture Prototype
+        private CairoTexture Prototype
         {
             set
             {
@@ -164,9 +167,13 @@ namespace NoNoise.Visualization
 
         public void SetPrototypeByColor (Color color)
         {
+            if (color == current_color)
+                return;
+
             Debug.Assert ((int)color < prototype_list.Count);
 
             Prototype = prototype_list[(int)color];
+            current_color = color;
         }
 
         public SongPoint Owner {

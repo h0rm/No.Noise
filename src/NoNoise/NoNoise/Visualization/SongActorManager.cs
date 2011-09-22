@@ -75,14 +75,22 @@ namespace NoNoise.Visualization
             return clone;
         }
 
-        public SongActor AllocateAtPosition (double x, double y)
+        public SongActor AllocateAtPosition (SongPoint p)
         {
             if (free_actors.Count < 1)
                 return null;
 
             SongActor actor = free_actors.Pop ();
-            actor.SetPosition ((float)x, (float)y);
+            if (!p.Selected) {
+                actor.SetPrototypeByColor (SongActor.Color.White);
+            } else {
+                actor.SetPrototypeByColor (SongActor.Color.Red);
+                Hyena.Log.Information ("Point selected");
+            }
+
+            actor.SetPosition ((float)p.X, (float)p.Y);
             actor.Opacity = 255;
+            actor.Owner = p;
             actor.Show ();
 
             return actor;
