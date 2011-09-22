@@ -75,7 +75,7 @@ namespace Banshee.NoNoise
 
         private BansheeLibraryAnalyzer ()
         {
-            ml = ServiceManager.SourceManager.MusicLibrary;     // null on startup
+            ml = ServiceManager.SourceManager.MusicLibrary;     // used to be null on startup
 //            Hyena.Log.Debug ("NoNoise - ml count: " + ml.TrackModel.Count);
 //            if (ml.TrackModel.Count == 0) {
 //                Hyena.Log.Debug ("NoNoise - tm count 0, adding handler");
@@ -90,6 +90,9 @@ namespace Banshee.NoNoise
             analyzing_lib = false;
             lib_scanned = CheckLibScanned ();
             data_up_to_date = CheckDataUpToDate ();
+
+            new Thread (new ThreadStart(PcaForMusicLibrary)).Start ();
+            new Thread (new ThreadStart(WriteTrackInfosToDB)).Start ();
         }
 
         public static BansheeLibraryAnalyzer Init (NoNoiseSourceContents sc)
@@ -97,8 +100,8 @@ namespace Banshee.NoNoise
             bla = new BansheeLibraryAnalyzer ();
             bla.sc = sc;
 
-            bla.PcaForMusicLibrary ();
-            bla.WriteTrackInfosToDB ();
+//            bla.PcaForMusicLibrary ();
+//            bla.WriteTrackInfosToDB ();
 
             return bla;
         }
@@ -116,7 +119,7 @@ namespace Banshee.NoNoise
 //                Hyena.Log.Debug ("NoNoise/DB - tm count: " + ml.TrackModel.Count);
                 lib_scanned = (cnt == ml.TrackModel.Count);
             }
-            Hyena.Log.Debug ("NoNoise/DB - lib scanned: " + lib_scanned);
+            Hyena.Log.Debug ("NoNoise/BLA - lib scanned: " + lib_scanned);
 
             return lib_scanned;
         }
@@ -135,7 +138,7 @@ namespace Banshee.NoNoise
             lock (scan_synch) {
                 data_up_to_date = eq;
             }
-            Hyena.Log.Debug ("NoNoise/DB - data up to date: " + data_up_to_date);
+            Hyena.Log.Debug ("NoNoise/BLA - data up to date: " + data_up_to_date);
 
             return data_up_to_date;
         }
@@ -165,7 +168,7 @@ namespace Banshee.NoNoise
                     stop_scan = true;
                 }
             }
-            Hyena.Log.Information ("Scan " + (start ? "started." : "paused."));
+            Hyena.Log.Information ("NoNoise/BLA - Scan " + (start ? "started." : "paused."));
         }
 
         private void ScanMusicLibrary ()
@@ -182,7 +185,7 @@ namespace Banshee.NoNoise
                 mfccMap = db.GetMirageMatrices ();
             }
             if (mfccMap == null)
-                Hyena.Log.Error ("NoNoise/DB - mfccMap is null!");
+                Hyena.Log.Error ("NoNoise/BLA - mfccMap is null!");
 
             for (int i = 0; i < ml.TrackModel.Count; i++) {
                 if (stop_scan) {
@@ -240,14 +243,20 @@ namespace Banshee.NoNoise
         {
 //            Hyena.Log.Debug ("NoNoise/PCA - ml.TrackModel count: "  + ml.TrackModel.Count);
 
-            if (data_up_to_date)
+            if (data_up_to_date) {
+                Hyena.Log.Information ("NoNoise - Data already up2date - aborting pca.");
                 return;
+            }
 
-            if (analyzing_lib)
+            if (analyzing_lib) {
+                Hyena.Log.Information ("NoNoise - Music library is currently beeing scanned - aborting pca.");
                 return;     // TODO react!
+            }
 
-            if (!lib_scanned)
+            if (!lib_scanned) {
+                Hyena.Log.Information ("NoNoise - No mirage data available for pca - aborting.");
                 return;     // TODO something clever!
+            }
 
             ana = new PCAnalyzer();
             Dictionary<int, Mirage.Matrix> mfccMap = null;
@@ -255,7 +264,7 @@ namespace Banshee.NoNoise
                 mfccMap = db.GetMirageMatrices ();
             }
             if (mfccMap == null)
-                Hyena.Log.Error ("NoNoise/DB - mfccMap is null!");
+                Hyena.Log.Error ("NoNoise/BLA - mfccMap is null!");
 
             foreach (int bid in mfccMap.Keys) {
                 try {
@@ -313,8 +322,10 @@ namespace Banshee.NoNoise
         {
 //            Hyena.Log.Debug ("NoNoise/TI - tm count: "  + ml.TrackModel.Count);
 
-            if (data_up_to_date)
+            if (data_up_to_date) {
+                Hyena.Log.Information ("NoNoise - Data already up2date - aborting write-track-infos.");
                 return;
+            }
 
 //            ml = ServiceManager.SourceManager.MusicLibrary;
 
