@@ -35,9 +35,17 @@ using NoNoise.PCA;
 
 namespace Banshee.NoNoise
 {
+    /// <summary>
+    /// This class provides a singleton which serves as an interface between the
+    /// GUI and the database.
+    /// </summary>
     public class BansheeLibraryAnalyzer
     {
         private static BansheeLibraryAnalyzer bla = null;
+
+        // TODO remove this debug helper bool
+        private readonly bool STORE_ENTIRE_MATRIX = false;
+
         #region Members
         private Banshee.Library.MusicLibrarySource ml;
 //        private Banshee.Collection.TrackListModel tm;
@@ -55,14 +63,24 @@ namespace Banshee.NoNoise
         private object db_synch;
         #endregion
 
+        /// <summary>
+        /// The current instance of this class. Is null until Init () has been called.
+        /// </summary>
         public static BansheeLibraryAnalyzer Singleton {
             get { return bla; }
         }
 
+        /// <summary>
+        /// The PCA coordinates of the corresponding tracks.
+        /// Is empty if there is no PCA data available yet.
+        /// </summary>
         public List<DataEntry> PcaCoordinates {
             get { return coords; }
         }
 
+        /// <summary>
+        /// Boolean variable indicating whether the library is currently being scanned.
+        /// </summary>
         public bool IsScanning {
             get { return analyzing_lib; }
         }
@@ -95,6 +113,18 @@ namespace Banshee.NoNoise
             new Thread (new ThreadStart(WriteTrackInfosToDB)).Start ();
         }
 
+        /// <summary>
+        /// Initializes the singleton instance of this class and starts PCA
+        /// computations if the library has been scanned already. Also causes
+        /// TrackData to be written to the database if it is not current anymore.
+        /// </summary>
+        /// <param name="sc">
+        /// The <see cref="NoNoiseSourceContents"/> which is used as callback.
+        /// May NOT be null.
+        /// </param>
+        /// <returns>
+        /// The singleton instance of <see cref="BansheeLibraryAnalyzer"/>
+        /// </returns>
         public static BansheeLibraryAnalyzer Init (NoNoiseSourceContents sc)
         {
             bla = new BansheeLibraryAnalyzer ();
@@ -106,6 +136,13 @@ namespace Banshee.NoNoise
             return bla;
         }
 
+        /// <summary>
+        /// Checks whether the music library has been scanned or not and stores
+        /// the result in lib_scanned.
+        /// </summary>
+        /// <returns>
+        /// True if the music library has been scanned, false otherwise.
+        /// </returns>
         private bool CheckLibScanned ()
         {
 //            tm = ServiceManager.SourceManager.MusicLibrary.TrackModel;
@@ -124,6 +161,13 @@ namespace Banshee.NoNoise
             return lib_scanned;
         }
 
+        /// <summary>
+        /// Checks whether the pca and track data is up2date or not and stores
+        /// the result in data_up_to_date.
+        /// </summary>
+        /// <returns>
+        /// True if the pca and track data is up to date, false otherwise.
+        /// </returns>
         private bool CheckDataUpToDate ()
         {
 //            tm = ServiceManager.SourceManager.MusicLibrary.TrackModel;
@@ -143,6 +187,16 @@ namespace Banshee.NoNoise
             return data_up_to_date;
         }
 
+        /// <summary>
+        /// Starts a new thread which scans the music library and stores the mirage
+        /// data in the database.
+        /// </summary>
+        /// <param name="start">
+        /// If start is true, the scan will be started. If it is false, the scan
+        /// will be stopped. If start is true and the library is already being
+        /// scanned, or if start is false and the library is not being scanned
+        /// then this method does nothing.
+        /// </param>
         public void Scan (bool start)
         {
             if (start == analyzing_lib)
@@ -171,6 +225,10 @@ namespace Banshee.NoNoise
             Hyena.Log.Information ("NoNoise/BLA - Scan " + (start ? "started." : "paused."));
         }
 
+        /// <summary>
+        /// Scans the music library and stores the mirage data in the database.
+        /// Calls <see cref="Finished ()"/> when everything has been scanned.
+        /// </summary>
         private void ScanMusicLibrary ()
         {
 //            ml = ServiceManager.SourceManager.MusicLibrary;
@@ -200,8 +258,6 @@ namespace Banshee.NoNoise
                     string absPath = ti.Uri.AbsolutePath;
                     int bid = ml.GetTrackIdForUri (ti.Uri);
 
-                    // WARN: A bid could theoretically be inserted/deleted between GetMirageMatrices ()
-                    // and CointainsMirDataForTrack () such that if and else fail
                     if (!mfccMap.ContainsKey (bid)) {
                         mfcc = Mirage.Analyzer.AnalyzeMFCC (absPath);
 
@@ -225,6 +281,10 @@ namespace Banshee.NoNoise
             finished.WakeupMain();
         }
 
+        /// <summary>
+        /// Sets lib_scanned to true and tells the NoNoiseSourceContent that
+        /// the scan finished.
+        /// </summary>
         private void Finished ()
         {
             lock (scan_synch) {

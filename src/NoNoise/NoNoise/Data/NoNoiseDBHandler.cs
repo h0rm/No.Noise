@@ -283,6 +283,18 @@ namespace NoNoise.Data
             return true;
         }
 
+        /// <summary>
+        /// Inserts a Mirage.Vector into the database.
+        /// </summary>
+        /// <param name="v">
+        /// The <see cref="Mirage.Vector"/> to be inserted
+        /// </param>
+        /// <param name="bid">
+        /// The banshee_id of the corresponding track
+        /// </param>
+        /// <returns>
+        /// True if the vector was successfully inserted. False otherwise.
+        /// </returns>
         public bool InsertVector (Mirage.Vector v, int bid)
         {
             IDbCommand dbcmd = null;
@@ -350,6 +362,13 @@ namespace NoNoise.Data
             }
         }
 
+        /// <summary>
+        /// Parses Mirage.Vector's from the database and returns them.
+        /// </summary>
+        /// <returns>
+        /// A <see cref="Dictionary<System.Int32, Mirage.Vector>"/> containing
+        /// all vectors in the database mapped to their corresponding banshee_id.
+        /// </returns>
         public Dictionary<int, Mirage.Vector> GetMirageVectors ()
         {
             Dictionary<int, Mirage.Vector> ret = new Dictionary<int, Mirage.Vector> ();
@@ -489,6 +508,13 @@ namespace NoNoise.Data
             return true;
         }
 
+        /// <summary>
+        /// Gets a list with all PCA coordinates stored in the database.
+        /// </summary>
+        /// <returns>
+        /// A <see cref="List<DataEntry>"/> containing all PCA coordinates
+        /// from the database.
+        /// </returns>
         public List<DataEntry> GetPcaCoordinates ()
         {
             List<DataEntry> ret = new List<DataEntry> ();
@@ -601,6 +627,13 @@ namespace NoNoise.Data
             }
         }
 
+        /// <summary>
+        /// Gets a list with all track data stored in the database.
+        /// </summary>
+        /// <returns>
+        /// A <see cref="List<TrackData>"/> containing all track data
+        /// from the database.
+        /// </returns>
         public List<TrackData> GetTrackData ()
         {
             List<TrackData> ret = new List<TrackData> ();
@@ -632,6 +665,15 @@ namespace NoNoise.Data
             }
         }
 
+        /// <summary>
+        /// Gets the corresponding track data for the given banshee_id.
+        /// </summary>
+        /// <param name="bid">
+        /// The banshee_id
+        /// </param>
+        /// <returns>
+        /// The <see cref="TrackData"/> with the given banshee_id
+        /// </returns>
         public TrackData GetTrackData (int bid)
         {
             TrackData td = null;
@@ -669,6 +711,12 @@ namespace NoNoise.Data
 
         #region Info Queries
 
+        /// <summary>
+        /// Gets the number of records in the MIRData table.
+        /// </summary>
+        /// <returns>
+        /// The number of records in the MIRData table.
+        /// </returns>
         public int GetMirDataCount ()
         {
             IDbCommand dbcmd = null;
@@ -690,6 +738,12 @@ namespace NoNoise.Data
             }
         }
 
+        /// <summary>
+        /// Gets the number of records in the PCAData table.
+        /// </summary>
+        /// <returns>
+        /// The number of records in the PCAData table.
+        /// </returns>
         public int GetPcaDataCount ()
         {
             IDbCommand dbcmd = null;
@@ -711,6 +765,12 @@ namespace NoNoise.Data
             }
         }
 
+        /// <summary>
+        /// Gets the number of records in the TrackData table.
+        /// </summary>
+        /// <returns>
+        /// The number of records in the TrackData table.
+        /// </returns>
         public int GetTrackDataCount ()
         {
             IDbCommand dbcmd = null;
