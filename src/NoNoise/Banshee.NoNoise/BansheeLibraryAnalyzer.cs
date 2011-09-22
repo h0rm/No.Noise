@@ -171,9 +171,14 @@ namespace Banshee.NoNoise
         private void ScanMusicLibrary ()
         {
 //            ml = ServiceManager.SourceManager.MusicLibrary;
+            int ml_cnt = ml.TrackModel.Count;
+            int db_cnt = 0;
+            DateTime dt = DateTime.Now;
+
             Mirage.Matrix mfcc;
             Dictionary<int, Mirage.Matrix> mfccMap = null;
             lock (db_synch) {
+                db_cnt = db.GetMirDataCount ();
                 mfccMap = db.GetMirageMatrices ();
             }
             if (mfccMap == null)
@@ -201,6 +206,13 @@ namespace Banshee.NoNoise
                             if (!db.InsertMatrix (mfcc, bid))
                                 Hyena.Log.Error ("NoNoise - Matrix insert failed");
                         }
+                        db_cnt++;
+                    }
+
+                    if ((DateTime.Now - dt).TotalSeconds > 20.0) {
+                        Hyena.Log.InformationFormat ("NoNoise/Scan - {0}% finished.",
+                                                     (int)((double)db_cnt / (double)ml_cnt * 100.0));
+                        dt = DateTime.Now;
                     }
                 } catch (Exception e) {
                     Hyena.Log.Exception("NoNoise - MFCC/DB Problem", e);

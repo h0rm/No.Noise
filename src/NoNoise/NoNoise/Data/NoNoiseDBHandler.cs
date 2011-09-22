@@ -64,7 +64,7 @@ namespace NoNoise.Data
         /// </summary>
         public NoNoiseDBHandler ()
         {
-            dbcon = (IDbConnection) new SqliteConnection(CONNECTION_STRING);
+            dbcon = (IDbConnection) new SqliteConnection (CONNECTION_STRING);
             CreateSchema ();
         }
 
@@ -75,8 +75,8 @@ namespace NoNoise.Data
         {
             IDbCommand dbcmd = null;
             try {
-                dbcon.Open();
-                dbcmd = dbcon.CreateCommand();
+                dbcon.Open ();
+                dbcmd = dbcon.CreateCommand ();
 
                 dbcmd.CommandText = CREATE_TABLE_MIRDATA;
                 dbcmd.ExecuteNonQuery ();
@@ -87,14 +87,14 @@ namespace NoNoise.Data
                 dbcmd.CommandText = CREATE_TABLE_TRACKDATA;
                 dbcmd.ExecuteNonQuery ();
             } catch (Exception e) {
-                Log.Exception("NoNoise/DB - Schema creation failed", e);
+                Log.Exception ("NoNoise/DB - Schema creation failed", e);
                 throw new Exception ("Unable to create DB schema!", e);
             } finally {
                 if (dbcmd != null)
-                    dbcmd.Dispose();
+                    dbcmd.Dispose ();
                 dbcmd = null;
                 if (dbcon != null)
-                    dbcon.Close();
+                    dbcon.Close ();
             }
         }
 
@@ -117,21 +117,21 @@ namespace NoNoise.Data
         {
             IDbCommand dbcmd = null;
             try {
-                dbcon.Open();
-                dbcmd = dbcon.CreateCommand();
+                dbcon.Open ();
+                dbcmd = dbcon.CreateCommand ();
 
-                dbcmd.CommandText = string.Format("INSERT INTO MIRData (banshee_id, data) VALUES ('{0}', '{1}')",
+                dbcmd.CommandText = string.Format ("INSERT INTO MIRData (banshee_id, data) VALUES ('{0}', '{1}')",
                                                   bid, DataParser.MatrixToString (m));
                 dbcmd.ExecuteNonQuery ();
             } catch (Exception e) {
-                Log.Exception("NoNoise/DB - Matrix insert failed", e);
+                Log.Exception ("NoNoise/DB - Matrix insert failed", e);
                 return false;
             } finally {
                 if (dbcmd != null)
-                    dbcmd.Dispose();
+                    dbcmd.Dispose ();
                 dbcmd = null;
                 if (dbcon != null)
-                    dbcon.Close();
+                    dbcon.Close ();
             }
 
             return true;
@@ -157,25 +157,25 @@ namespace NoNoise.Data
         {
             IDbCommand dbcmd = null;
             try {
-                dbcon.Open();
-                dbcmd = dbcon.CreateCommand();
+                dbcon.Open ();
+                dbcmd = dbcon.CreateCommand ();
 
                 dbcmd.CommandText = string.Format ("SELECT id FROM MIRData WHERE id = '{0}'", primaryKey);
                 if (dbcmd.ExecuteScalar () != null)
                     return UpdateMatrix (m, bid, primaryKey, dbcmd);
 
-                dbcmd.CommandText = string.Format("INSERT INTO MIRData (banshee_id, data, id) VALUES ('{0}', '{1}'," +
+                dbcmd.CommandText = string.Format ("INSERT INTO MIRData (banshee_id, data, id) VALUES ('{0}', '{1}'," +
                                                     " '{2}')", bid, DataParser.MatrixToString (m), primaryKey);
                 dbcmd.ExecuteNonQuery ();
             } catch (Exception e) {
-                Log.Exception("NoNoise/DB - Matrix insert failed for id: " + primaryKey, e);
+                Log.Exception ("NoNoise/DB - Matrix insert failed for id: " + primaryKey, e);
                 return false;
             } finally {
                 if (dbcmd != null)
-                    dbcmd.Dispose();
+                    dbcmd.Dispose ();
                 dbcmd = null;
                 if (dbcon != null)
-                    dbcon.Close();
+                    dbcon.Close ();
             }
 
             return true;
@@ -202,8 +202,8 @@ namespace NoNoise.Data
         /// </returns>
         private bool UpdateMatrix (Matrix m, int bid, int primaryKey, IDbCommand dbcmd)
         {
-            Log.Debug("NoNoise/DB - Updating id " + primaryKey);
-            dbcmd.CommandText = string.Format("UPDATE MIRData SET data = '{0}', banshee_id = '{1}' WHERE id = '{2}'",
+            Log.Debug ("NoNoise/DB - Updating id " + primaryKey);
+            dbcmd.CommandText = string.Format ("UPDATE MIRData SET data = '{0}', banshee_id = '{1}' WHERE id = '{2}'",
                                               DataParser.MatrixToString (m), bid, primaryKey);
             dbcmd.ExecuteNonQuery ();
 
@@ -222,25 +222,25 @@ namespace NoNoise.Data
 
             IDbCommand dbcmd = null;
             try {
-                dbcon.Open();
-                dbcmd = dbcon.CreateCommand();
+                dbcon.Open ();
+                dbcmd = dbcon.CreateCommand ();
 
                 dbcmd.CommandText = "SELECT data FROM MIRData";
-                System.Data.IDataReader reader = dbcmd.ExecuteReader();
-                while(reader.Read()) {
+                System.Data.IDataReader reader = dbcmd.ExecuteReader ();
+                while (reader.Read ()) {
                     ret.Add (DataParser.ParseMatrix (reader.GetString (0)));
                 }
 
                 return ret;
             } catch (Exception e) {
-                Log.Exception("NoNoise/DB - Matrix read failed", e);
+                Log.Exception ("NoNoise/DB - Matrix read failed", e);
                 return null;
             } finally {
                 if (dbcmd != null)
-                    dbcmd.Dispose();
+                    dbcmd.Dispose ();
                 dbcmd = null;
                 if (dbcon != null)
-                    dbcon.Close();
+                    dbcon.Close ();
             }
         }
         #endregion
@@ -263,21 +263,21 @@ namespace NoNoise.Data
         {
             IDbCommand dbcmd = null;
             try {
-                dbcon.Open();
-                dbcmd = dbcon.CreateCommand();
+                dbcon.Open ();
+                dbcmd = dbcon.CreateCommand ();
 
-                dbcmd.CommandText = string.Format("INSERT INTO MIRData (banshee_id, data) VALUES ('{0}', '{1}')",
+                dbcmd.CommandText = string.Format ("INSERT INTO MIRData (banshee_id, data) VALUES ('{0}', '{1}')",
                                                   bid, DataParser.MirageMatrixToString(m));
                 dbcmd.ExecuteNonQuery ();
             } catch (Exception e) {
-                Log.Exception("NoNoise/DB - Mirage.Matrix insert failed", e);
+                Log.Exception ("NoNoise/DB - Mirage.Matrix insert failed", e);
                 return false;
             } finally {
                 if (dbcmd != null)
-                    dbcmd.Dispose();
+                    dbcmd.Dispose ();
                 dbcmd = null;
                 if (dbcon != null)
-                    dbcon.Close();
+                    dbcon.Close ();
             }
 
             return true;
@@ -287,21 +287,21 @@ namespace NoNoise.Data
         {
             IDbCommand dbcmd = null;
             try {
-                dbcon.Open();
-                dbcmd = dbcon.CreateCommand();
+                dbcon.Open ();
+                dbcmd = dbcon.CreateCommand ();
 
-                dbcmd.CommandText = string.Format("INSERT INTO MIRData (banshee_id, data) VALUES ('{0}', '{1}')",
+                dbcmd.CommandText = string.Format ("INSERT INTO MIRData (banshee_id, data) VALUES ('{0}', '{1}')",
                                                   bid, DataParser.MirageVectorToString(v));
                 dbcmd.ExecuteNonQuery ();
             } catch (Exception e) {
-                Log.Exception("NoNoise/DB - Mirage.Vector insert failed", e);
+                Log.Exception ("NoNoise/DB - Mirage.Vector insert failed", e);
                 return false;
             } finally {
                 if (dbcmd != null)
-                    dbcmd.Dispose();
+                    dbcmd.Dispose ();
                 dbcmd = null;
                 if (dbcon != null)
-                    dbcon.Close();
+                    dbcon.Close ();
             }
 
             return true;
@@ -320,12 +320,12 @@ namespace NoNoise.Data
 
             IDbCommand dbcmd = null;
             try {
-                dbcon.Open();
-                dbcmd = dbcon.CreateCommand();
+                dbcon.Open ();
+                dbcmd = dbcon.CreateCommand ();
 
                 dbcmd.CommandText = "SELECT data, id, banshee_id FROM MIRData";
-                System.Data.IDataReader reader = dbcmd.ExecuteReader();
-                while(reader.Read()) {
+                System.Data.IDataReader reader = dbcmd.ExecuteReader ();
+                while (reader.Read ()) {
                     Mirage.Matrix mat = DataParser.ParseMirageMatrix (reader.GetString (0));
                     int bid = reader.GetInt32 (2);
                     if (mat != null)
@@ -339,14 +339,14 @@ namespace NoNoise.Data
 
                 return ret;
             } catch (Exception e) {
-                Log.Exception("NoNoise/DB - Mirage.Matrix read failed", e);
+                Log.Exception ("NoNoise/DB - Mirage.Matrix read failed", e);
                 return null;
             } finally {
                 if (dbcmd != null)
-                    dbcmd.Dispose();
+                    dbcmd.Dispose ();
                 dbcmd = null;
                 if (dbcon != null)
-                    dbcon.Close();
+                    dbcon.Close ();
             }
         }
 
@@ -356,12 +356,12 @@ namespace NoNoise.Data
 
             IDbCommand dbcmd = null;
             try {
-                dbcon.Open();
-                dbcmd = dbcon.CreateCommand();
+                dbcon.Open ();
+                dbcmd = dbcon.CreateCommand ();
 
                 dbcmd.CommandText = "SELECT data, id, banshee_id FROM MIRData";
-                System.Data.IDataReader reader = dbcmd.ExecuteReader();
-                while(reader.Read()) {
+                System.Data.IDataReader reader = dbcmd.ExecuteReader ();
+                while (reader.Read ()) {
                     Mirage.Vector vec = DataParser.ParseMirageVector (reader.GetString (0));
                     int bid = reader.GetInt32 (2);
                     if (vec != null)
@@ -374,14 +374,14 @@ namespace NoNoise.Data
 
                 return ret;
             } catch (Exception e) {
-                Log.Exception("NoNoise/DB - Mirage.Vector read failed", e);
+                Log.Exception ("NoNoise/DB - Mirage.Vector read failed", e);
                 return null;
             } finally {
                 if (dbcmd != null)
-                    dbcmd.Dispose();
+                    dbcmd.Dispose ();
                 dbcmd = null;
                 if (dbcon != null)
-                    dbcon.Close();
+                    dbcon.Close ();
             }
         }
         #endregion
@@ -416,20 +416,20 @@ namespace NoNoise.Data
         {
             IDbCommand dbcmd = null;
             try {
-                dbcon.Open();
-                dbcmd = dbcon.CreateCommand();
+                dbcon.Open ();
+                dbcmd = dbcon.CreateCommand ();
 
                 dbcmd.CommandText = string.Format ("SELECT id FROM MIRData WHERE banshee_id = '{0}'", bid);
                 return (dbcmd.ExecuteScalar () != null);
             } catch (Exception e) {
-                Log.Exception("NoNoise/DB - Contains MIRData query failed for Banshee_id: " + bid, e);
+                Log.Exception ("NoNoise/DB - Contains MIRData query failed for Banshee_id: " + bid, e);
                 return false;
             } finally {
                 if (dbcmd != null)
-                    dbcmd.Dispose();
+                    dbcmd.Dispose ();
                 dbcmd = null;
                 if (dbcon != null)
-                    dbcon.Close();
+                    dbcon.Close ();
             }
         }
         #endregion
@@ -468,22 +468,22 @@ namespace NoNoise.Data
         {
             IDbCommand dbcmd = null;
             try {
-                dbcon.Open();
-                dbcmd = dbcon.CreateCommand();
+                dbcon.Open ();
+                dbcmd = dbcon.CreateCommand ();
 
-                dbcmd.CommandText = string.Format(
+                dbcmd.CommandText = string.Format (
                         "INSERT INTO PCAData (banshee_id, pca_x, pca_y) VALUES ('{0}', '{1}', '{2}')",
                         de.ID, de.X, de.Y);
                 dbcmd.ExecuteNonQuery ();
             } catch (Exception e) {
-                Log.Exception("NoNoise/DB - DataEntry insert failed for DE: " + de, e);
+                Log.Exception ("NoNoise/DB - DataEntry insert failed for DE: " + de, e);
                 return false;
             } finally {
                 if (dbcmd != null)
-                    dbcmd.Dispose();
+                    dbcmd.Dispose ();
                 dbcmd = null;
                 if (dbcon != null)
-                    dbcon.Close();
+                    dbcon.Close ();
             }
 
             return true;
@@ -495,12 +495,12 @@ namespace NoNoise.Data
 
             IDbCommand dbcmd = null;
             try {
-                dbcon.Open();
-                dbcmd = dbcon.CreateCommand();
+                dbcon.Open ();
+                dbcmd = dbcon.CreateCommand ();
 
                 dbcmd.CommandText = "SELECT pca_x, pca_y, banshee_id FROM PCAData";
-                System.Data.IDataReader reader = dbcmd.ExecuteReader();
-                while(reader.Read()) {
+                System.Data.IDataReader reader = dbcmd.ExecuteReader ();
+                while (reader.Read ()) {
                     DataEntry de = new DataEntry (reader.GetInt32 (2), reader.GetDouble (0),
                                                   reader.GetDouble (1), null);
                     ret.Add (de);
@@ -508,14 +508,14 @@ namespace NoNoise.Data
 
                 return ret;
             } catch (Exception e) {
-                Log.Exception("NoNoise/DB - PCA data read failed", e);
+                Log.Exception ("NoNoise/DB - PCA data read failed", e);
                 return null;
             } finally {
                 if (dbcmd != null)
-                    dbcmd.Dispose();
+                    dbcmd.Dispose ();
                 dbcmd = null;
                 if (dbcon != null)
-                    dbcon.Close();
+                    dbcon.Close ();
             }
         }
         #endregion
@@ -535,36 +535,36 @@ namespace NoNoise.Data
         {
             IDbCommand dbcmd = null;
             try {
-                dbcon.Open();
-                dbcmd = dbcon.CreateCommand();
+                dbcon.Open ();
+                dbcmd = dbcon.CreateCommand ();
 
                 dbcmd.CommandText = "INSERT INTO TrackData (banshee_id, artist, title, album, duration)" +
                                     " VALUES (@bid, @artist, @title, @album, @duration)";
 
-                SqliteParameter id = new SqliteParameter("@bid", ti.ID);
-                SqliteParameter artist = new SqliteParameter("@artist", ti.Artist);
-                SqliteParameter title = new SqliteParameter("@title", ti.Title);
-                SqliteParameter album = new SqliteParameter("@album", ti.Album);
-                SqliteParameter duration = new SqliteParameter("@duration", ti.Duration);
+                SqliteParameter id = new SqliteParameter ("@bid", ti.ID);
+                SqliteParameter artist = new SqliteParameter ("@artist", ti.Artist);
+                SqliteParameter title = new SqliteParameter ("@title", ti.Title);
+                SqliteParameter album = new SqliteParameter ("@album", ti.Album);
+                SqliteParameter duration = new SqliteParameter ("@duration", ti.Duration);
 
-                dbcmd.Parameters.Add(id);
-                dbcmd.Parameters.Add(artist);
-                dbcmd.Parameters.Add(title);
-                dbcmd.Parameters.Add(album);
-                dbcmd.Parameters.Add(duration);
+                dbcmd.Parameters.Add (id);
+                dbcmd.Parameters.Add (artist);
+                dbcmd.Parameters.Add (title);
+                dbcmd.Parameters.Add (album);
+                dbcmd.Parameters.Add (duration);
     
-                dbcmd.Prepare();
+                dbcmd.Prepare ();
 
                 dbcmd.ExecuteNonQuery ();
             } catch (Exception e) {
-                Log.Exception("NoNoise/DB - TrackInfo insert failed for TI: " + ti, e);
+                Log.Exception ("NoNoise/DB - TrackInfo insert failed for TI: " + ti, e);
                 return false;
             } finally {
                 if (dbcmd != null)
-                    dbcmd.Dispose();
+                    dbcmd.Dispose ();
                 dbcmd = null;
                 if (dbcon != null)
-                    dbcon.Close();
+                    dbcon.Close ();
             }
 
             return true;
@@ -584,20 +584,85 @@ namespace NoNoise.Data
         {
             IDbCommand dbcmd = null;
             try {
-                dbcon.Open();
-                dbcmd = dbcon.CreateCommand();
+                dbcon.Open ();
+                dbcmd = dbcon.CreateCommand ();
 
                 dbcmd.CommandText = string.Format ("SELECT id FROM TrackData WHERE banshee_id = '{0}'", bid);
                 return (dbcmd.ExecuteScalar () != null);
             } catch (Exception e) {
-                Log.Exception("NoNoise/DB - Contains TrackInfo query failed for banshee_id: " + bid, e);
+                Log.Exception ("NoNoise/DB - Contains TrackInfo query failed for banshee_id: " + bid, e);
                 return false;
             } finally {
                 if (dbcmd != null)
-                    dbcmd.Dispose();
+                    dbcmd.Dispose ();
                 dbcmd = null;
                 if (dbcon != null)
-                    dbcon.Close();
+                    dbcon.Close ();
+            }
+        }
+
+        public List<TrackData> GetTrackData ()
+        {
+            List<TrackData> ret = new List<TrackData> ();
+
+            IDbCommand dbcmd = null;
+            try {
+                dbcon.Open ();
+                dbcmd = dbcon.CreateCommand ();
+
+                dbcmd.CommandText = "SELECT banshee_id, artist, title, album, duration FROM TrackData";
+                System.Data.IDataReader reader = dbcmd.ExecuteReader ();
+                while (reader.Read ()) {
+                    TrackData td = new TrackData (reader.GetInt32 (0), reader.GetString (1),
+                                                  reader.GetString (2), reader.GetString (3),
+                                                  reader.GetInt32 (4));
+                    ret.Add (td);
+                }
+
+                return ret;
+            } catch (Exception e) {
+                Log.Exception ("NoNoise/DB - Track data read failed", e);
+                return null;
+            } finally {
+                if (dbcmd != null)
+                    dbcmd.Dispose ();
+                dbcmd = null;
+                if (dbcon != null)
+                    dbcon.Close ();
+            }
+        }
+
+        public TrackData GetTrackData (int bid)
+        {
+            TrackData td = null;
+            IDbCommand dbcmd = null;
+            try {
+                dbcon.Open ();
+                dbcmd = dbcon.CreateCommand ();
+
+                dbcmd.CommandText = string.Format ("SELECT banshee_id, artist, title, album, duration " +
+                                                    "FROM TrackData WHERE banshee_id = '{0}'", bid);
+                System.Data.IDataReader reader = dbcmd.ExecuteReader ();
+                if (reader.Read ()) {
+                    td = new TrackData (reader.GetInt32 (0), reader.GetString (1),
+                                                  reader.GetString (2), reader.GetString (3),
+                                                  reader.GetInt32 (4));
+                } else
+                    throw new Exception ("No track for given banshee_id.");
+
+                if (reader.Read ())
+                    Log.WarningFormat ("NoNoise/DB - More than one result for banshee_id {0}!", bid);
+
+                return td;
+            } catch (Exception e) {
+                Log.Exception ("NoNoise/DB - Track data read failed", e);
+                return null;
+            } finally {
+                if (dbcmd != null)
+                    dbcmd.Dispose ();
+                dbcmd = null;
+                if (dbcon != null)
+                    dbcon.Close ();
             }
         }
         #endregion
@@ -608,20 +673,20 @@ namespace NoNoise.Data
         {
             IDbCommand dbcmd = null;
             try {
-                dbcon.Open();
-                dbcmd = dbcon.CreateCommand();
+                dbcon.Open ();
+                dbcmd = dbcon.CreateCommand ();
 
                 dbcmd.CommandText = SELECT_MIRDATA_COUNT;
                 return int.Parse (dbcmd.ExecuteScalar ().ToString ());
             } catch (Exception e) {
-                Log.Exception("NoNoise/DB - MIRData COUNT query failed", e);
+                Log.Exception ("NoNoise/DB - MIRData COUNT query failed", e);
                 return -1;
             } finally {
                 if (dbcmd != null)
-                    dbcmd.Dispose();
+                    dbcmd.Dispose ();
                 dbcmd = null;
                 if (dbcon != null)
-                    dbcon.Close();
+                    dbcon.Close ();
             }
         }
 
@@ -629,20 +694,20 @@ namespace NoNoise.Data
         {
             IDbCommand dbcmd = null;
             try {
-                dbcon.Open();
-                dbcmd = dbcon.CreateCommand();
+                dbcon.Open ();
+                dbcmd = dbcon.CreateCommand ();
 
                 dbcmd.CommandText = SELECT_PCADATA_COUNT;
                 return int.Parse (dbcmd.ExecuteScalar ().ToString ());
             } catch (Exception e) {
-                Log.Exception("NoNoise/DB - PCAData COUNT query failed", e);
+                Log.Exception ("NoNoise/DB - PCAData COUNT query failed", e);
                 return -1;
             } finally {
                 if (dbcmd != null)
-                    dbcmd.Dispose();
+                    dbcmd.Dispose ();
                 dbcmd = null;
                 if (dbcon != null)
-                    dbcon.Close();
+                    dbcon.Close ();
             }
         }
 
@@ -650,20 +715,20 @@ namespace NoNoise.Data
         {
             IDbCommand dbcmd = null;
             try {
-                dbcon.Open();
-                dbcmd = dbcon.CreateCommand();
+                dbcon.Open ();
+                dbcmd = dbcon.CreateCommand ();
 
                 dbcmd.CommandText = SELECT_TRACKDATA_COUNT;
                 return int.Parse (dbcmd.ExecuteScalar ().ToString ());
             } catch (Exception e) {
-                Log.Exception("NoNoise/DB - TrackData COUNT query failed", e);
+                Log.Exception ("NoNoise/DB - TrackData COUNT query failed", e);
                 return -1;
             } finally {
                 if (dbcmd != null)
-                    dbcmd.Dispose();
+                    dbcmd.Dispose ();
                 dbcmd = null;
                 if (dbcon != null)
-                    dbcon.Close();
+                    dbcon.Close ();
             }
         }
         #endregion
@@ -677,8 +742,8 @@ namespace NoNoise.Data
         {
             IDbCommand dbcmd = null;
             try {
-                dbcon.Open();
-                dbcmd = dbcon.CreateCommand();
+                dbcon.Open ();
+                dbcmd = dbcon.CreateCommand ();
 
                 dbcmd.CommandText = "DROP TABLE MIRData";
                 dbcmd.ExecuteNonQuery ();
@@ -686,14 +751,14 @@ namespace NoNoise.Data
                 dbcmd.CommandText = CREATE_TABLE_MIRDATA;
                 dbcmd.ExecuteNonQuery ();
             } catch (Exception e) {
-                Log.Exception("NoNoise/DB - Clear MIR Data failed", e);
+                Log.Exception ("NoNoise/DB - Clear MIR Data failed", e);
                 throw new Exception ("Clear MIR Data failed!", e);
             } finally {
                 if (dbcmd != null)
-                    dbcmd.Dispose();
+                    dbcmd.Dispose ();
                 dbcmd = null;
                 if (dbcon != null)
-                    dbcon.Close();
+                    dbcon.Close ();
             }
         }
 
@@ -704,8 +769,8 @@ namespace NoNoise.Data
         {
             IDbCommand dbcmd = null;
             try {
-                dbcon.Open();
-                dbcmd = dbcon.CreateCommand();
+                dbcon.Open ();
+                dbcmd = dbcon.CreateCommand ();
 
                 dbcmd.CommandText = "DROP TABLE PCAData";
                 dbcmd.ExecuteNonQuery ();
@@ -713,14 +778,14 @@ namespace NoNoise.Data
                 dbcmd.CommandText = CREATE_TABLE_PCADATA;
                 dbcmd.ExecuteNonQuery ();
             } catch (Exception e) {
-                Log.Exception("NoNoise/DB - Clear PCA Data failed", e);
+                Log.Exception ("NoNoise/DB - Clear PCA Data failed", e);
                 throw new Exception ("Clear PCA Data failed!", e);
             } finally {
                 if (dbcmd != null)
-                    dbcmd.Dispose();
+                    dbcmd.Dispose ();
                 dbcmd = null;
                 if (dbcon != null)
-                    dbcon.Close();
+                    dbcon.Close ();
             }
         }
 
@@ -731,8 +796,8 @@ namespace NoNoise.Data
         {
             IDbCommand dbcmd = null;
             try {
-                dbcon.Open();
-                dbcmd = dbcon.CreateCommand();
+                dbcon.Open ();
+                dbcmd = dbcon.CreateCommand ();
 
                 dbcmd.CommandText = "DROP TABLE TrackData";
                 dbcmd.ExecuteNonQuery ();
@@ -740,14 +805,14 @@ namespace NoNoise.Data
                 dbcmd.CommandText = CREATE_TABLE_TRACKDATA;
                 dbcmd.ExecuteNonQuery ();
             } catch (Exception e) {
-                Log.Exception("NoNoise/DB - Clear Track Data failed", e);
+                Log.Exception ("NoNoise/DB - Clear Track Data failed", e);
                 throw new Exception ("Clear Track Data failed!", e);
             } finally {
                 if (dbcmd != null)
-                    dbcmd.Dispose();
+                    dbcmd.Dispose ();
                 dbcmd = null;
                 if (dbcon != null)
-                    dbcon.Close();
+                    dbcon.Close ();
             }
         }
         #endregion
