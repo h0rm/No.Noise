@@ -295,6 +295,7 @@ namespace Banshee.NoNoise
                 analyzing_lib = false;
             }
             sc.ScanFinished ();
+            new Thread (new ThreadStart(PcaForMusicLibrary)).Start ();
         }
 
         /// <summary>
