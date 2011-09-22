@@ -57,6 +57,9 @@ namespace Banshee.NoNoise
 		private ISourceContents no_noise_contents;
         private bool scan_action_enabled = false;
 
+        private bool pref_installed = false;
+        private bool source_contents_set_up = false;
+
         private Gtk.Action scan_action;
         protected Gtk.Action ScanAction {
             get {
@@ -106,10 +109,12 @@ namespace Banshee.NoNoise
                                    + "\naction_service " + (action_service == null ? "Null" : "OK")
                                    + "\nsource_manager " + (source_manager == null ? "Null" : "OK")
                                    + "\nmusic_library " + (music_library == null ? "Null" : "OK")
-                                   + "\npreference_service " + (music_library == null ? "Null" : "OK"));
+                                   + "\npreference_service " + (preference_service == null ? "Null" : "OK"));
 
             InstallPreferences ();
             SetupInterfaceActions ();
+
+            ServiceManager.ServiceStarted += OnServiceStarted;
 
             if (!SetupSourceContents ())
                 source_manager.SourceAdded += OnSourceAdded;
@@ -120,11 +125,32 @@ namespace Banshee.NoNoise
 
         void InstallPreferences ()
         {
-            preferences = preference_service.Add (new Page ("nonoise", Catalog.GetString ("No.Noise"), 20));
-
-            debug = preferences.Add (new Section ("debug", Catalog.GetString ("Debug"), 1));
-            debug.Add (new SchemaPreference<bool> (Schemas.Startup, Schemas.Startup.ShortDescription, Schemas.Startup.LongDescription));
+            if (!pref_installed) {
+                preferences = preference_service.Add (new Page ("nonoise", Catalog.GetString ("No.Noise"), 20));
+        
+                debug = preferences.Add (new Section ("debug", Catalog.GetString ("Debug"), 1));
+                debug.Add (new SchemaPreference<bool> (Schemas.Startup, Schemas.Startup.ShortDescription, Schemas.Startup.LongDescription));
+                pref_installed = true;
+            }
         }
+
+        private void OnServiceStarted (ServiceStartedArgs args)
+        {
+            if (args.Service is Banshee.Preferences.PreferenceService) {
+                preference_service = (PreferenceService)args.Service;
+                InstallPreferences ();
+            } else if (args.Service is Banshee.Gui.InterfaceActionService) {
+                action_service = (InterfaceActionService)args.Service;
+                SetupInterfaceActions ();
+            }
+
+            if (!(preference_service==null || action_service==null)) {
+                ServiceManager.ServiceStarted -= OnServiceStarted;
+                if (!SetupSourceContents ())
+                    source_manager.SourceAdded += OnSourceAdded;
+            }
+        }
+
         void OnSourceAdded (SourceAddedArgs args)
         {
             if (args.Source is MusicLibrarySource) {
@@ -146,7 +172,7 @@ namespace Banshee.NoNoise
                     new ToggleActionEntry ("NoNoiseVisibleAction", null,
                     Catalog.GetString ("No.Noise Visualization"), null,
                     Catalog.GetString ("Enable or disable the No.Noise visualization"),
-                    null, false)
+                    null, true)
                 });
 
                 action_service.AddActionGroup (no_noise_actions);
@@ -215,7 +241,11 @@ namespace Banshee.NoNoise
 
         private bool SetupSourceContents ()
         {
-            if (music_library == null || action_service == null)
+            if (source_contents_set_up)
+                return true;
+
+            // TODO handle real empty libraries...
+            if (music_library == null || action_service == null || music_library.TrackModel.Count == 0)
                 return false;
 
             no_noise_contents = GetSourceContents ();
@@ -231,11 +261,15 @@ namespace Banshee.NoNoise
 
             source_manager.SourceAdded -= OnSourceAdded;
 
-            Hyena.Log.Information ("Service Foo Initialized: "
-                                   + "\naction_service " + (action_service == null ? "Null" : "OK")
-                                   + "\nsource_manager " + (source_manager == null ? "Null" : "OK")
-                                   + "\nmusic_library " + (music_library == null ? "Null" : "OK")
-                                   + "\npreference_service " + (music_library == null ? "Null" : "OK"));
+            Hyena.Log.Debug ("NoNoise/Serv - tm cnt: " + music_library.TrackModel.Count);
+
+            source_contents_set_up = true;
+
+//            Hyena.Log.Information ("Service Foo Initialized: "
+//                                   + "\naction_service " + (action_service == null ? "Null" : "OK")
+//                                   + "\nsource_manager " + (source_manager == null ? "Null" : "OK")
+//                                   + "\nmusic_library " + (music_library == null ? "Null" : "OK")
+//                                   + "\npreference_service " + (preference_service == null ? "Null" : "OK"));
             return true;
         }
 

@@ -40,7 +40,7 @@ namespace Banshee.NoNoise
         private static BansheeLibraryAnalyzer bla = null;
         #region Members
         private Banshee.Library.MusicLibrarySource ml;
-        private Banshee.Collection.TrackListModel tm;
+//        private Banshee.Collection.TrackListModel tm;
         private NoNoiseSourceContents sc;
         private NoNoiseDBHandler db;
         private PCAnalyzer ana;
@@ -67,10 +67,11 @@ namespace Banshee.NoNoise
             get { return analyzing_lib; }
         }
 
-        public TrackListModel TrackModel {
-            get { return tm; }
-            set { tm = value; }
-        }
+//        public TrackListModel TrackModel {
+//            get { return tm; }
+//            set { tm = value;
+//            Hyena.Log.Debug ("tm set, cnt: " + tm.Count); }
+//        }
 
         private BansheeLibraryAnalyzer ()
         {
@@ -104,16 +105,16 @@ namespace Banshee.NoNoise
 
         private bool CheckLibScanned ()
         {
-            tm = ServiceManager.SourceManager.MusicLibrary.TrackModel;
+//            tm = ServiceManager.SourceManager.MusicLibrary.TrackModel;
             int cnt = -1;
             lock (db_synch) {
                 cnt = db.GetMirDataCount ();
-                Hyena.Log.Debug ("NoNoise/DB - MIRData count: " + cnt);
+//                Hyena.Log.Debug ("NoNoise/DB - MIRData count: " + cnt);
             }
 
             lock (scan_synch) {
-                Hyena.Log.Debug ("NoNoise/DB - tm count: " + tm.Count);
-                lib_scanned = (cnt == tm.Count);
+//                Hyena.Log.Debug ("NoNoise/DB - tm count: " + ml.TrackModel.Count);
+                lib_scanned = (cnt == ml.TrackModel.Count);
             }
             Hyena.Log.Debug ("NoNoise/DB - lib scanned: " + lib_scanned);
 
@@ -122,13 +123,13 @@ namespace Banshee.NoNoise
 
         private bool CheckDataUpToDate ()
         {
-            tm = ServiceManager.SourceManager.MusicLibrary.TrackModel;
+//            tm = ServiceManager.SourceManager.MusicLibrary.TrackModel;
             int cnt = -1;
             bool eq = false;
             lock (db_synch) {
                 cnt = db.GetPcaDataCount ();
                 eq = cnt == db.GetTrackDataCount ();
-                eq &= cnt == tm.Count;
+                eq &= cnt == ml.TrackModel.Count;
             }
 
             lock (scan_synch) {
@@ -145,7 +146,7 @@ namespace Banshee.NoNoise
                 return;
 
 //            ml = ServiceManager.SourceManager.MusicLibrary;
-            Hyena.Log.Debug ("NN Scan - tm count: " + tm.Count);
+//            Hyena.Log.Debug ("NN Scan - tm count: " + ml.TrackModel.Count);
 
             if (start) {
                 if (CheckLibScanned ()) {
@@ -169,7 +170,7 @@ namespace Banshee.NoNoise
 
         private void ScanMusicLibrary ()
         {
-            ml = ServiceManager.SourceManager.MusicLibrary;
+//            ml = ServiceManager.SourceManager.MusicLibrary;
             Mirage.Matrix mfcc;
             Dictionary<int, Mirage.Matrix> mfccMap = null;
             lock (db_synch) {
@@ -178,7 +179,7 @@ namespace Banshee.NoNoise
             if (mfccMap == null)
                 Hyena.Log.Error ("NoNoise/DB - mfccMap is null!");
 
-            for (int i = 0; i < tm.Count; i++) {
+            for (int i = 0; i < ml.TrackModel.Count; i++) {
                 if (stop_scan) {
                     lock (scan_synch) {
                         analyzing_lib = false;
@@ -187,7 +188,7 @@ namespace Banshee.NoNoise
                 }
 
                 try {
-                    TrackInfo ti = tm [i];
+                    TrackInfo ti = ml.TrackModel [i];
                     string absPath = ti.Uri.AbsolutePath;
                     int bid = ml.GetTrackIdForUri (ti.Uri);
 
@@ -225,7 +226,7 @@ namespace Banshee.NoNoise
         /// </summary>
         private void PcaForMusicLibrary ()
         {
-            Hyena.Log.Debug ("NoNoise/PCA - tm count: "  + tm.Count);
+//            Hyena.Log.Debug ("NoNoise/PCA - ml.TrackModel count: "  + ml.TrackModel.Count);
 
             if (data_up_to_date)
                 return;
@@ -298,16 +299,16 @@ namespace Banshee.NoNoise
         /// </summary>
         private void WriteTrackInfosToDB ()
         {
-            Hyena.Log.Debug ("NoNoise/TI - tm count: "  + tm.Count);
+//            Hyena.Log.Debug ("NoNoise/TI - tm count: "  + ml.TrackModel.Count);
 
             if (data_up_to_date)
                 return;
 
-            ml = ServiceManager.SourceManager.MusicLibrary;
+//            ml = ServiceManager.SourceManager.MusicLibrary;
 
-            for (int i = 0; i < tm.Count; i++) {
+            for (int i = 0; i < ml.TrackModel.Count; i++) {
                 try {
-                    TrackInfo ti = tm [i];
+                    TrackInfo ti = ml.TrackModel [i];
                     int bid = ml.GetTrackIdForUri (ti.Uri);
 
                     lock (db_synch) {
