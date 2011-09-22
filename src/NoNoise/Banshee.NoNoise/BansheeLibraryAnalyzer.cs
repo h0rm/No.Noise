@@ -33,6 +33,9 @@ using Banshee.ServiceStack;
 using NoNoise.Data;
 using NoNoise.PCA;
 
+// TODO something like compute_pca button
+// TODO track_added/track_removed/track_updated listener + db updates
+
 namespace Banshee.NoNoise
 {
     /// <summary>
