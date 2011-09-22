@@ -589,8 +589,8 @@ namespace NoNoise.Visualization
             } else if (selection_enabled){
 
 //                Hyena.Log.Information ("Paint line");
+                SelectionPaintLine (x, y);
 
-                SelectionPaintLine (mouse_old_x, mouse_old_y, x, y);
             }
 
             mouse_old_x = x;
@@ -598,9 +598,14 @@ namespace NoNoise.Visualization
         }
 
         private int count = 0;
+        private float line_end_x, line_end_y;
 
-        private void SelectionPaintLine (float x, float y, float to_x, float to_y)
+        private void SelectionPaintLine (float x, float y)
         {
+            if (count%10 != 0) {
+                count++;
+                return;
+            }
 
             Hyena.Log.Information ("Paint line " + count );
 
@@ -608,13 +613,16 @@ namespace NoNoise.Visualization
 
             context.Color = new Cairo.Color (1,0,0,0.9);
             context.LineWidth = 5;
-            context.MoveTo (x, y);
-            context.LineTo (to_x, to_y);
+            context.MoveTo (line_end_x, line_end_y);
+            context.LineTo (x, y);
             context.Stroke ();
 
             ((IDisposable) context.Target).Dispose ();
             ((IDisposable) context).Dispose ();
 //            selection.QueueRedraw ();
+
+            line_end_x = x;
+            line_end_y = y;
 
             count ++;
         }
@@ -622,6 +630,9 @@ namespace NoNoise.Visualization
         private void SelectionClear ()
         {
             count = 0;
+            line_end_x = mouse_old_x;
+            line_end_y = mouse_old_y;
+
             selection.Clear ();
             Cairo.Context context = selection.Create();
 
@@ -705,6 +716,7 @@ namespace NoNoise.Visualization
 
             uint button = EventHelper.GetButton (args.Event);
 
+            EventHelper.GetCoords (args.Event, out mouse_old_x, out mouse_old_y);
             SelectionClear ();
 
             if (button != 1)
@@ -717,7 +729,7 @@ namespace NoNoise.Visualization
             else {
                 mouse_down = true;
             }
-            EventHelper.GetCoords (args.Event, out mouse_old_x, out mouse_old_y);
+
         }
 
         private void FireSongEnter (SongHighlightArgs args)
