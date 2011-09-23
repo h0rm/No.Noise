@@ -82,14 +82,6 @@ namespace NoNoise.Data
         }
 	}
 
-    /// <summary>
-    /// This class encapsulates additional information of a track used for the
-    /// visualization.
-    /// </summary>
-	public class DataValue
-    {
-		
-	}
 
     /// <summary>
     /// This class encapsulates the PCA coordinates of a track with its banshee_id
@@ -100,9 +92,9 @@ namespace NoNoise.Data
 		private int id;			//unique id for each track
 		private double pca_x;	//between 0...1
 		private double pca_y;	//between 0...1
-		private DataValue val;  //additional information like color
+		private TrackData val;  //additional information like color
 		
-		public DataEntry (int id, double pca_x, double pca_y, DataValue val)
+		public DataEntry (int id, double pca_x, double pca_y, TrackData val)
 		{
 			this.id = id;
 			this.pca_x = pca_x;
@@ -136,7 +128,7 @@ namespace NoNoise.Data
 		/// <summary>
 		/// additional information like color
 		/// </summary>
-		public DataValue Value {
+		public TrackData Value {
 			get { return val; }
             set { val = value; }
 		}

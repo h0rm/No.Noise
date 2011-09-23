@@ -40,7 +40,7 @@ namespace Banshee.NoNoise
 
         View view;
 
-        public NoNoiseClutterSourceContents ()
+        public NoNoiseClutterSourceContents (bool pcadata)
         {
             //Gtk.Box box = new Gtk.HBox(true,0);
             if (!GLib.Thread.Supported)
@@ -55,7 +55,12 @@ namespace Banshee.NoNoise
             //cv.Init();
 
             view = new View();
-            view.TestGenerateData();
+//
+            if (pcadata)
+                view.GetPcaCoordinates ();
+            else
+                view.TestGenerateData();
+            
             //GLib.Thread thread = new GLib.Thread(cv.Init);
 
             this.Widget.Shown += delegate{

@@ -280,28 +280,30 @@ namespace Banshee.NoNoise
 
         private ISourceContents GetSourceContents ()
         {
-            bool startViz = false;
+            int startViz = 0;
 
             try {
                 using (System.IO.StreamReader sr = new System.IO.StreamReader ("../../NoNoise.starter"))
                 {
                     string line;
-                    if ((line = sr.ReadLine ()) != null && int.Parse(line) == 1)
-                        startViz = true;
-                    else
-                        startViz = false;
+                    if ((line = sr.ReadLine ()) != null)
+                        startViz = int.Parse (line);
                 }
             } catch (Exception e) {
                 Hyena.Log.Exception ("NoNoise - startup error", e);
             }
 
-            if (startViz) {
-                Hyena.Log.Information ("NoNoise - startViz is true");
-                return new NoNoiseClutterSourceContents ();
-            } else {
-                Hyena.Log.Information ("NoNoise - startViz is false");
+            switch (startViz) {
+            case 1 :
+                return new NoNoiseClutterSourceContents (false);
+
+            case 2:
+                return new NoNoiseClutterSourceContents (true);
+
+            default:
                 return new NoNoiseSourceContents ();
             }
+            
         }
 
         public void Dispose ()

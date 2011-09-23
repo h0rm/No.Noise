@@ -34,6 +34,7 @@ namespace NoNoise.Visualization
     {
         SongGroup point_group;
         MainGui gui;
+        Banshee.NoNoise.BansheeLibraryAnalyzer analyzer;
 
         public View () : base ()
         {
@@ -42,10 +43,11 @@ namespace NoNoise.Visualization
             Stage.Color = new Color (0,0,0,255);
             point_group = new SongGroup (Stage);
             gui = new MainGui ();
-            point_group.LowerBottom ();
+
 
             Stage.Add (point_group);
             Stage.Add (gui);
+            point_group.LowerBottom ();
 //            Stage.SetClip (0,0,Stage.Width, Stage.Height);
 
             Stage.AllocationChanged += delegate {
@@ -74,6 +76,12 @@ namespace NoNoise.Visualization
         void HandleGuiZoomChangedEvent (object source, MainGui.ZoomLevelArgs args)
         {
             point_group.ZoomOnCenter (args.Inwards);
+        }
+
+        public void GetPcaCoordinates ()
+        {
+            analyzer = Banshee.NoNoise.BansheeLibraryAnalyzer.Init (null);
+            point_group.LoadPcaData (analyzer.PcaCoordinates);
         }
 
         public void TestGenerateData ()

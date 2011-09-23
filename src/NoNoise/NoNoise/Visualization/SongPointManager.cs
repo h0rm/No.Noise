@@ -85,10 +85,10 @@ namespace NoNoise.Visualization
                 if (tree.Count < min_points)
                     break;
 
-                tree_list.Add (tree_list[i].GetClusteredTree ());
+                tree_list.Add (tree);
             }
 
-            max_clustering_level = i-1 > 0 ? i-1 : 0;
+            max_clustering_level = tree_list.Count-1;
 
             Hyena.Log.Information ("Max clustering level " + max_clustering_level);
         }
@@ -121,12 +121,13 @@ namespace NoNoise.Visualization
             int i;
 
             //get lowest level with Count < numofpoints
-            for (i = 0; i <= max_clustering_level; i++) {
+            for (i = max_clustering_level; i >= 0; i--) {
                 if (tree_list[i].Count > numofpoints)
                     break;
             }
 
             Level = i-1;
+            Hyena.Log.Information ("Default level set to " + Level);
         }
     }
 }

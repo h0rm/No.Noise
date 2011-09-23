@@ -31,6 +31,7 @@ using System.IO;
 using System.Linq;
 
 using NoNoise.Visualization.Util;
+using NoNoise.Data;
 
 namespace NoNoise.Visualization
 {
@@ -132,6 +133,25 @@ namespace NoNoise.Visualization
         {
             this.stage = stage;
             Init();
+        }
+
+        public void LoadPcaData (List<DataEntry> entries)
+        {
+
+            point_manager = new SongPointManager (0, 0, 3000, 3000);
+
+            foreach (DataEntry e in entries)
+                point_manager.Add (e.X*3000, e.Y*3000, e.ToString());
+
+            point_manager.Cluster ();
+            point_manager.SetDefaultLevel (500);
+
+            points_visible = new List<SongPoint> (2000);
+
+            foreach (SongActor a in actor_manager.Actors) {
+                this.Add (a);
+                animation_behave.Apply (a);
+            }
         }
 
         public void ParseTextFile (string filename, int count)

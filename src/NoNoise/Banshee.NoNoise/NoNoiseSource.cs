@@ -107,7 +107,8 @@ namespace Banshee.NoNoise
                 //cv.Init();
 
                 view = new View();
-                view.TestGenerateData();
+//                view.TestGenerateData();
+                view.GetPcaCoordinates ();
                 //GLib.Thread thread = new GLib.Thread(cv.Init);
 
                 this.Widget.Shown += delegate{

@@ -173,8 +173,10 @@ namespace NoNoise.Visualization
 
             foreach (SongPoint p in points) {
 
-                if (IsPointInside (p.XY))
+                if (IsPointInside (p.XY)) {
                     inside.Add (p);
+                    Hyena.Log.Information (p.ID + " is inside");
+                }
             }
 
             Hyena.Log.Information ("Inside : " + inside.Count);
