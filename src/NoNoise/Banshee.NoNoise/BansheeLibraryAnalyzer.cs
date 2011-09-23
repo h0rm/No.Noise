@@ -49,7 +49,7 @@ namespace Banshee.NoNoise
 
         // TODO remove debug helper bools
         private readonly bool STORE_ENTIRE_MATRIX = false;
-        private readonly bool DB_CHEATER_MODE = false;
+        private readonly bool DB_CHEATER_MODE = true;
 
         #region Members
         private Banshee.Library.MusicLibrarySource ml;
@@ -559,6 +559,13 @@ namespace Banshee.NoNoise
                 } catch (Exception e) {
                     Hyena.Log.Exception("NoNoise - DB Problem", e);
                 }
+            }
+        }
+
+        private void RemoveMissingFiles ()
+        {
+            for (int i = 0; i < ml.TrackModel.Count; i++) {
+
             }
         }
 
