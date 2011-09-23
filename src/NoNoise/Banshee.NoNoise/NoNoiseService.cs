@@ -155,10 +155,15 @@ namespace Banshee.NoNoise
         {
             if (args.Source is MusicLibrarySource) {
                 music_library = args.Source as MusicLibrarySource;
-                Hyena.Log.Debug ("NoNoise/Serv - ml added, cnt: " + music_library.TrackModel.Count);
             }
 
-            SetupSourceContents ();
+            // TODO coincidence or real solution?
+            if (args.Source is VideoLibrarySource) {
+                Hyena.Log.Debug ("NoNoise/Serv - src added, type: " + args.Source.GetType ().ToString ());
+                Hyena.Log.Debug ("NoNoise/Serv - vl added, cnt: " + music_library.TrackModel.Count);
+
+                SetupSourceContents ();
+            }
         }
 
 
@@ -244,8 +249,8 @@ namespace Banshee.NoNoise
             if (source_contents_set_up)
                 return true;
 
-            // TODO handle real empty libraries...
-            if (music_library == null || action_service == null || music_library.TrackModel.Count == 0)
+            // TODO handle real empty libraries...done.
+            if (music_library == null || action_service == null)// || music_library.TrackModel.Count == 0)
                 return false;
 
             no_noise_contents = GetSourceContents ();

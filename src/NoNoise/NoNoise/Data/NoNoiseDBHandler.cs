@@ -549,13 +549,13 @@ namespace NoNoise.Data
         #region TrackData
 
         /// <summary>
-        /// Inserts one TrackInfo into the TrackData table.
+        /// Inserts one TrackData into the TrackData table.
         /// </summary>
         /// <param name="ti">
-        /// The <see cref="TrackInfo"/> to be inserted
+        /// The <see cref="TrackData"/> to be inserted
         /// </param>
         /// <returns>
-        /// True if the TrackInfo was successfully inserted. False otherwise.
+        /// True if the TrackData was successfully inserted. False otherwise.
         /// </returns>
         public bool InsertTrackInfo (TrackData ti)
         {
@@ -594,6 +594,72 @@ namespace NoNoise.Data
             }
 
             return true;
+        }
+        /// <summary>
+        /// Updates the given TrackData in the TrackData table.
+        /// </summary>
+        /// <param name="td">
+        /// The <see cref="TrackData"/> to be updated
+        /// </param>
+        /// <returns>
+        /// True if the TrackData was successfully updated. False otherwise.
+        /// </returns>
+        public bool UpdateTrackData (TrackData td)
+        {
+            IDbCommand dbcmd = null;
+            try {
+                dbcon.Open ();
+                dbcmd = dbcon.CreateCommand ();
+
+                dbcmd.CommandText = "UPDATE TrackData SET artist = @artist, title = @title, " +
+                                    "album = @album, duration = @duration WHERE banshee_id = @bid";
+
+                SqliteParameter id = new SqliteParameter ("@bid", td.ID);
+                SqliteParameter artist = new SqliteParameter ("@artist", td.Artist);
+                SqliteParameter title = new SqliteParameter ("@title", td.Title);
+                SqliteParameter album = new SqliteParameter ("@album", td.Album);
+                SqliteParameter duration = new SqliteParameter ("@duration", td.Duration);
+
+                dbcmd.Parameters.Add (id);
+                dbcmd.Parameters.Add (artist);
+                dbcmd.Parameters.Add (title);
+                dbcmd.Parameters.Add (album);
+                dbcmd.Parameters.Add (duration);
+    
+                dbcmd.Prepare ();
+
+                dbcmd.ExecuteNonQuery ();
+            } catch (Exception e) {
+                Log.Exception ("NoNoise/DB - TrackData update failed for TD: " + td, e);
+                return false;
+            } finally {
+                if (dbcmd != null)
+                    dbcmd.Dispose ();
+                dbcmd = null;
+                if (dbcon != null)
+                    dbcon.Close ();
+            }
+
+            return true;
+        }
+
+        /// <summary>
+        /// Inserts the given TrackData if it is not already in the database.
+        /// Otherwise updates the TrackData in the database.
+        /// </summary>
+        /// <param name="td">
+        /// The <see cref="TrackData"/> to be inserted or updated
+        /// </param>
+        /// <returns>
+        /// True if the TrackData was successfully inserted or updated.
+        /// False otherwise.
+        /// </returns>
+        public bool InsertOrUpdateTrackData (TrackData td)
+        {
+            if (ContainsInfoForTrack (td.ID))
+                return UpdateTrackData (td);
+            else
+                return InsertTrackInfo (td);
         }
 
         /// <summary>

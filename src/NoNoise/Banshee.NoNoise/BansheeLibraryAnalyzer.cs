@@ -46,8 +46,9 @@ namespace Banshee.NoNoise
     {
         private static BansheeLibraryAnalyzer bla = null;
 
-        // TODO remove this debug helper bool
+        // TODO remove debug helper bools
         private readonly bool STORE_ENTIRE_MATRIX = false;
+        private readonly bool DB_CHEATER_MODE = true;
 
         #region Members
         private Banshee.Library.MusicLibrarySource ml;
@@ -107,6 +108,16 @@ namespace Banshee.NoNoise
 
             db = new NoNoiseDBHandler ();
             coords = db.GetPcaCoordinates ();
+
+            /// REMOVE THIS
+            if (DB_CHEATER_MODE) {
+                analyzing_lib = false;
+                lib_scanned = true;
+                data_up_to_date = true;
+                Hyena.Log.Information ("NoNoise/BLA - cheater mode - skipping checks");
+                return;
+            }
+            /// SIHT EVOMER
 
             analyzing_lib = false;
             lib_scanned = CheckLibScanned ();
@@ -207,6 +218,13 @@ namespace Banshee.NoNoise
         {
             if (start == analyzing_lib)
                 return;
+
+            /// REMOVE THIS
+            if (DB_CHEATER_MODE) {
+                Hyena.Log.Information ("NoNoise/BLA - cheater mode - doing nothing");
+                return;
+            }
+            /// SIHT EVOMER
 
 //            ml = ServiceManager.SourceManager.MusicLibrary;
 //            Hyena.Log.Debug ("NN Scan - tm count: " + ml.TrackModel.Count);
