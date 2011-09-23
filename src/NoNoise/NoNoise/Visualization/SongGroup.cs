@@ -241,13 +241,15 @@ namespace NoNoise.Visualization
             foreach (SongActor a in actor_manager.Actors) {
                 a.EnterEvent += delegate(object o, EnterEventArgs args) {
                     SongActor sender = o as SongActor;
-                    FireSongEnter (new SongHighlightArgs (sender.Owner.GetAllIDs ()));
+                    if (sender.Owner != null)
+                        FireSongEnter (new SongHighlightArgs (sender.Owner.GetAllIDs ()));
                 };
 
 
                 a.LeaveEvent += delegate(object o, LeaveEventArgs args) {
                     SongActor sender = o as SongActor;
-                    FireSongLeave (new SongHighlightArgs (sender.Owner.GetAllIDs ()));
+                    if (sender.Owner != null)
+                        FireSongLeave (new SongHighlightArgs (sender.Owner.GetAllIDs ()));
                 };
             }
 
