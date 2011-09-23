@@ -148,10 +148,6 @@ namespace NoNoise.Visualization
 
             points_visible = new List<SongPoint> (2000);
 
-            foreach (SongActor a in actor_manager.Actors) {
-                this.Add (a);
-                animation_behave.Apply (a);
-            }
         }
 
         public void ParseTextFile (string filename, int count)
@@ -197,30 +193,39 @@ namespace NoNoise.Visualization
             point_manager.Cluster ();
             stop.Stop ();
 
+
+            point_manager.SetDefaultLevel (500);
+
             Hyena.Log.Information ("Clustering time: "+stop.ElapsedMilliseconds);
 
             points_visible = new List<SongPoint> (2000);
 
-            foreach (SongActor a in actor_manager.Actors) {
-                this.Add (a);
-                animation_behave.Apply (a);
-            }
         }
 
-
-        /// <summary>
-        /// Initializes the prototype texture, the animations, and the event handler.
-        /// </summary>
-        public void Init ()
+        private void InitSongActors ()
         {
-            Hyena.Log.Information ("Initializing Song Group.");
 
             actor_manager = new SongActorManager (num_of_actors);
 
+            foreach (SongActor a in actor_manager.Actors) {
+                Add (a);
+                animation_behave.Apply (a);
+            }
 
-            //Animation
+        }
+
+        private void InitSelectionActor ()
+        {
+            selection = new SelectionActor (1000,1000, new Cairo.Color (1,0,0,0.8));
+            selection.SetPosition (0,0);
+            stage.Add (selection);
+
+        }
+
+        private void InitAnimations ()
+        {
+
             animation_timeline = new Timeline (animation_time);
-//            animation_alpha = new Alpha (animation_timeline, (ulong)AnimationMode.EaseOutCubic);
             animation_alpha = new Alpha (animation_timeline, (ulong)AnimationMode.EaseInOutSine);
             animation_behave = new BehaviourScale (animation_alpha,1.0,1.0,1.0,1.0);
 
@@ -228,21 +233,14 @@ namespace NoNoise.Visualization
             clustering_animation_alpha = new Alpha (clustering_animation_timeline, (ulong)AnimationMode.EaseInOutSine);
             clustering_animation_behave = new BehaviourOpacity (clustering_animation_alpha, 255, 0);
             clustering_animation_timeline.Completed += HandleClusteringTimelineCompleted;
-            clustering_animation_timeline.AddMarkerAtTime ("Halftime",1);
-//            clustering_animation_timeline.MarkerReached += HandleClusteringTimelineMarkerReached;
 
             zoom_animation_behave = new BehaviourScale (animation_alpha, 1.0,1.0,1.0,1.0);
 
             zoom_animation_behave.Apply (this);
-            this.Reactive = true;
-            this.ScrollEvent += HandleAdaptiveZoom;
+        }
 
-//            selection = new CairoTexture (1000,1000);
-            selection = new SelectionActor (1000,1000, new Cairo.Color (1,0,0,0.8));
-            selection.SetPosition (0,0);
-            stage.Add (selection);
-//            selection.Show ();
-
+        private void InitHandlers ()
+        {
             stage.ButtonPressEvent += HandleStageButtonPressEvent;
             stage.ButtonReleaseEvent += HandleStageButtonReleaseEvent;
             stage.MotionEvent += HandleMotionEvent;
@@ -250,8 +248,20 @@ namespace NoNoise.Visualization
                 selection.SetSize (stage.Width, stage.Height);
                 UpdateClipping ();
             };
-            //this.LeaveEvent += HandleHandleLeaveEvent;
-            //this.Stage.ButtonPressEvent += HandleGlobalButtonPressEven;
+        }
+        /// <summary>
+        /// Initializes the prototype texture, the animations, and the event handler.
+        /// </summary>
+        public void Init ()
+        {
+            Hyena.Log.Information ("Initializing Song Group.");
+
+            Reactive = true;
+
+            InitAnimations ();
+            InitSongActors ();
+            InitSelectionActor ();
+            InitHandlers ();
         }
 
         /// <summary>
