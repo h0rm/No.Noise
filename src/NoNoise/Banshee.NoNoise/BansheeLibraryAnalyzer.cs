@@ -29,6 +29,7 @@ using System.Threading;
 
 using Banshee.Collection;
 using Banshee.ServiceStack;
+using Banshee.Sources;
 
 using NoNoise.Data;
 using NoNoise.PCA;
@@ -48,7 +49,7 @@ namespace Banshee.NoNoise
 
         // TODO remove debug helper bools
         private readonly bool STORE_ENTIRE_MATRIX = false;
-        private readonly bool DB_CHEATER_MODE = true;
+        private readonly bool DB_CHEATER_MODE = false;
 
         #region Members
         private Banshee.Library.MusicLibrarySource ml;
@@ -123,11 +124,15 @@ namespace Banshee.NoNoise
             lib_scanned = CheckLibScanned ();
             data_up_to_date = CheckDataUpToDate ();
 
+            ml.TracksAdded += HandleTracksAdded;
+            ml.TracksDeleted += HandleTracksDeleted;
+            ml.TracksChanged += HandleTracksChanged;
+
             if (STORE_ENTIRE_MATRIX)
-                new Thread (new ThreadStart(PcaForMusicLibrary)).Start ();
+                new Thread (new ThreadStart (PcaForMusicLibrary)).Start ();
             else
-                new Thread (new ThreadStart(PcaForMusicLibraryVectorEdition)).Start ();
-            new Thread (new ThreadStart(WriteTrackInfosToDB)).Start ();
+                new Thread (new ThreadStart (PcaForMusicLibraryVectorEdition)).Start ();
+            new Thread (new ThreadStart (WriteTrackInfosToDB)).Start ();
         }
 
         /// <summary>
@@ -239,10 +244,10 @@ namespace Banshee.NoNoise
                     stop_scan = false;
                 }
                 if (STORE_ENTIRE_MATRIX)
-                    thr = new Thread (new ThreadStart(ScanMusicLibrary));
+                    thr = new Thread (new ThreadStart (ScanMusicLibrary));
                 else
-                    thr = new Thread (new ThreadStart(ScanMusicLibraryVectorEdition));
-                finished = new Gtk.ThreadNotify (new Gtk.ReadyEvent(Finished));
+                    thr = new Thread (new ThreadStart (ScanMusicLibraryVectorEdition));
+                finished = new Gtk.ThreadNotify (new Gtk.ReadyEvent (Finished));
                 thr.Start();
             } else {
                 lock (scan_synch) {
@@ -301,11 +306,11 @@ namespace Banshee.NoNoise
                         dt = DateTime.Now;
                     }
                 } catch (Exception e) {
-                    Hyena.Log.Exception("NoNoise - MFCC/DB Problem", e);
+                    Hyena.Log.Exception ("NoNoise - MFCC/DB Problem", e);
                 }
             }
 
-            finished.WakeupMain();
+            finished.WakeupMain ();
         }
 
         /// <summary>
@@ -358,11 +363,11 @@ namespace Banshee.NoNoise
                         dt = DateTime.Now;
                     }
                 } catch (Exception e) {
-                    Hyena.Log.Exception("NoNoise - MFCC/DB Problem", e);
+                    Hyena.Log.Exception ("NoNoise - MFCC/DB Problem", e);
                 }
             }
 
-            finished.WakeupMain();
+            finished.WakeupMain ();
         }
 
         /// <summary>
@@ -377,9 +382,9 @@ namespace Banshee.NoNoise
             }
             sc.ScanFinished ();
             if (STORE_ENTIRE_MATRIX)
-                new Thread (new ThreadStart(PcaForMusicLibrary)).Start ();
+                new Thread (new ThreadStart (PcaForMusicLibrary)).Start ();
             else
-                new Thread (new ThreadStart(PcaForMusicLibraryVectorEdition)).Start ();
+                new Thread (new ThreadStart (PcaForMusicLibraryVectorEdition)).Start ();
         }
 
         /// <summary>
@@ -554,6 +559,44 @@ namespace Banshee.NoNoise
                 } catch (Exception e) {
                     Hyena.Log.Exception("NoNoise - DB Problem", e);
                 }
+            }
+        }
+
+        private void HandleTracksAdded (Source sender, TrackEventArgs args)
+        {
+            Hyena.Log.Debug ("NoNoise/BLA - tracks added (unhandled)");
+
+            if (analyzing_lib) {
+                // TODO check for missed files after the scan finished...
+            }
+
+            CheckLibScanned ();
+            CheckDataUpToDate ();
+
+            if (!data_up_to_date) {
+                if (STORE_ENTIRE_MATRIX)
+                    new Thread (new ThreadStart (PcaForMusicLibrary)).Start ();
+                else
+                    new Thread (new ThreadStart (PcaForMusicLibraryVectorEdition)).Start ();
+                new Thread (new ThreadStart (WriteTrackInfosToDB)).Start ();
+            }
+        }
+
+        private void HandleTracksDeleted (Source sender, TrackEventArgs args)
+        {
+            Hyena.Log.Debug ("NoNoise/BLA - tracks deleted (unhandled)");
+        }
+
+        private void HandleTracksChanged (Source sender, TrackEventArgs args)
+        {
+            try {
+                Hyena.Log.Debug ("NoNoise/BLA - tracks changed (unhandled): " +
+                                 args.ChangedFields.ToString ());
+            } catch (Exception e) {
+                if (args == null || args.ChangedFields == null)
+                    Hyena.Log.Debug ("NoNoise/BLA - tracks changed (unhandled): args or CF null");
+                else
+                    Hyena.Log.Debug ("NoNoise/BLA - tracks changed (unhandled): CF not null");
             }
         }
     }
