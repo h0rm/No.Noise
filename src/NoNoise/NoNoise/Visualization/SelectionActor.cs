@@ -183,6 +183,10 @@ namespace NoNoise.Visualization
             return inside;
         }
 
+
+        // Winding number algorithm by Dan Sunday
+        // http://softsurfer.com/Archive/algorithm_0103/algorithm_0103.htm
+
         private bool IsPointInside (Point P)
         {
             int wn = 0;
@@ -212,6 +216,8 @@ namespace NoNoise.Visualization
 
             return erg;
         }
+
+        // ~~~~
     }
 }
 
