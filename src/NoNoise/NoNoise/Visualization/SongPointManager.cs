@@ -97,7 +97,7 @@ namespace NoNoise.Visualization
             get { return tree_list[level].GetAllObjects (); }
         }
 
-        public void Add (double x, double y, string id)
+        public void Add (double x, double y, int id)
         {
             tree_list[0].Add (new SongPoint (x, y, id));
         }

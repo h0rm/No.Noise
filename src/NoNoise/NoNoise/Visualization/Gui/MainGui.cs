@@ -25,6 +25,7 @@
 // THE SOFTWARE.
 using System;
 using Clutter;
+using System.Collections.Generic;
 
 namespace NoNoise.Visualization.Gui
 {
@@ -38,6 +39,8 @@ namespace NoNoise.Visualization.Gui
 
         private CairoTexture debug_in;
         private CairoTexture debug_out;
+
+        private InfoBox infobox;
 
         public MainGui () : base ()
         {
@@ -67,10 +70,17 @@ namespace NoNoise.Visualization.Gui
             this.Add (zoom_out);
 
             this.Reactive = true;
+            infobox = new InfoBox (100,200);
+            this.Add (infobox);
+            infobox.SetPosition (0,200);
 
             InitDebug ();
         }
 
+        public void UpdateInfoText (List<String> lines)
+        {
+            infobox.Update (lines);
+        }
         private void InitDebug ()
         {
             Hyena.Log.Debug ("Debug GUI init");

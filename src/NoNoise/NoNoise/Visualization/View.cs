@@ -25,7 +25,7 @@
 // THE SOFTWARE.
 using System;
 using Clutter;
-
+using System.Collections.Generic;
 using NoNoise.Visualization.Gui;
 
 namespace NoNoise.Visualization
@@ -55,12 +55,19 @@ namespace NoNoise.Visualization
             };
 
             point_group.SongEntered += delegate (object source, SongHighlightArgs args) {
-                //Hyena.Log.Information ("Entered "+args.X+":"+args.Y+" | "+args.ID);
+                List<String> songs = new List<String> ();
+
+                foreach (int i in args.SongIDs)
+                    songs.Add (i.ToString());
+
+                gui.UpdateInfoText (songs);
+//                Hyena.Log.Information ("Entered "+args.ID + "\n" + ids);
             };
 
             point_group.SongLeft += delegate (object source, SongHighlightArgs args) {
-                //Hyena.Log.Information ("Left "+args.X+":"+args.Y+" | "+args.ID);
+                Hyena.Log.Information ("Left");
             };
+
 
             //Event Handler to handle zoom
             gui.ZoomChangedEvent += HandleGuiZoomChangedEvent;

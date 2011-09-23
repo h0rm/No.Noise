@@ -37,35 +37,24 @@ namespace NoNoise.Visualization
 {
     public class SongHighlightArgs
     {
-        private float x;
-        private float y;
-        private string name;
-        private int id;
-
-        public SongHighlightArgs (float x, float y, string name, int id)
+        public SongHighlightArgs (List<int> song_ids)
         {
-            this.x = x;
-            this.y = y;
-            this.name = name;
-            this.id = id;
+            SongIDs = song_ids;
         }
 
-        public SongHighlightArgs (float x, float y, int id) : this (x, y, id + "", id) {}
-
-        public float X {
-             get { return x; }
+        public SongHighlightArgs (int id)
+        {
+            SongIDs = new List<int> ();
+            SongIDs.Add (id);
         }
 
-        public float Y {
-             get { return y; }
-        }
-
-        public string Name {
-             get { return name; }
+        public List<int> SongIDs {
+            private set;
+            get;
         }
 
         public int ID {
-             get { return id; }
+            get { return SongIDs[0]; }
         }
     }
 
@@ -141,7 +130,7 @@ namespace NoNoise.Visualization
             point_manager = new SongPointManager (0, 0, 3000, 3000);
 
             foreach (DataEntry e in entries)
-                point_manager.Add (e.X*3000, e.Y*3000, e.ToString());
+                point_manager.Add (e.X*3000, e.Y*3000, e.ID);
 
             point_manager.Cluster ();
             point_manager.SetDefaultLevel (500);
@@ -184,7 +173,7 @@ namespace NoNoise.Visualization
             point_manager = new SongPointManager (0, 0, max_x, max_y);
 
             for (int i=0; i < points.Count; i ++)
-                point_manager.Add (points[i].X, points[i].Y, "SongPoint "+i);
+                point_manager.Add (points[i].X, points[i].Y, i);
 
 
 
@@ -248,6 +237,20 @@ namespace NoNoise.Visualization
                 selection.SetSize (stage.Width, stage.Height);
                 UpdateClipping ();
             };
+
+            foreach (SongActor a in actor_manager.Actors) {
+                a.EnterEvent += delegate(object o, EnterEventArgs args) {
+                    SongActor sender = o as SongActor;
+                    FireSongEnter (new SongHighlightArgs (sender.Owner.GetAllIDs ()));
+                };
+
+
+                a.LeaveEvent += delegate(object o, LeaveEventArgs args) {
+                    SongActor sender = o as SongActor;
+                    FireSongLeave (new SongHighlightArgs (sender.Owner.GetAllIDs ()));
+                };
+            }
+
         }
         /// <summary>
         /// Initializes the prototype texture, the animations, and the event handler.

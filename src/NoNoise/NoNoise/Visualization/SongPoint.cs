@@ -25,6 +25,7 @@
 // THE SOFTWARE.
 using System;
 using NoNoise.Visualization.Util;
+using System.Collections.Generic;
 
 namespace NoNoise.Visualization
 {
@@ -33,7 +34,7 @@ namespace NoNoise.Visualization
     /// </summary>
     public class SongPoint :IStorable<SongPoint>
     {
-        public SongPoint (double x, double y, string id)
+        public SongPoint (double x, double y, int id)
         {
             X = x;
             Y = y;
@@ -95,11 +96,24 @@ namespace NoNoise.Visualization
         /// <summary>
         /// Unique id which represents the song.
         /// </summary>
-        public String ID {
+        public int ID {
             get;
             private set;
         }
 
+        public List<int> GetAllIDs ()
+        {
+            List<int> ids = new List<int> ();
+            ids.Add (ID);
+
+            if (LeftChild != null)
+                ids.AddRange (LeftChild.GetAllIDs ());
+            if (RightChild != null)
+                ids.AddRange (RightChild.GetAllIDs ());
+
+            return ids;
+        }
+        
         public SongPoint GetMerged (SongPoint other)
         {
             Point merged = this.XY;
