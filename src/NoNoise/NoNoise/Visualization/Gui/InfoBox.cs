@@ -64,7 +64,7 @@ namespace NoNoise
             double w = Width - 10;
             double h = Height -10;
 
-            Hyena.Log.Information ("Infobox background");
+//            Hyena.Log.Information ("Infobox background");
             texture.Clear ();
             Cairo.Context cr = texture.Create ();
 

@@ -52,6 +52,16 @@ namespace NoNoise.Visualization
 
             Stage.AllocationChanged += delegate {
                 Stage.SetClip (0,0,Stage.Width, Stage.Height);
+                Hyena.Log.Information ("Clutter stage allocation changed to " + Stage.Width + "x" + Stage.Height);
+                point_group.QueueRelayout ();
+            };
+
+            Stage.Shown += delegate {
+                Hyena.Log.Information ("Clutter stage shown " + Stage.Width + "x" + Stage.Height);
+            };
+
+            Stage.Realized += delegate {
+                Hyena.Log.Information ("Clutter stage realized");
             };
 
             point_group.SongEntered += delegate (object source, SongHighlightArgs args) {
@@ -65,7 +75,7 @@ namespace NoNoise.Visualization
             };
 
             point_group.SongLeft += delegate (object source, SongHighlightArgs args) {
-                Hyena.Log.Information ("Left");
+//                Hyena.Log.Information ("Left");
             };
 
 
@@ -75,14 +85,19 @@ namespace NoNoise.Visualization
             gui.DebugButtonPressedEvent += HandleGuiDebugButtonPressedEvent;
         }
 
+        public void FinishedInit ()
+        {
+            point_group.UpdateClipping ();
+        }
         void HandleGuiDebugButtonPressedEvent  (object source, MainGui.DebugEventArgs args)
         {
-            point_group.ClusterOneStep (args.Value == 1);
+            point_group.UpdateClipping ();
         }
 
         void HandleGuiZoomChangedEvent (object source, MainGui.ZoomLevelArgs args)
         {
-            point_group.ZoomOnCenter (args.Inwards);
+            point_group.ClusterOneStep (args.Inwards);
+            //point_group.ZoomOnCenter (args.Inwards);
         }
 
         public void GetPcaCoordinates ()

@@ -52,10 +52,12 @@ namespace NoNoise.Visualization
             texture.SetSurfaceSize ((uint)Math.Ceiling(width), (uint)Math.Ceiling (height));
             texture.SetSize ((float)Math.Ceiling(width), (float)Math.Ceiling (height));
         }
+
         public Cairo.Color Color {
             get;
             set;
         }
+        
         public void Reset ()
         {
             texture.Clear ();

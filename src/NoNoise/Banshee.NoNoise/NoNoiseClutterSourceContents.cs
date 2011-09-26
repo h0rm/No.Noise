@@ -32,6 +32,7 @@ using Gtk;
 using Banshee.Library;
 using Clutter;
 using GLib;
+using Banshee.ServiceStack;
 
 namespace Banshee.NoNoise
 {
@@ -53,20 +54,36 @@ namespace Banshee.NoNoise
 
             //cv = new ClutterView();
             //cv.Init();
-
+            Clutter.Threads.Enter ();
             view = new View();
 //
             if (pcadata)
                 view.GetPcaCoordinates ();
             else
                 view.TestGenerateData();
-            
+
+            Clutter.Threads.Leave ();
             //GLib.Thread thread = new GLib.Thread(cv.Init);
 
             this.Widget.Shown += delegate{
                 Hyena.Log.Information("Widget shown");
                 //(w as ClutterView).GenerateOverview();
             };
+
+            this.Widget.VisibilityNotifyEvent += delegate {
+                Hyena.Log.Information ("Widget visible");
+            };
+
+            this.Widget.Focused += delegate {
+                Hyena.Log.Information ("Focused");
+            };
+
+            Banshee.ServiceStack.Application.ClientStarted += delegate {
+                Threads.Enter ();
+                view.FinishedInit ();
+                Threads.Leave ();
+            };
+
         }
 
         ~ NoNoiseClutterSourceContents ()
@@ -84,18 +101,20 @@ namespace Banshee.NoNoise
                 return true;
 
             return true;
-
         }
 
         public void Dispose ()
         {
+            Clutter.Threads.Enter ();
+            view = null;
+//            if (view != null) {
+//                view.Dispose ();
+//                view = null;
+//            }
 
-            if (view != null) {
-                view.Dispose ();
-                view = null;
-            }
 
-            Clutter.Application.Quit ();
+            Clutter.Threads.Leave ();
+
         }
         public void ResetSource () { }
         public Widget Widget { get { return view; } }
