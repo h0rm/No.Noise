@@ -42,6 +42,11 @@ namespace NoNoise.Visualization.Gui
 
         private InfoBox infobox;
 
+        private ZoomButton zoom_button_in;
+        private ZoomButton zoom_button_out;
+
+        private SelectButton select_button;
+
         public MainGui () : base ()
         {
             Init ();
@@ -52,29 +57,28 @@ namespace NoNoise.Visualization.Gui
         {
             Hyena.Log.Debug ("GUI init");
 
-            //Create Texture
-            CreateZoomTexture (out zoom_in, true);
-            zoom_in.Reactive = true;
-            //Attach Handler
-            zoom_in.ButtonPressEvent += HandleZoomInEvent;
 
-            //Create Texture
-            CreateZoomTexture (out zoom_out, false);
-            zoom_out.Reactive = true;
-            zoom_out.SetPosition (0,40);
-            //Attach Handler
-            zoom_out.ButtonPressEvent += HandleZoomOutEvent;
+            zoom_button_in = new ZoomButton (true);
+            zoom_button_in.ButtonPressEvent += HandleZoomInEvent;
 
+            zoom_button_out = new ZoomButton (false);
+            zoom_button_out.ButtonPressEvent += HandleZoomOutEvent;
+            zoom_button_out.SetPosition (0,40);
 
-            this.Add (zoom_in);
-            this.Add (zoom_out);
+            this.Add (zoom_button_in);
+            this.Add (zoom_button_out);
+
+            select_button = new SelectButton ();
+            select_button.SetPosition (0,100);
+
+            this.Add (select_button);
 
             this.Reactive = true;
             infobox = new InfoBox (100,200);
             this.Add (infobox);
             infobox.SetPosition (0,200);
 
-            InitDebug ();
+//            InitDebug ();
         }
 
         public void UpdateInfoText (List<String> lines)
@@ -180,37 +184,6 @@ namespace NoNoise.Visualization.Gui
                 if (this.zoom_changed != null)
                    zoom_changed (this,new ZoomLevelArgs(true,0));
             }
-        }
-
-        //The CairoTexture "+" or "-" with circle is created
-        void CreateZoomTexture (out CairoTexture actor, bool inwards)
-        {
-            actor = new CairoTexture (30,30);
-            actor.Clear ();
-            Cairo.Context context = actor.Create ();
-
-            context.LineWidth = 2.0;
-
-            context.Color = new Cairo.Color (0,0,0);
-            context.Arc(15,15,11,0,2*Math.PI);
-            context.Fill ();
-
-            context.Color = new Cairo.Color (0.95,0.95,0.95);
-            context.Arc(15,15,10,0,2*Math.PI);
-            context.Stroke ();
-
-            context.MoveTo (10,15);
-            context.LineTo (20,15);
-            context.Stroke ();
-
-            if (inwards)
-            {
-                context.MoveTo (15,10);
-                context.LineTo (15,20);
-                context.Stroke ();
-            }
-            ((IDisposable) context.Target).Dispose ();
-            ((IDisposable) context).Dispose ();
         }
 
         public delegate void ZoomLevelChangedEvent (Object source, ZoomLevelArgs args);

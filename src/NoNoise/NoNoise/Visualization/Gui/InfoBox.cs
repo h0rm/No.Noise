@@ -28,19 +28,19 @@ using Clutter;
 using System.Collections.Generic;
 using Cairo;
 
-namespace NoNoise
+namespace NoNoise.Visualization.Gui
 {
     public class InfoBox : Clutter.Group
     {
         private List<String> info_strings;
         private CairoTexture texture;
 
-        public uint Width{
+        public new uint Width{
             get;
             private set;
         }
 
-        public uint Height {
+        public new uint Height {
             get;
             private set;
 
