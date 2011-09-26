@@ -453,6 +453,13 @@ namespace NoNoise.Data
             }
         }
 
+        /// <summary>
+        /// Removes the MIR data for the track with the given banshee_id,
+        /// if it is in the database.
+        /// </summary>
+        /// <param name='bid'>
+        /// The banshee_id
+        /// </param>
         public void RemoveMirDataForTrack (int bid)
         {
             IDbCommand dbcmd = null;
@@ -550,7 +557,7 @@ namespace NoNoise.Data
                 while (reader.Read ()) {
                     int bid = reader.GetInt32 (2);
                     DataEntry de = new DataEntry (bid, reader.GetDouble (0),
-                                                  reader.GetDouble (1), null);
+                                                  reader.GetDouble (1), null);  // test if gettrackdata (bid) works (dbcon.Open()...)
                     ret.Add (bid, de);
                 }
 
@@ -604,6 +611,13 @@ namespace NoNoise.Data
             }
         }
 
+        /// <summary>
+        /// Removes the PCA data for the track with the given banshee_id,
+        /// if it is in the database.
+        /// </summary>
+        /// <param name='bid'>
+        /// The banshee_id
+        /// </param>
         public void RemovePcaDataForTrack (int bid)
         {
             IDbCommand dbcmd = null;
@@ -892,6 +906,13 @@ namespace NoNoise.Data
             }
         }
 
+        /// <summary>
+        /// Removes the track data for the track with the given banshee_id,
+        /// if it is in the database.
+        /// </summary>
+        /// <param name='bid'>
+        /// The banshee_id
+        /// </param>
         public void RemoveTrackDataForTrack (int bid)
         {
             IDbCommand dbcmd = null;

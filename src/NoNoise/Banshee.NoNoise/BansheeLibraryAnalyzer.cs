@@ -620,6 +620,9 @@ namespace Banshee.NoNoise
             }
         }
 
+        /// <summary>
+        /// Checks the music library for deleted tracks and removes them from the database.
+        /// </summary>
         private void RemoveDeletedTracks ()
         {
             SortedList<int, int> ids = new SortedList<int, int> (ml.TrackModel.Count);
@@ -697,6 +700,15 @@ namespace Banshee.NoNoise
             }
         }
 
+        /// <summary>
+        /// Handles the tracks added event when the user adds new files to the music library.
+        /// </summary>
+        /// <param name='sender'>
+        /// Sender.
+        /// </param>
+        /// <param name='args'>
+        /// Arguments.
+        /// </param>
         private void HandleTracksAdded (Source sender, TrackEventArgs args)
         {
             Hyena.Log.Debug ("NoNoise/BLA - tracks added (unhandled)");
@@ -722,6 +734,15 @@ namespace Banshee.NoNoise
             }
         }
 
+        /// <summary>
+        /// Handles the tracks deleted event when the user removes files from the music library.
+        /// </summary>
+        /// <param name='sender'>
+        /// Sender.
+        /// </param>
+        /// <param name='args'>
+        /// Arguments.
+        /// </param>
         private void HandleTracksDeleted (Source sender, TrackEventArgs args)
         {
             Hyena.Log.Debug ("NoNoise/BLA - tracks deleted (unhandled)");
@@ -731,6 +752,15 @@ namespace Banshee.NoNoise
             }
         }
 
+        /// <summary>
+        /// Handles the tracks changed event when the user modifies files in the music library.
+        /// </summary>
+        /// <param name='sender'>
+        /// Sender.
+        /// </param>
+        /// <param name='args'>
+        /// Arguments.
+        /// </param>
         private void HandleTracksChanged (Source sender, TrackEventArgs args)
         {
             try {
