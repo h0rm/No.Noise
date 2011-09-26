@@ -44,7 +44,7 @@ namespace NoNoise.PCA
         private Vector mean = null;
         private List<Vector> differences = null;
         private List<Matrix> matrices = null;
-        private Dictionary<int, Vector> vector_map = new Dictionary<int, Vector> ();
+        private Dictionary<int, Vector> vector_map;
         private int num_params = 0;
         private int num_columns = 0;
         private Vector base1;
@@ -64,6 +64,7 @@ namespace NoNoise.PCA
         public PCAnalyzer ()
         {
             num_params = -1;
+            vector_map = new Dictionary<int, Vector> ();
         }
 
         /// <summary>
@@ -156,8 +157,13 @@ namespace NoNoise.PCA
                 mean = v;
             else
                 mean = mean.Add(v);
-            vector_map.Add (bid, v);
-            num_columns++;
+            try {
+                vector_map.Add (bid, v);
+                num_columns++;
+            } catch (Exception e) {
+                Log.Exception ("NoNoise/PCA - vm size: " + vector_map.Count + ", bid: " + bid, e);
+                return false;
+            }
 
             return true;
         }
@@ -189,7 +195,7 @@ namespace NoNoise.PCA
             } else
                 comb = args;
 
-            Log.Debug ("NoNoise/PCA - combined vector: " + GetValues (comb));
+//            Log.Debug ("NoNoise/PCA - combined vector: " + GetValues (comb));
 
             return AddEntry (bid, comb);
         }

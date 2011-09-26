@@ -27,7 +27,8 @@ using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Text;
-using Mono.Data.SqliteClient;
+//using Mono.Data.SqliteClient;
+using Mono.Data.Sqlite;
 using MathNet.Numerics.LinearAlgebra;
 using Hyena.Data.Sqlite;
 using Hyena;
@@ -451,6 +452,26 @@ namespace NoNoise.Data
                     dbcon.Close ();
             }
         }
+
+        public void RemoveMirDataForTrack (int bid)
+        {
+            IDbCommand dbcmd = null;
+            try {
+                dbcon.Open ();
+                dbcmd = dbcon.CreateCommand ();
+
+                dbcmd.CommandText = string.Format ("DELETE FROM MIRData WHERE banshee_id = '{0}'", bid);
+                dbcmd.ExecuteNonQuery ();
+            } catch (Exception e) {
+                Log.Warning ("NoNoise/DB - Remove MIRData query failed for Banshee_id: " + bid + "\n" + e.StackTrace);
+            } finally {
+                if (dbcmd != null)
+                    dbcmd.Dispose ();
+                dbcmd = null;
+                if (dbcon != null)
+                    dbcon.Close ();
+            }
+        }
         #endregion
 
         #region PCAData
@@ -512,6 +533,44 @@ namespace NoNoise.Data
         /// Gets a list with all PCA coordinates stored in the database.
         /// </summary>
         /// <returns>
+        /// A <see cref="Dictionary<int, DataEntry>"/> containing all PCA coordinates
+        /// from the database.
+        /// </returns>
+        public Dictionary<int, DataEntry> GetPcaCoordinatesDictionary ()
+        {
+            Dictionary<int, DataEntry> ret = new Dictionary<int, DataEntry> ();
+
+            IDbCommand dbcmd = null;
+            try {
+                dbcon.Open ();
+                dbcmd = dbcon.CreateCommand ();
+
+                dbcmd.CommandText = "SELECT pca_x, pca_y, banshee_id FROM PCAData";
+                System.Data.IDataReader reader = dbcmd.ExecuteReader ();
+                while (reader.Read ()) {
+                    int bid = reader.GetInt32 (2);
+                    DataEntry de = new DataEntry (bid, reader.GetDouble (0),
+                                                  reader.GetDouble (1), null);
+                    ret.Add (bid, de);
+                }
+
+                return ret;
+            } catch (Exception e) {
+                Log.Exception ("NoNoise/DB - PCA data read failed", e);
+                return null;
+            } finally {
+                if (dbcmd != null)
+                    dbcmd.Dispose ();
+                dbcmd = null;
+                if (dbcon != null)
+                    dbcon.Close ();
+            }
+        }
+
+        /// <summary>
+        /// Gets a list with all PCA coordinates stored in the database.
+        /// </summary>
+        /// <returns>
         /// A <see cref="List<DataEntry>"/> containing all PCA coordinates
         /// from the database.
         /// </returns>
@@ -536,6 +595,26 @@ namespace NoNoise.Data
             } catch (Exception e) {
                 Log.Exception ("NoNoise/DB - PCA data read failed", e);
                 return null;
+            } finally {
+                if (dbcmd != null)
+                    dbcmd.Dispose ();
+                dbcmd = null;
+                if (dbcon != null)
+                    dbcon.Close ();
+            }
+        }
+
+        public void RemovePcaDataForTrack (int bid)
+        {
+            IDbCommand dbcmd = null;
+            try {
+                dbcon.Open ();
+                dbcmd = dbcon.CreateCommand ();
+
+                dbcmd.CommandText = string.Format ("DELETE FROM PCAData WHERE banshee_id = '{0}'", bid);
+                dbcmd.ExecuteNonQuery ();
+            } catch (Exception e) {
+                Log.Warning ("NoNoise/DB - Remove PCAData query failed for Banshee_id: " + bid + "\n" + e.StackTrace);
             } finally {
                 if (dbcmd != null)
                     dbcmd.Dispose ();
@@ -694,6 +773,45 @@ namespace NoNoise.Data
         }
 
         /// <summary>
+        /// Gets a map with all track data stored in the database.
+        /// </summary>
+        /// <returns>
+        /// A <see cref="Dictionary<int, TrackData>"/> containing all track data
+        /// from the database mapped to their banshee_id.
+        /// </returns>
+        public Dictionary<int, TrackData> GetTrackDataDictionary ()
+        {
+            Dictionary<int, TrackData> ret = new Dictionary<int, TrackData> ();
+
+            IDbCommand dbcmd = null;
+            try {
+                dbcon.Open ();
+                dbcmd = dbcon.CreateCommand ();
+
+                dbcmd.CommandText = "SELECT banshee_id, artist, title, album, duration FROM TrackData";
+                System.Data.IDataReader reader = dbcmd.ExecuteReader ();
+                while (reader.Read ()) {
+                    int bid = reader.GetInt32 (0);
+                    TrackData td = new TrackData (bid, reader.GetString (1),
+                                                  reader.GetString (2), reader.GetString (3),
+                                                  reader.GetInt32 (4));
+                    ret.Add (bid, td);
+                }
+
+                return ret;
+            } catch (Exception e) {
+                Log.Exception ("NoNoise/DB - Track data read failed", e);
+                return null;
+            } finally {
+                if (dbcmd != null)
+                    dbcmd.Dispose ();
+                dbcmd = null;
+                if (dbcon != null)
+                    dbcon.Close ();
+            }
+        }
+
+        /// <summary>
         /// Gets a list with all track data stored in the database.
         /// </summary>
         /// <returns>
@@ -765,6 +883,26 @@ namespace NoNoise.Data
             } catch (Exception e) {
                 Log.Exception ("NoNoise/DB - Track data read failed", e);
                 return null;
+            } finally {
+                if (dbcmd != null)
+                    dbcmd.Dispose ();
+                dbcmd = null;
+                if (dbcon != null)
+                    dbcon.Close ();
+            }
+        }
+
+        public void RemoveTrackDataForTrack (int bid)
+        {
+            IDbCommand dbcmd = null;
+            try {
+                dbcon.Open ();
+                dbcmd = dbcon.CreateCommand ();
+
+                dbcmd.CommandText = string.Format ("DELETE FROM TrackData WHERE banshee_id = '{0}'", bid);
+                dbcmd.ExecuteNonQuery ();
+            } catch (Exception e) {
+                Log.Warning ("NoNoise/DB - Remove TrackData query failed for Banshee_id: " + bid + "\n" + e.StackTrace);
             } finally {
                 if (dbcmd != null)
                     dbcmd.Dispose ();

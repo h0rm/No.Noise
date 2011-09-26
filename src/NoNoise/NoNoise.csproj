@@ -26,7 +26,6 @@
         <Command type="Execute" command="make run" workingdir="${SolutionDir}" />
       </CustomCommands>
     </CustomCommands>
-    <WarningLevel>4</WarningLevel>
     <Optimize>false</Optimize>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Windows|AnyCPU' ">
@@ -34,7 +33,6 @@
     <DebugType>full</DebugType>
     <OutputPath>..\..\..\bin</OutputPath>
     <PlatformTarget>x86</PlatformTarget>
-    <WarningLevel>4</WarningLevel>
     <Optimize>false</Optimize>
   </PropertyGroup>
   <ItemGroup>
@@ -47,7 +45,6 @@
       <Package>gtk-sharp-2.0</Package>
     </Reference>
     <Reference Include="Mono.Cairo">
-      <SpecificVersion>False</SpecificVersion>
     </Reference>
     <Reference Include="Mono.Addins">
       <SpecificVersion>False</SpecificVersion>
@@ -82,6 +79,7 @@
       <Package>clutter-sharp</Package>
     </Reference>
     <Reference Include="System.Data" />
+    <Reference Include="Mono.Data.Sqlite" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="NoNoise.addin.xml">

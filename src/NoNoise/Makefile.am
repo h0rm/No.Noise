@@ -208,7 +208,7 @@ SOURCES =  \
 LINK =  \
 	$(BANSHEE_LIBS) \
 	$(CLUTTER_SHARP_LIBS) \
-	 -r:System.Data -r:Mono.Data.SqliteClient
+	 -r:System.Data -r:Mono.Data.Sqlite
 
 ASSEMBLY = Banshee.NoNoise
 
