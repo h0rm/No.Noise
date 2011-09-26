@@ -104,7 +104,8 @@ namespace NoNoise.Visualization
         public List<int> GetAllIDs ()
         {
             List<int> ids = new List<int> ();
-            ids.Add (ID);
+            if (LeftChild == null)
+                ids.Add (ID);
 
             if (LeftChild != null)
                 ids.AddRange (LeftChild.GetAllIDs ());

@@ -33,9 +33,18 @@ namespace NoNoise.Visualization
     {
         private int max_clustering_level = 8;
         private List<QuadTree<SongPoint>> tree_list;
-        private const int min_points = 100;
-
+        private const int min_points = 400;
         private int level = 0;
+
+        public double Width {
+            get;
+            private set;
+        }
+
+        public double Height {
+            get;
+            private set;
+        }
 
         public bool IsMaxLevel {
             get { return max_clustering_level == level; }
@@ -68,6 +77,9 @@ namespace NoNoise.Visualization
 
         public SongPointManager (double x, double y, double width, double height)
         {
+            Width = width;
+            Height = height;
+
             tree_list = new List<QuadTree<SongPoint>> ();
 
             tree_list.Add (new QuadTree<SongPoint> (x, y, width, height));
@@ -78,6 +90,8 @@ namespace NoNoise.Visualization
             QuadTree<SongPoint> tree;
 
             int i;
+            double w,h;
+
             for (i = 0; i < max_clustering_level; i++) {
                 tree = tree_list[i].GetClusteredTree ();
 
@@ -85,6 +99,8 @@ namespace NoNoise.Visualization
                 if (tree.Count < min_points)
                     break;
 
+                tree.GetWindowDimesions (500, out w, out h);
+                Hyena.Log.Information ("Window dimension for 500 points: " + w + "x" + h);
                 tree_list.Add (tree);
             }
 
@@ -116,6 +132,14 @@ namespace NoNoise.Visualization
             return tree_list[lvl].GetObjects (new QRectangle (x, y, width, height));
         }
 
+        public void GetWindowDimensions (int level, int num_of_points, out double w, out double h)
+        {
+
+            int lvl = (level > max_clustering_level) ? max_clustering_level : level;
+            lvl = (lvl < 0) ? 0 : lvl;
+
+            tree_list[lvl].GetWindowDimesions (num_of_points, out w, out h);
+        }
         public void SetDefaultLevel (int numofpoints)
         {
             int i;

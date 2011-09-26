@@ -158,6 +158,11 @@ namespace NoNoise.Visualization.Util
             return quadTreeRoot.GetNearestObjectInTree (new QCircle (item.XY, start_radius), item);
         }
 
+        public void GetWindowDimesions (int num_of_points, out double width, out double height)
+        {
+            quadTreeRoot.GetWindow (num_of_points, out width, out height);
+        }
+
         public QuadTree<T> GetClusteredTree ()
         {
             Hyena.Log.Debug ("Cluster Tree");
@@ -507,6 +512,13 @@ namespace NoNoise.Visualization.Util
 
         }
 
+        public List<T> GetAllObjects ()
+        {
+            List<T> result = new List<T> ();
+            GetAllObjects (ref result);
+            return result;
+        }
+
         /// <summary>
         /// Gets all objects in a subtree which are in the search area
         /// </summary>
@@ -638,6 +650,32 @@ namespace NoNoise.Visualization.Util
             }
         }
 
+        public void GetWindow (int num_of_points, out double width, out double height)
+        {
+            if (GetAllObjects().Count < num_of_points) {
+                // All points fit in this window -> return
+                width = boundary_rectangle.Width;
+                height = boundary_rectangle.Height;
+
+            } else {
+                // Check which is the smallest window of the children which fits all points
+                double current_w, current_h;
+
+                top_left.GetWindow (num_of_points, out width, out height);
+
+                top_right.GetWindow (num_of_points, out current_w, out current_h);
+                width = current_w < width ? current_w : width;
+                height = current_h < height ? current_h : height;
+
+                bottom_left.GetWindow (num_of_points, out current_w, out current_h);
+                width = current_w < width ? current_w : width;
+                height = current_h < height ? current_h : height;
+
+                bottom_right.GetWindow (num_of_points, out current_w, out current_h);
+                width = current_w < width ? current_w : width;
+                height = current_h < height ? current_h : height;
+            }
+        }
         public T GetNearestObjectInTree (QCircle circle, T except)
         {
             Stack<QuadTreeNode<T>> stack = new Stack<QuadTreeNode<T>> ();

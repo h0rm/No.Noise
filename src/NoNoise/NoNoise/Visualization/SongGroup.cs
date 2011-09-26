@@ -67,10 +67,12 @@ namespace NoNoise.Visualization
         SongHighlightEvent song_enter;
         SongHighlightEvent song_leave;
 
-        private const double zoom_level_mult = 1.5;
+        private readonly double zoom_level_mult = Math.Sqrt (2);
         private double zoom_level = 1.0;
+        private bool zoom_initialized = false;
+        private double cluster_w, cluster_h;
 
-        private const int num_of_actors = 2000;
+        private const int num_of_actors = 3000;
 
 //        private List<Rectangle> debug_quad_rectangles;
 
@@ -101,9 +103,6 @@ namespace NoNoise.Visualization
         private bool selection_enabled = false;
         private List<SongPoint> points_selected = new List<SongPoint> ();
 
-//        private Cogl.Clip.
-//        private int clustering_level
-       // private CairoTexture test_circle;
         #endregion
 
         #region Getter + Setter
@@ -133,9 +132,9 @@ namespace NoNoise.Visualization
                 point_manager.Add (e.X*3000, e.Y*3000, e.ID);
 
             point_manager.Cluster ();
-            point_manager.SetDefaultLevel (500);
+//            point_manager.SetDefaultLevel (500);
 
-            points_visible = new List<SongPoint> (2000);
+            points_visible = new List<SongPoint> (num_of_actors);
 
         }
 
@@ -183,11 +182,16 @@ namespace NoNoise.Visualization
             stop.Stop ();
 
 
-            point_manager.SetDefaultLevel (500);
+//            point_manager.SetDefaultLevel (500);
+//            point_manager.GetWindowDimensions (0, 500, out cluster_w, out cluster_h);
+//            cluster_w *= Math.Pow (zoom_level_mult, point_manager.Level);
+//            cluster_h *= Math.Pow (zoom_level_mult, point_manager.Level);
+
+//            SetZoomLevel (0.5);
 
             Hyena.Log.Information ("Clustering time: "+stop.ElapsedMilliseconds);
 
-            points_visible = new List<SongPoint> (2000);
+            points_visible = new List<SongPoint> (num_of_actors);
 
         }
 
@@ -233,10 +237,7 @@ namespace NoNoise.Visualization
             stage.ButtonPressEvent += HandleStageButtonPressEvent;
             stage.ButtonReleaseEvent += HandleStageButtonReleaseEvent;
             stage.MotionEvent += HandleMotionEvent;
-            stage.AllocationChanged += delegate {
-                selection.SetSize (stage.Width, stage.Height);
-                UpdateClipping ();
-            };
+            stage.AllocationChanged += HandleWindowSizeChanged;
 
             foreach (SongActor a in actor_manager.Actors) {
                 a.EnterEvent += delegate(object o, EnterEventArgs args) {
@@ -254,6 +255,8 @@ namespace NoNoise.Visualization
             }
 
         }
+
+
         /// <summary>
         /// Initializes the prototype texture, the animations, and the event handler.
         /// </summary>
@@ -279,7 +282,7 @@ namespace NoNoise.Visualization
         /// </param>
         public void ClusterOneStep (bool inwards)
         {
-            selection.Reset ();
+            ClearSelection ();
             if (inwards)
             {
                 AnimateClustering (false);
@@ -302,6 +305,14 @@ namespace NoNoise.Visualization
             ZoomOnPosition (inwards, Stage.Width/2.0f, Stage.Height/2.0f);
         }
 
+        public void SetZoomLevel (double scale)
+        {
+            zoom_level = scale;
+            SetScale (zoom_level, zoom_level);
+
+            foreach (SongActor s in actor_manager.Actors)
+                s.SetScale (1/zoom_level, 1/zoom_level);
+        }
 
         public void ZoomOnPosition (bool inwards, float x, float y)
         {
@@ -503,16 +514,20 @@ namespace NoNoise.Visualization
             GetTransformedPosition (out tx, out ty);
             GetScale (out sx, out sy);
 
+            Hyena.Log.Information (System.String.Format("Clipping ({0},{1}) with {2}x{3}",tx,ty,sx,sy));
+
             x = (-(float)SongActor.CircleSize-tx)/sx;
             y = (-(float)SongActor.CircleSize-ty)/sy;
             width = (stage.Width+2*(float)SongActor.CircleSize)/sx;
             height = (stage.Height+2*(float)SongActor.CircleSize)/sy;
         }
 
-        private void UpdateClipping ()
+        public void UpdateClipping ()
         {
+            Hyena.Log.Information ("Update Clipping");
             double x, y, width, height;
             GetClippingWindow (out x, out y, out width, out height );
+
 
             List<SongPoint> points;
             SongPoint p;
@@ -544,8 +559,10 @@ namespace NoNoise.Visualization
             // Check invisible points
             for (int i = 0; i < points.Count; i++)
             {
-                if (!actor_manager.HasFree)
-                    continue;
+                if (!actor_manager.HasFree) {
+                    Hyena.Log.Warning ("No free Actor left");
+                    break;
+                }
 
                 p = points[i];
 
@@ -644,6 +661,8 @@ namespace NoNoise.Visualization
             }
 
             points_selected = new List<SongPoint> ();
+
+            selection.Reset ();
         }
 
         private void UpdateSelection ()
@@ -657,6 +676,48 @@ namespace NoNoise.Visualization
 
             UpdateClipping ();
         }
+
+        void InitializeZoomLevel ()
+        {
+            int i = 0;
+
+            point_manager.GetWindowDimensions (0, 1500, out cluster_w, out cluster_h);
+            Hyena.Log.Information ("Window dimensions " + cluster_w + "x" + cluster_h);
+            // as long as window size is too small zoom out
+            while (cluster_w < point_manager.Width) {
+                cluster_w *= zoom_level_mult;
+                i++;
+
+            }
+
+            point_manager.Level = i;
+            diff_zoom_clustering = i - point_manager.Level;
+
+            Hyena.Log.Information ("Zoom initialized with scale="+
+                                   stage.Width / point_manager.Width + " level="+ point_manager.Level +
+                                   " diff=" + diff_zoom_clustering);
+
+
+
+            this.SetZoomLevel (stage.Width / point_manager.Width);
+            this.SetPosition (0, stage.Height / 2f - (float)point_manager.Height*(float)zoom_level/2f);
+
+        }
+        void HandleWindowSizeChanged (object o, AllocationChangedArgs args)
+        {
+            if (stage.Width == 1)
+                return;
+
+            if (!zoom_initialized) {
+                zoom_initialized = true;
+
+                InitializeZoomLevel ();
+
+            }
+            selection.SetSize (stage.Width, stage.Height);
+            UpdateClipping ();
+        }
+
         /// <summary>
         /// Handles the button release event for displacing the actor.
         /// </summary>
