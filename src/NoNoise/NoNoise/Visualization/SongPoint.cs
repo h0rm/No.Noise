@@ -44,6 +44,12 @@ namespace NoNoise.Visualization
             LeftChild = null;
             RightChild = null;
             Selected = false;
+            IsRemoved = false;
+        }
+
+        public bool IsRemoved {
+            get;
+            private set;
         }
 
         public bool Selected {
@@ -101,6 +107,68 @@ namespace NoNoise.Visualization
             private set;
         }
 
+        public void UnmarkRemoved ()
+        {
+            IsRemoved = false;
+
+            if (LeftChild != null)
+                LeftChild.UnmarkRemoved ();
+
+            if (RightChild != null)
+                RightChild.UnmarkRemoved ();
+        }
+        
+        public void MarkRemovedifSelected ()
+        {
+            if (Selected)
+                IsRemoved = true;
+
+
+            if (LeftChild != null)
+                LeftChild.MarkRemovedifSelected ();
+
+            if (RightChild != null)
+                RightChild.MarkRemovedifSelected ();
+        }
+        private void SelectUpwards ()
+        {
+            if (LeftChild == null || RightChild == null || Parent == null)
+                return;
+
+            if (Parent.Selected)
+                return;
+
+            if (LeftChild.Selected && RightChild.Selected) {
+                Selected = true;
+                Parent.SelectUpwards ();
+            }
+
+        }
+
+        public void MarkAsSelected ()
+        {
+            Selected = true;
+
+            if (LeftChild != null)
+                LeftChild.MarkAsSelected ();
+
+            if (RightChild != null)
+                RightChild.MarkAsSelected ();
+
+            if (Parent != null)
+                Parent.SelectUpwards ();
+        }
+
+        public void ClearSelection ()
+        {
+            Selected = false;
+
+            if (LeftChild != null)
+                LeftChild.ClearSelection ();
+
+            if (RightChild != null)
+                RightChild.ClearSelection ();
+        }
         public List<int> GetAllIDs ()
         {
             List<int> ids = new List<int> ();

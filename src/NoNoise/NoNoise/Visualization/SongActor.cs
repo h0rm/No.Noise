@@ -74,7 +74,7 @@ namespace NoNoise.Visualization
         {
             color_index = color_index % max_prototypes;
 
-            Hyena.Log.Debug ("Color changed to "+color_index);
+//            Hyena.Log.Debug ("Color changed to "+color_index);
 
             switch (color_index)
             {
@@ -110,7 +110,7 @@ namespace NoNoise.Visualization
         {
             double size = (double)circle_size;
 
-            Hyena.Log.Debug ("Color : " + r + " " + g + " " + b + " ");
+//            Hyena.Log.Debug ("Color : " + r + " " + g + " " + b + " ");
             actor.Clear();
             Cairo.Context context = actor.Create();
 

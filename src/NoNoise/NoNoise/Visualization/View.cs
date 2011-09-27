@@ -91,6 +91,14 @@ namespace NoNoise.Visualization
             case MainGui.ButtonClickedArgs.Button.Select:
                 point_group.ToggleSelection ();
                 break;
+
+            case MainGui.ButtonClickedArgs.Button.Remove:
+                point_group.RemoveSelected ();
+                break;
+
+            case MainGui.ButtonClickedArgs.Button.Reset:
+                point_group.ResetRemovedPoints ();
+                break;
             }
         }
         public void FinishedInit ()

@@ -148,12 +148,19 @@ namespace NoNoise.Visualization.Gui
                     button_clicked (this, new ButtonClickedArgs (ButtonClickedArgs.Button.Playlist));
             };
 
-            zoom_button_in.ButtonPressEvent += delegate {
-                if (button_clicked != null)
+            zoom_button_in.ButtonPressEvent += delegate(object o, ButtonPressEventArgs args) {
+//                Clutter.EventHelper.Free (args.Event);
+                 if (button_clicked != null)
                     button_clicked (this, new ButtonClickedArgs (ButtonClickedArgs.Button.ZoomIn));
             };
 
-            zoom_button_out.ButtonPressEvent += delegate {
+//            delegate {
+//                if (button_clicked != null)
+//                    button_clicked (this, new ButtonClickedArgs (ButtonClickedArgs.Button.ZoomIn));
+//            };
+//
+            zoom_button_out.ButtonPressEvent += delegate(object o, ButtonPressEventArgs args) {
+//                Clutter.EventHelper.Free (args.Event);
                 if (button_clicked != null)
                     button_clicked (this, new ButtonClickedArgs (ButtonClickedArgs.Button.ZoomOut));
             };
