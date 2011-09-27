@@ -32,7 +32,7 @@ namespace NoNoise.Visualization.Gui
     {
         private bool inward;
 
-        public ZoomButton (bool inward) : base (30,30)
+        public ZoomButton (StyleSheet style, bool inward) : base (style,30,30)
         {
             this.inward = inward;
             base.Initialize ();
@@ -50,18 +50,14 @@ namespace NoNoise.Visualization.Gui
 
             context.ClosePath ();
 
-//            context.Color = new Cairo.Color (1,1,1);
-            context.Color = new Cairo.Color (1,1,1,0.8);
-//            context.FillPreserve ();
-            context.Fill ();
+            context.Color = Style.Background;
+            context.FillPreserve ();
 
-//            context.Antialias = Cairo.Antialias.Subpixel;
-            context.LineWidth = 1.0;
+            context.Color = Style.Border;
+            context.LineWidth = Style.BorderSize;
+            context.Stroke ();
 
-            context.Color = new Cairo.Color (0.1,0.1,0.1);
-//            context.Stroke ();
-
-//            context.Color = new Cairo.Color (0,0,0);
+            context.Color = Style.Foreground;
 
             context.MoveTo (x+5,texture_height /2);
             context.LineTo (texture_width-5-x, texture_height /2);

@@ -28,19 +28,10 @@ using Cairo;
 
 namespace NoNoise.Visualization.Gui
 {
-    public struct StyleSheet
+    public struct Font
     {
-        public Color Foreground {
-            get;
-            set;
-        }
 
-        public Color Background {
-            get;
-            set;
-        }
-
-        public String Font {
+        public String Family {
             get;
             set;
         }
@@ -55,20 +46,66 @@ namespace NoNoise.Visualization.Gui
             set;
         }
 
-        public double FontSize {
+        public double Size {
+            get;
+            set;
+        }
+
+        public Color Color {
+            get;
+            set;
+        }
+
+        public Font (String family, FontSlant slant, FontWeight weight, double font_size, Color color)
+        {
+            Size = font_size;
+            Slant = slant;
+            Weight = weight;
+            Family = family;
+            Color = color;
+        }
+    }
+    public struct StyleSheet
+    {
+        public Color Foreground {
+            get;
+            set;
+        }
+
+        public Color Background {
+            get;
+            set;
+        }
+
+        public Font Standard {
+            get;
+            set;
+        }
+
+        public Font Highlighted {
+            get;
+            set;
+        }
+
+        public Color Border {
+            get;
+            set;
+        }
+
+        public double BorderSize {
             get;
             set;
         }
 
         public StyleSheet (Color foreground, Color background,
-                           String font, FontSlant slant, FontWeight weight, double font_size)
+                           Font standard, Font highlighted, Color border, double border_size)
         {
             Foreground = foreground;
             Background = background;
-            FontSize = font_size;
-            Slant = slant;
-            Weight = weight;
-            Font = font;
+            Standard = standard;
+            Highlighted = highlighted;
+            Border = border;
+            BorderSize = border_size;
         }
 
     }

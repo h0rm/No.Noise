@@ -514,7 +514,7 @@ namespace NoNoise.Visualization
             GetTransformedPosition (out tx, out ty);
             GetScale (out sx, out sy);
 
-            Hyena.Log.Information (System.String.Format("Clipping ({0},{1}) with {2}x{3}",tx,ty,sx,sy));
+//            Hyena.Log.Information (System.String.Format("Clipping ({0},{1}) with {2}x{3}",tx,ty,sx,sy));
 
             x = (-(float)SongActor.CircleSize-tx)/sx;
             y = (-(float)SongActor.CircleSize-ty)/sy;
@@ -524,7 +524,7 @@ namespace NoNoise.Visualization
 
         public void UpdateClipping ()
         {
-            Hyena.Log.Information ("Update Clipping");
+//            Hyena.Log.Information ("Update Clipping");
             double x, y, width, height;
             GetClippingWindow (out x, out y, out width, out height );
 

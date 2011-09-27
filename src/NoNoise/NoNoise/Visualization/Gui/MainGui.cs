@@ -33,9 +33,7 @@ namespace NoNoise.Visualization.Gui
     {
 //        private Clutter.Rectangle zoom_in;
 //        private Clutter.Rectangle zoom_out;
-
-        private CairoTexture zoom_in;
-        private CairoTexture zoom_out;
+        private Stage stage;
 
         private CairoTexture debug_in;
         private CairoTexture debug_out;
@@ -50,8 +48,11 @@ namespace NoNoise.Visualization.Gui
         private Button remove_button;
         private Button playlist_button;
 
-        public MainGui () : base ()
+        private Group toolbar;
+
+        public MainGui (Stage stage) : base ()
         {
+            this.stage = stage;
             Init ();
         }
 
@@ -62,55 +63,71 @@ namespace NoNoise.Visualization.Gui
 
             StyleSheet style = new StyleSheet (new Cairo.Color (0.1, 0.1, 0.1),
                                                new Cairo.Color (1, 1, 1, 0.9),
-                                               "Verdana",
+                                               new Font ("Verdana",
                                                Cairo.FontSlant.Normal,
                                                Cairo.FontWeight.Normal,
-                                               12);
+                                               12, new Cairo.Color (0.1, 0.1, 0.1)),
+                                               new Font ("Verdana",
+                                               Cairo.FontSlant.Normal,
+                                               Cairo.FontWeight.Bold,
+                                               12, new Cairo.Color (0.1, 0.1, 0.1)),
+                                               new Cairo.Color (1, 1, 1, 0.9), 1.0
+                                               );
 
-            zoom_button_in = new ZoomButton (true);
+            zoom_button_in = new ZoomButton (style, true);
             zoom_button_in.ButtonPressEvent += HandleZoomInEvent;
 
-            zoom_button_out = new ZoomButton (false);
+            zoom_button_out = new ZoomButton (style, false);
             zoom_button_out.ButtonPressEvent += HandleZoomOutEvent;
             zoom_button_out.SetPosition (0,40);
 
             this.Add (zoom_button_in);
             this.Add (zoom_button_out);
 
+
+            toolbar = new Group ();
             select_button = new ToolbarToggleButton ("select", style,
-                                                     ToolbarButton.Border.Left, 75,30);
-//            select_button = new TextToggleButton ("select", 75, 30);
-            select_button.SetPosition (0,100);
-            this.Add (select_button);
+                                                     ToolbarButton.Border.Left, 75,20);
+            select_button.SetPosition (0,0);
+
 
             remove_button = new ToolbarButton ("remove", style,
-                                               ToolbarButton.Border.None, 75,30);
-//            remove_button = new TextButton ("remove", 75, 30);
-            remove_button.SetPosition (0, 140);
-            this.Add (remove_button);
+                                               ToolbarButton.Border.None, 75,20);
+            remove_button.SetPosition (77, 0);
 
             reset_button = new ToolbarButton ("reset", style,
-                                               ToolbarButton.Border.Right | ToolbarButton.Border.Left,
-                                               75,30);
-//            reset_button = new TextButton ("reset", 75, 30);
-            reset_button.SetPosition (0, 180);
-            this.Add (reset_button);
+                                               ToolbarButton.Border.None,
+                                               75,20);
+            reset_button.SetPosition (154, 0);
 
             playlist_button = new ToolbarButton ("playlist", style,
-                                               ToolbarButton.Border.Right, 75,30);
-//            playlist_button = new TextButton ("playlist", 75, 30);
-            playlist_button.SetPosition (0, 220);
-            this.Add (playlist_button);
+                                               ToolbarButton.Border.Right, 75,20);
+            playlist_button.SetPosition (231, 0);
 
+            toolbar.Add (select_button);
+            toolbar.Add (remove_button);
+            toolbar.Add (reset_button);
+            toolbar.Add (playlist_button);
 
+            toolbar.AnchorPointFromGravity = Gravity.North;
+            toolbar.SetPosition (500,5);
+
+            this.Add (toolbar);
 
             this.Reactive = true;
-            infobox = new InfoBox (100,200);
+            infobox = new InfoBox (style, 150,200);
             infobox.AnchorPointFromGravity = Gravity.NorthEast;
             this.Add (infobox);
             infobox.SetPosition (1000,200);
 
+            stage.AllocationChanged += HandleWindowSizeChanged;
 //            InitDebug ();
+        }
+
+        void HandleWindowSizeChanged (object o, AllocationChangedArgs args)
+        {
+            toolbar.SetPosition (stage.Width/2f-infobox.Width+zoom_button_in.Width, toolbar.Y);
+            infobox.SetPosition (stage.Width, 0);
         }
 
         public void UpdateInfoText (List<String> lines)

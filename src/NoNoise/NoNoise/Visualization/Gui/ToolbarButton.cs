@@ -43,22 +43,17 @@ namespace NoNoise.Visualization.Gui
             protected set;
         }
 
-        public StyleSheet Style {
-            get;
-            protected set;
-        }
-
-        public ToolbarButton (String text, StyleSheet scheme, Border borders, uint width, uint height) : base (width, height)
+        public ToolbarButton (String text, StyleSheet scheme, Border borders,
+                              uint width, uint height) : base (scheme, width, height)
         {
             Text = text;
-            Style = scheme;
             Borders = borders;
             base.Initialize ();
         }
 
         protected void Draw (CairoTexture actor)
         {
-            double x = 5+0.5, y = 5+0.5;
+            double x = 0.5, y = 0.5;
             double r = (texture_height - x - y) / 2;
 
             Cairo.Context cr = actor.Create ();
@@ -81,18 +76,21 @@ namespace NoNoise.Visualization.Gui
             cr.ClosePath ();
 
             cr.Color = Style.Background;
-            cr.FillPreserve ();
+            cr.FillPreserve();
 
-            cr.Color = Style.Foreground;
-            cr.LineWidth = 1.0;
+            cr.Color = Style.Border;
+            cr.LineWidth = Style.BorderSize;
             cr.Stroke ();
 
-            cr.SelectFontFace (Style.Font, Style.Slant, Style.Weight);
-            cr.SetFontSize (Style.FontSize);
+            cr.Color = Style.Standard.Color;
+
+            cr.SelectFontFace (Style.Standard.Family, Style.Standard.Slant, Style.Standard.Weight);
+            cr.SetFontSize (Style.Standard.Size);
 
             TextExtents te = cr.TextExtents (Text);
-            Hyena.Log.Information ("Height=" + te.Height + " YBearing=" + te.YBearing);
-            cr.MoveTo ((texture_width-te.Width)/2,y+r+te.Height/2-te.Height-te.YBearing);
+
+            cr.MoveTo ((texture_width-te.Width)/2,y+2*r-texture_height/4);
+            cr.FontOptions.HintStyle = HintStyle.Full;
             cr.ShowText (Text);
 
             ((IDisposable) cr.Target).Dispose ();

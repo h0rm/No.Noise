@@ -42,7 +42,7 @@ namespace NoNoise.Visualization
             SetSizeRequest (100,100);
             Stage.Color = new Color (0,0,0,255);
             point_group = new SongGroup (Stage);
-            gui = new MainGui ();
+            gui = new MainGui (Stage);
 
 
             Stage.Add (point_group);

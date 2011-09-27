@@ -34,12 +34,19 @@ namespace NoNoise.Visualization.Gui
         protected List<CairoTexture> textures;
         protected uint texture_width, texture_height;
 
-        public Button (uint width, uint height)
+        public StyleSheet Style {
+            get;
+            protected set;
+        }
+
+        public Button (StyleSheet style, uint width, uint height)
         {
+            Style = style;
             Reactive = true;
 
             texture_width = width;
             texture_height = height;
+            this.SetSize (width,height);
         }
 
         protected void Initialize ()

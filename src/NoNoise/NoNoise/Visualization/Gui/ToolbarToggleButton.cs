@@ -42,7 +42,9 @@ namespace NoNoise.Visualization.Gui
             StyleSheet s = scheme;
             s.Foreground = scheme.Background;
             s.Background = scheme.Foreground;
-
+            s.Standard = new Font (scheme.Standard.Family, scheme.Standard.Slant,
+                                   scheme.Standard.Weight, scheme.Standard.Size, scheme.Background);
+            s.Border = scheme.Foreground;
             Style = s;
 
             Draw (texture);
@@ -52,7 +54,6 @@ namespace NoNoise.Visualization.Gui
             texture.Hide ();
             this.Add (texture);
 
-            Hyena.Log.Information ("Textures " + textures.Count);
             InitializeHandlers ();
         }
 
@@ -70,7 +71,6 @@ namespace NoNoise.Visualization.Gui
 
         private void OnStateChanged ()
         {
-            Hyena.Log.Information ("Textures " + textures.Count);
             textures[0].Hide ();
             textures[1].Hide ();
 
