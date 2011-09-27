@@ -61,7 +61,7 @@ namespace NoNoise.Visualization.Gui
         {
             Hyena.Log.Debug ("GUI init");
 
-            StyleSheet style = new StyleSheet (new Cairo.Color (0.1, 0.1, 0.1),
+            StyleSheet style = new StyleSheet (new Cairo.Color (0.1, 0.1, 0.1,0.5),
                                                new Cairo.Color (1, 1, 1, 0.9),
                                                new Font ("Verdana",
                                                Cairo.FontSlant.Normal,
@@ -71,14 +71,12 @@ namespace NoNoise.Visualization.Gui
                                                Cairo.FontSlant.Normal,
                                                Cairo.FontWeight.Bold,
                                                12, new Cairo.Color (0.1, 0.1, 0.1)),
-                                               new Cairo.Color (1, 1, 1, 0.9), 1.0
+                                               new Cairo.Color (1, 1, 1, 1), 1.0
                                                );
 
             zoom_button_in = new ZoomButton (style, true);
-            zoom_button_in.ButtonPressEvent += HandleZoomInEvent;
 
             zoom_button_out = new ZoomButton (style, false);
-            zoom_button_out.ButtonPressEvent += HandleZoomOutEvent;
             zoom_button_out.SetPosition (0,40);
 
             this.Add (zoom_button_in);
@@ -95,14 +93,17 @@ namespace NoNoise.Visualization.Gui
                                                ToolbarButton.Border.None, 75,20);
             remove_button.SetPosition (77, 0);
 
+
             reset_button = new ToolbarButton ("reset", style,
                                                ToolbarButton.Border.None,
                                                75,20);
             reset_button.SetPosition (154, 0);
 
+
             playlist_button = new ToolbarButton ("playlist", style,
                                                ToolbarButton.Border.Right, 75,20);
             playlist_button.SetPosition (231, 0);
+
 
             toolbar.Add (select_button);
             toolbar.Add (remove_button);
@@ -118,11 +119,46 @@ namespace NoNoise.Visualization.Gui
             infobox = new InfoBox (style, 150,200);
             infobox.AnchorPointFromGravity = Gravity.NorthEast;
             this.Add (infobox);
-            infobox.SetPosition (1000,200);
-
-            stage.AllocationChanged += HandleWindowSizeChanged;
 //            InitDebug ();
+
+            InitHandler ();
         }
+
+        private void InitHandler ()
+        {
+            stage.AllocationChanged += HandleWindowSizeChanged;
+
+            select_button.ButtonPressEvent += delegate {
+                if (button_clicked != null)
+                    button_clicked (this, new ButtonClickedArgs (ButtonClickedArgs.Button.Select));
+            };
+
+            remove_button.ButtonPressEvent += delegate {
+                if (button_clicked != null)
+                    button_clicked (this, new ButtonClickedArgs (ButtonClickedArgs.Button.Remove));
+            };
+
+            reset_button.ButtonPressEvent += delegate {
+                if (button_clicked != null)
+                    button_clicked (this, new ButtonClickedArgs (ButtonClickedArgs.Button.Reset));
+            };
+
+            playlist_button.ButtonPressEvent += delegate {
+                if (button_clicked != null)
+                    button_clicked (this, new ButtonClickedArgs (ButtonClickedArgs.Button.Playlist));
+            };
+
+            zoom_button_in.ButtonPressEvent += delegate {
+                if (button_clicked != null)
+                    button_clicked (this, new ButtonClickedArgs (ButtonClickedArgs.Button.ZoomIn));
+            };
+
+            zoom_button_out.ButtonPressEvent += delegate {
+                if (button_clicked != null)
+                    button_clicked (this, new ButtonClickedArgs (ButtonClickedArgs.Button.ZoomOut));
+            };
+        }
+
 
         void HandleWindowSizeChanged (object o, AllocationChangedArgs args)
         {
@@ -134,6 +170,59 @@ namespace NoNoise.Visualization.Gui
         {
             infobox.Update (lines);
         }
+
+
+        private void CreateDebugTexture (out CairoTexture actor)
+        {
+            actor = new CairoTexture (30,30);
+            actor.Clear ();
+            Cairo.Context context = actor.Create ();
+
+            context.LineWidth = 2.0;
+
+            context.Color = new Cairo.Color (0,0,0);
+            context.Arc(15,15,11,0,2*Math.PI);
+            context.Fill ();
+
+            context.Color = new Cairo.Color (0.95,0.95,0.95);
+            context.Arc(15,15,10,0,2*Math.PI);
+            context.Stroke ();
+
+            context.LineWidth = 0.0;
+            context.Rectangle (12,12,6,6);
+            context.Fill ();
+
+            ((IDisposable) context.Target).Dispose ();
+            ((IDisposable) context).Dispose ();
+        }
+
+
+        public event ButtonClickedEvent ButtonClicked {
+            add { button_clicked += value; }
+            remove { button_clicked -= value;}
+        }
+
+        public delegate void ButtonClickedEvent (Object source, ButtonClickedArgs args);
+
+        private ButtonClickedEvent button_clicked;
+
+        public struct ButtonClickedArgs
+        {
+            public enum Button { ZoomIn, ZoomOut, Select, Reset, Playlist, Remove};
+
+            public Button ButtonClicked {
+                get;
+                private set;
+            }
+
+            public ButtonClickedArgs (Button button)
+            {
+                ButtonClicked = button;
+            }
+        }
+
+        #region Debug
+
         private void InitDebug ()
         {
             Hyena.Log.Debug ("Debug GUI init");
@@ -149,8 +238,6 @@ namespace NoNoise.Visualization.Gui
             debug_out.Reactive = true;
             debug_out.ButtonPressEvent += HandleDebugTwoEvent;
             this.Add (debug_out);
-
-
         }
 
         void HandleDebugTwoEvent (object o, ButtonPressEventArgs args)
@@ -180,93 +267,6 @@ namespace NoNoise.Visualization.Gui
                     debug_event (this,new DebugEventArgs (1,"Debug one"));
             }
         }
-
-        private void CreateDebugTexture (out CairoTexture actor)
-        {
-            actor = new CairoTexture (30,30);
-            actor.Clear ();
-            Cairo.Context context = actor.Create ();
-
-            context.LineWidth = 2.0;
-
-            context.Color = new Cairo.Color (0,0,0);
-            context.Arc(15,15,11,0,2*Math.PI);
-            context.Fill ();
-
-            context.Color = new Cairo.Color (0.95,0.95,0.95);
-            context.Arc(15,15,10,0,2*Math.PI);
-            context.Stroke ();
-
-            context.LineWidth = 0.0;
-            context.Rectangle (12,12,6,6);
-            context.Fill ();
-
-            ((IDisposable) context.Target).Dispose ();
-            ((IDisposable) context).Dispose ();
-        }
-
-        //Event Handler which is called when the "-" button is pressed
-        void HandleZoomOutEvent (object o, ButtonPressEventArgs args)
-        {
-            uint button = EventHelper.GetButton (args.Event);
-
-            if(button == 1)
-            {
-                Hyena.Log.Debug ("Zoom out");
-
-                //Call event Handler - TODO level allways 0
-                if (this.zoom_changed != null)
-                    zoom_changed (this,new ZoomLevelArgs(false,0));
-            }
-        }
-
-        //Event Handler which is called when the "+" button is pressed
-        void HandleZoomInEvent (object o, ButtonPressEventArgs args)
-        {
-            uint button = EventHelper.GetButton (args.Event);
-
-            if(button == 1)
-            {
-                Hyena.Log.Debug ("Zoom in");
-
-                //Call event Handler - TODO level allways 0
-                if (this.zoom_changed != null)
-                   zoom_changed (this,new ZoomLevelArgs(true,0));
-            }
-        }
-
-        public delegate void ZoomLevelChangedEvent (Object source, ZoomLevelArgs args);
-
-        private ZoomLevelChangedEvent zoom_changed;
-
-        //Event args which are used to update the Zoom level
-        public class ZoomLevelArgs
-        {
-            private bool inwards;   //zoom in or out
-            private int level;      //actual zoom level
-
-            public ZoomLevelArgs (bool inwards, int level)
-            {
-                this.inwards = inwards;
-                this.level = level;
-            }
-
-            public bool Inwards {
-                get {return inwards;}
-            }
-
-            public int Level {
-                get {return level;}
-            }
-        }
-
-        //Event Handler which is called when the zoom level has changed
-        public event ZoomLevelChangedEvent ZoomChangedEvent {
-            add { zoom_changed += value; }
-            remove { zoom_changed -= value; }
-        }
-
-        #region Debug
 
         public delegate void DebugEvent (Object source, DebugEventArgs args);
 

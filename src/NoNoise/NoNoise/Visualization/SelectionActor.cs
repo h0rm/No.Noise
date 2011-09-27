@@ -57,14 +57,19 @@ namespace NoNoise.Visualization
             get;
             set;
         }
-        
-        public void Reset ()
+
+        private void Clear ()
         {
+
             texture.Clear ();
             Cairo.Context context = texture.Create();
 
             ((IDisposable) context.Target).Dispose ();
             ((IDisposable) context).Dispose ();
+        }
+        public void Reset ()
+        {
+            Clear ();
 
             vertices = new List<Point> ();
 
@@ -98,8 +103,10 @@ namespace NoNoise.Visualization
                 vertices.Add (GetTransformedPoint (start_x,start_y));
 
                 DrawLine (start_x, start_y);
-                DebugDrawSegment (start_x, start_y);
+//                DebugDrawSegment (start_x, start_y);
             }
+
+            Clear ();
         }
 
         public void LineTo (double x, double y)
@@ -124,7 +131,7 @@ namespace NoNoise.Visualization
 
             Cairo.Context context = texture.Create();
             context.LineWidth = 5;
-            context.Color = new Cairo.Color (1,0,0,0.9);
+            context.Color = new Cairo.Color (1,0,0,0.7);
 
             context.MoveTo (old_x, old_y);
             context.LineTo (x, y);
@@ -147,7 +154,7 @@ namespace NoNoise.Visualization
             if (vertices == null)
                 return;
 
-            DebugDrawSegment (x, y);
+//            DebugDrawSegment (x, y);
 
             vertices.Add (GetTransformedPoint (x,y));
 

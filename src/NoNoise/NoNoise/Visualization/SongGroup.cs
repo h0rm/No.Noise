@@ -103,6 +103,8 @@ namespace NoNoise.Visualization
         private bool selection_enabled = false;
         private List<SongPoint> points_selected = new List<SongPoint> ();
 
+        private bool selection_toggle = false;
+
         #endregion
 
         #region Getter + Setter
@@ -578,6 +580,11 @@ namespace NoNoise.Visualization
 
         }
 
+        public void ToggleSelection ()
+        {
+            selection_toggle = !selection_toggle;
+        }
+
          #region private Handler
 
         /// <summary>
@@ -798,7 +805,10 @@ namespace NoNoise.Visualization
             selection.Reset ();
 
             if (button != 1)
-            {
+                return;
+
+            if (selection_toggle) {
+
                 Hyena.Log.Debug ("Rechtsklick.");
 
                 ClearSelection ();

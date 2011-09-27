@@ -47,21 +47,21 @@ namespace NoNoise.Visualization
 
             Stage.Add (point_group);
             Stage.Add (gui);
-            point_group.LowerBottom ();
+
+                      point_group.LowerBottom ();
 //            Stage.SetClip (0,0,Stage.Width, Stage.Height);
+
+            InitHandler ();
+        }
+
+        private void InitHandler ()
+        {
+            gui.ButtonClicked += HandleGuiButtonClicked;
 
             Stage.AllocationChanged += delegate {
                 Stage.SetClip (0,0,Stage.Width, Stage.Height);
                 Hyena.Log.Information ("Clutter stage allocation changed to " + Stage.Width + "x" + Stage.Height);
                 point_group.QueueRelayout ();
-            };
-
-            Stage.Shown += delegate {
-                Hyena.Log.Information ("Clutter stage shown " + Stage.Width + "x" + Stage.Height);
-            };
-
-            Stage.Realized += delegate {
-                Hyena.Log.Information ("Clutter stage realized");
             };
 
             point_group.SongEntered += delegate (object source, SongHighlightArgs args) {
@@ -71,20 +71,28 @@ namespace NoNoise.Visualization
                     songs.Add (i.ToString());
 
                 gui.UpdateInfoText (songs);
-//                Hyena.Log.Information ("Entered "+args.ID + "\n" + ids);
             };
-
-            point_group.SongLeft += delegate (object source, SongHighlightArgs args) {
-//                Hyena.Log.Information ("Left");
-            };
-
-
-            //Event Handler to handle zoom
-            gui.ZoomChangedEvent += HandleGuiZoomChangedEvent;
 
             gui.DebugButtonPressedEvent += HandleGuiDebugButtonPressedEvent;
         }
 
+        void HandleGuiButtonClicked (object source, MainGui.ButtonClickedArgs args)
+        {
+            switch (args.ButtonClicked) {
+
+            case MainGui.ButtonClickedArgs.Button.ZoomIn:
+                point_group.ClusterOneStep (true);
+                break;
+
+            case MainGui.ButtonClickedArgs.Button.ZoomOut:
+                point_group.ClusterOneStep (false);
+                break;
+
+            case MainGui.ButtonClickedArgs.Button.Select:
+                point_group.ToggleSelection ();
+                break;
+            }
+        }
         public void FinishedInit ()
         {
             point_group.UpdateClipping ();
@@ -92,12 +100,6 @@ namespace NoNoise.Visualization
         void HandleGuiDebugButtonPressedEvent  (object source, MainGui.DebugEventArgs args)
         {
             point_group.UpdateClipping ();
-        }
-
-        void HandleGuiZoomChangedEvent (object source, MainGui.ZoomLevelArgs args)
-        {
-            point_group.ClusterOneStep (args.Inwards);
-            //point_group.ZoomOnCenter (args.Inwards);
         }
 
         public void GetPcaCoordinates ()
