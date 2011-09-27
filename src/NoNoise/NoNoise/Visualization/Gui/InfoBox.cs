@@ -82,7 +82,7 @@ namespace NoNoise.Visualization.Gui
             cr.Color = new Cairo.Color (0,0,0);
             cr.FillPreserve ();
 
-            cr.Color = new Cairo.Color (0.95,0.95,0.95);
+            cr.Color = new Cairo.Color (0.9,0.9,0.9);
             cr.LineWidth = 2.0;
             cr.Stroke ();
 
@@ -101,9 +101,9 @@ namespace NoNoise.Visualization.Gui
             Cairo.Context cr = texture.Create ();
             double x = 5 + 10, y = 5 + 10 ;
 
-            cr.Color = new Cairo.Color (0.95,0.95,0.0);
+            cr.Color = new Cairo.Color (0.9,0.9,0.0);
             cr.SelectFontFace ("Verdana", Cairo.FontSlant.Normal, Cairo.FontWeight.Bold);
-            cr.SetFontSize (14);
+            cr.SetFontSize (12);
 
             TextExtents te = cr.TextExtents ("Song List");
 

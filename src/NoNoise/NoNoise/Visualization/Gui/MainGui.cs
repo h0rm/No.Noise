@@ -45,7 +45,10 @@ namespace NoNoise.Visualization.Gui
         private ZoomButton zoom_button_in;
         private ZoomButton zoom_button_out;
 
-        private SelectButton select_button;
+        private Button select_button;
+        private Button reset_button;
+        private Button remove_button;
+        private Button playlist_button;
 
         public MainGui () : base ()
         {
@@ -57,6 +60,12 @@ namespace NoNoise.Visualization.Gui
         {
             Hyena.Log.Debug ("GUI init");
 
+            StyleSheet style = new StyleSheet (new Cairo.Color (0.1, 0.1, 0.1),
+                                               new Cairo.Color (1, 1, 1, 0.9),
+                                               "Verdana",
+                                               Cairo.FontSlant.Normal,
+                                               Cairo.FontWeight.Normal,
+                                               12);
 
             zoom_button_in = new ZoomButton (true);
             zoom_button_in.ButtonPressEvent += HandleZoomInEvent;
@@ -68,15 +77,38 @@ namespace NoNoise.Visualization.Gui
             this.Add (zoom_button_in);
             this.Add (zoom_button_out);
 
-            select_button = new SelectButton ();
+            select_button = new ToolbarToggleButton ("select", style,
+                                                     ToolbarButton.Border.Left, 75,30);
+//            select_button = new TextToggleButton ("select", 75, 30);
             select_button.SetPosition (0,100);
-
             this.Add (select_button);
+
+            remove_button = new ToolbarButton ("remove", style,
+                                               ToolbarButton.Border.None, 75,30);
+//            remove_button = new TextButton ("remove", 75, 30);
+            remove_button.SetPosition (0, 140);
+            this.Add (remove_button);
+
+            reset_button = new ToolbarButton ("reset", style,
+                                               ToolbarButton.Border.Right | ToolbarButton.Border.Left,
+                                               75,30);
+//            reset_button = new TextButton ("reset", 75, 30);
+            reset_button.SetPosition (0, 180);
+            this.Add (reset_button);
+
+            playlist_button = new ToolbarButton ("playlist", style,
+                                               ToolbarButton.Border.Right, 75,30);
+//            playlist_button = new TextButton ("playlist", 75, 30);
+            playlist_button.SetPosition (0, 220);
+            this.Add (playlist_button);
+
+
 
             this.Reactive = true;
             infobox = new InfoBox (100,200);
+            infobox.AnchorPointFromGravity = Gravity.NorthEast;
             this.Add (infobox);
-            infobox.SetPosition (0,200);
+            infobox.SetPosition (1000,200);
 
 //            InitDebug ();
         }

@@ -1,5 +1,5 @@
 // 
-// ToggleButton.cs
+// ColorScheme.cs
 // 
 // Author:
 //   horm <${AuthorEmail}>
@@ -24,34 +24,53 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 using System;
-using Clutter;
+using Cairo;
 
 namespace NoNoise.Visualization.Gui
 {
-    public abstract class ToggleButton : Button
+    public struct StyleSheet
     {
-        public enum State {On, Off};
-
-        protected State state = State.Off;
-
-        public ToggleButton (uint width, uint height) : base (width, height)
-        {
-            InitializeHandlers ();
+        public Color Foreground {
+            get;
+            set;
         }
 
-        private void InitializeHandlers ()
-        {
-            ButtonPressEvent += HandleButtonPressEvent;
+        public Color Background {
+            get;
+            set;
         }
 
-
-        void HandleButtonPressEvent (object o, ButtonPressEventArgs args)
-        {
-            state = state == State.On ? State.Off : State.On;
-            OnStateChanged ();
+        public String Font {
+            get;
+            set;
         }
 
-        protected abstract void OnStateChanged ();
+        public FontSlant Slant {
+            get;
+            set;
+        }
+
+        public FontWeight Weight {
+            get;
+            set;
+        }
+
+        public double FontSize {
+            get;
+            set;
+        }
+
+        public StyleSheet (Color foreground, Color background,
+                           String font, FontSlant slant, FontWeight weight, double font_size)
+        {
+            Foreground = foreground;
+            Background = background;
+            FontSize = font_size;
+            Slant = slant;
+            Weight = weight;
+            Font = font;
+        }
+
     }
 }
 

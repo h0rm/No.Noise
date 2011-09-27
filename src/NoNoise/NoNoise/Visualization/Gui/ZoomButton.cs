@@ -40,7 +40,7 @@ namespace NoNoise.Visualization.Gui
 
         protected override void GenerateTextures ()
         {
-            double x = 5, y = 5;
+            double x = 5+0.5, y = 5+0.5;
             double r = (texture_width - x - y) / 2;
 
             CairoTexture actor = new CairoTexture (texture_width,texture_height);
@@ -50,16 +50,22 @@ namespace NoNoise.Visualization.Gui
 
             context.ClosePath ();
 
-            context.Color = new Cairo.Color (0,0,0);
-            context.FillPreserve ();
+//            context.Color = new Cairo.Color (1,1,1);
+            context.Color = new Cairo.Color (1,1,1,0.8);
+//            context.FillPreserve ();
+            context.Fill ();
 
-            context.LineWidth = 2.0;
-            context.Color = new Cairo.Color (0.95,0.95,0.95);
-            context.Stroke ();
+//            context.Antialias = Cairo.Antialias.Subpixel;
+            context.LineWidth = 1.0;
 
+            context.Color = new Cairo.Color (0.1,0.1,0.1);
+//            context.Stroke ();
+
+//            context.Color = new Cairo.Color (0,0,0);
 
             context.MoveTo (x+5,texture_height /2);
             context.LineTo (texture_width-5-x, texture_height /2);
+            context.LineWidth = 2.0;
             context.Stroke ();
 
             if (inward)
