@@ -27,6 +27,7 @@
       </CustomCommands>
     </CustomCommands>
     <Optimize>false</Optimize>
+    <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Windows|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -34,6 +35,7 @@
     <OutputPath>..\..\..\bin</OutputPath>
     <PlatformTarget>x86</PlatformTarget>
     <Optimize>false</Optimize>
+    <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
@@ -79,7 +81,7 @@
       <Package>clutter-sharp</Package>
     </Reference>
     <Reference Include="System.Data" />
-    <Reference Include="Mono.Data.Sqlite" />
+    <Reference Include="Mono.Data.SqliteClient" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="NoNoise.addin.xml">

@@ -111,6 +111,8 @@ namespace Banshee.NoNoise
             db = new NoNoiseDBHandler ();
             coords = db.GetPcaCoordinates ();
 
+            Hyena.Log.Debug ("NoNoise/BLA - PCA coords size: " + coords.Count);
+
             /// REMOVE THIS
             if (DB_CHEATER_MODE) {
                 analyzing_lib = false;
@@ -131,12 +133,15 @@ namespace Banshee.NoNoise
             ml.TracksChanged += HandleTracksChanged;
 
             if (STORE_ENTIRE_MATRIX)
-                new Thread (new ThreadStart (PcaForMusicLibrary)).Start ();
+                PcaForMusicLibrary ();
+//                new Thread (new ThreadStart (PcaForMusicLibrary)).Start ();
             else
-                new Thread (new ThreadStart (PcaForMusicLibraryVectorEdition)).Start ();
+                PcaForMusicLibraryVectorEdition ();
+//                new Thread (new ThreadStart (PcaForMusicLibraryVectorEdition)).Start ();
+//            WriteTrackInfosToDB ();
             new Thread (new ThreadStart (WriteTrackInfosToDB)).Start ();
 
-            CheckGetTrackID ();
+//            CheckGetTrackID ();
         }
 
         /// <summary>
@@ -504,11 +509,16 @@ namespace Banshee.NoNoise
                     TrackInfo ti = ml.TrackModel [i];
                     int bid = ml.GetTrackIdForUri (ti.Uri);
 
-                    Hyena.Log.Debug ("bid: " + bid + ", uri: " + ti.Uri);
+                    if (!vectorMap.ContainsKey (bid)) {
+                        Hyena.Log.Debug ("NoNoise/BLA - skipping bid: " + bid);
+                        continue;
+                    }
+
+//                    Hyena.Log.Debug ("bid: " + bid + ", uri: " + ti.Uri);
 
 //                    if (!ana.AddEntry (bid, ConvertMfccMean (vectorMap [bid])))
 //                        throw new Exception ("AddEntry failed!");
-                    if (!ana.AddEntry (ml.GetTrackIdForUri (ti.Uri), ConvertMfccMean (vectorMap [bid]),
+                    if (!ana.AddEntry (bid, ConvertMfccMean (vectorMap [bid]),
                                        ti.Duration.TotalSeconds)) {
                         Hyena.Log.Debug ("Getting uri again..." + ml.GetTrackIdForUri (ti.Uri));
                         throw new Exception("AddEntry failed!");
@@ -562,8 +572,13 @@ namespace Banshee.NoNoise
             lock (db_synch) {
                 trackMap = db.GetTrackDataDictionary ();
             }
-            if (trackMap == null)
+            if (trackMap == null) {
                 Hyena.Log.Error ("NoNoise/BLA - trackMap is null!");
+                return;
+            }
+            Hyena.Log.Debug ("NoNoise/BLA - trackMap size: " + trackMap.Count);
+
+            int cnt = 0;
 
             for (int i = 0; i < ml.TrackModel.Count; i++) {
                 try {
@@ -576,14 +591,17 @@ namespace Banshee.NoNoise
                             Hyena.Log.ErrorFormat ("NoNoise/BLA - id and info do not match: artist: {0} vs {1}, title: " +
                              "{2} vs {3}, album: {4} vs {5}", ti.ArtistName, trackMap [bid].Artist, ti.TrackTitle,
                                                    trackMap [bid].Title, ti.AlbumTitle, trackMap [bid].Album);
+                            cnt++;
                         }
                     } else {
                         Hyena.Log.Error ("NoNoise/BLA - No key: " + bid);
                     }
                 } catch (Exception e) {
                     Hyena.Log.Exception ("NoNoise/BLA - everything failed.", e);
+                    return;
                 }
             }
+            Hyena.Log.DebugFormat ("NoNoise/BLA - {0} mismatches", cnt);
         }
 
         /// <summary>
@@ -604,7 +622,7 @@ namespace Banshee.NoNoise
             for (int i = 0; i < ml.TrackModel.Count; i++) {
                 try {
                     TrackInfo ti = ml.TrackModel [i];
-                    int bid = ml.GetTrackIdForUri (ti.Uri);
+                    int bid = ml.GetTrackIdForUri (ti.Uri);     // DB call from different thread! think that's the problem...
 
                     lock (db_synch) {
                         if (!db.ContainsInfoForTrack (bid)) {

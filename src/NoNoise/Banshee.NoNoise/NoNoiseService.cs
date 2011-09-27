@@ -255,6 +255,8 @@ namespace Banshee.NoNoise
 
             no_noise_contents = GetSourceContents ();
 
+            source_contents_set_up = true;
+
             if (no_noise_contents is NoNoiseSourceContents)
                 (no_noise_contents as NoNoiseSourceContents).OnScanFinished += ScanFinished;
 
@@ -267,8 +269,6 @@ namespace Banshee.NoNoise
             source_manager.SourceAdded -= OnSourceAdded;
 
             Hyena.Log.Debug ("NoNoise/Serv - tm cnt: " + music_library.TrackModel.Count);
-
-            source_contents_set_up = true;
 
 //            Hyena.Log.Information ("Service Foo Initialized: "
 //                                   + "\naction_service " + (action_service == null ? "Null" : "OK")

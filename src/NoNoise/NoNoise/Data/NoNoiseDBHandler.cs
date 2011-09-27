@@ -27,8 +27,8 @@ using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Text;
-//using Mono.Data.SqliteClient;
-using Mono.Data.Sqlite;
+using Mono.Data.SqliteClient;
+//using Mono.Data.Sqlite;
 using MathNet.Numerics.LinearAlgebra;
 using Hyena.Data.Sqlite;
 using Hyena;
@@ -805,11 +805,20 @@ namespace NoNoise.Data
                 dbcmd.CommandText = "SELECT banshee_id, artist, title, album, duration FROM TrackData";
                 System.Data.IDataReader reader = dbcmd.ExecuteReader ();
                 while (reader.Read ()) {
-                    int bid = reader.GetInt32 (0);
-                    TrackData td = new TrackData (bid, reader.GetString (1),
-                                                  reader.GetString (2), reader.GetString (3),
-                                                  reader.GetInt32 (4));
-                    ret.Add (bid, td);
+                    try {
+                        int bid = reader.GetInt32 (0);
+                        reader.GetValue (1);
+                        string artist = (string) reader.GetValue (1);// ?? "";
+                        string title = (string) reader.GetValue (2);// ?? "";
+                        string album = (string) reader.GetValue (3);// ?? "";
+                        int duration = reader.GetInt32 (4);
+                        TrackData td = new TrackData (bid, artist,
+                                                      title, album,
+                                                      duration);
+                        ret.Add (bid, td);
+                    } catch (Exception e) {
+                        Log.Exception ("Track data read error.", e);
+                    }
                 }
 
                 return ret;

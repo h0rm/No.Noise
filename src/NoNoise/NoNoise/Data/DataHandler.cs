@@ -29,9 +29,9 @@ namespace NoNoise.Data
         public TrackData (int id, string artist, string title, string album, int duration)
         {
             ID = id;
-            Artist = artist;
-            Title = title;
-            Album = album;
+            Artist = artist ?? "";
+            Title = title ?? "";
+            Album = album ?? "";
             Duration = duration;
         }
 
