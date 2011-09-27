@@ -117,7 +117,7 @@ namespace NoNoise.Visualization
             if (RightChild != null)
                 RightChild.UnmarkRemoved ();
         }
-        
+
         public void MarkRemovedifSelected ()
         {
             if (Selected)
@@ -172,13 +172,15 @@ namespace NoNoise.Visualization
         public List<int> GetAllIDs ()
         {
             List<int> ids = new List<int> ();
-            if (LeftChild == null)
+            if (LeftChild == null && !IsRemoved)
                 ids.Add (ID);
 
             if (LeftChild != null)
-                ids.AddRange (LeftChild.GetAllIDs ());
+                if (!LeftChild.IsRemoved)
+                    ids.AddRange (LeftChild.GetAllIDs ());
             if (RightChild != null)
-                ids.AddRange (RightChild.GetAllIDs ());
+                if (!RightChild.IsRemoved)
+                    ids.AddRange (RightChild.GetAllIDs ());
 
             return ids;
         }
