@@ -125,7 +125,10 @@ namespace Banshee.NoNoise
             ml.TracksChanged += HandleTracksChanged;
 
             Hyena.Log.Debug ("NoNoise/BLA - starting pca query");
-            new Thread (new ThreadStart (GetPcaData)).Start ();
+//            new Thread (new ThreadStart (GetPcaData)).Start ();
+            GetPcaData ();
+
+//            Hyena.Log.Debug ("NoNoise/BLA - blabla: " + coords [0].Value.Artist + " - " + coords [0].Value.Title);
 
             Hyena.Log.Debug ("NoNoise/BLA - starting pca/write track data threads");
             if (STORE_ENTIRE_MATRIX)

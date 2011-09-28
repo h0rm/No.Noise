@@ -584,6 +584,7 @@ namespace NoNoise.Data
         public List<DataEntry> GetPcaCoordinates ()
         {
             List<DataEntry> ret = new List<DataEntry> ();
+            Dictionary<int, TrackData> trackdata = GetTrackDataDictionary ();
 
             IDbCommand dbcmd = null;
             try {
@@ -594,7 +595,7 @@ namespace NoNoise.Data
                 System.Data.IDataReader reader = dbcmd.ExecuteReader ();
                 while (reader.Read ()) {
                     int bid = reader.GetInt32 (2);
-                    TrackData td = GetTrackData (bid);
+                    TrackData td = trackdata [bid];
                     DataEntry de = new DataEntry (bid, reader.GetDouble (0),
                                                   reader.GetDouble (1), td);
                     ret.Add (de);
