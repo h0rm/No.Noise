@@ -46,6 +46,9 @@ namespace Banshee.NoNoise
         MusicLibrarySource source;
         View view;
 
+        public delegate void ScanFinishedEvent (object source, ScanFinishedEventArgs args);
+        private ScanFinishedEvent scan_event;
+
         public NoNoiseClutterSourceContents (bool pcadata)
         {
             //Gtk.Box box = new Gtk.HBox(true,0);
@@ -62,9 +65,10 @@ namespace Banshee.NoNoise
             Clutter.Threads.Enter ();
             view = new View();
 //
-            if (pcadata)
+            if (pcadata) {
                 view.GetPcaCoordinates ();
-            else
+                BansheeLibraryAnalyzer.Init (this);
+            } else
                 view.TestGenerateData();
 
             Clutter.Threads.Leave ();
@@ -78,6 +82,18 @@ namespace Banshee.NoNoise
                 Threads.Leave ();
             };
 
+        }
+
+        public void Scan (bool start)
+        {
+            Hyena.Log.Information ("NoNoise - Scan " + (start ? "started." : "paused."));
+            BansheeLibraryAnalyzer.Singleton.Scan (start);
+        }
+
+        public void ScanFinished ()
+        {
+            Hyena.Log.Information ("NoNoise - Scan finished.");
+            scan_event (this, new ScanFinishedEventArgs ("supi"));
         }
 
         void HandleViewOnAddToPlaylist (object sender, View.AddToPlaylistEventArgs args)
@@ -146,6 +162,25 @@ namespace Banshee.NoNoise
         public void ResetSource () { }
         public Widget Widget { get { return view; } }
         public ISource Source { get { return source; } }
+
+        public class ScanFinishedEventArgs
+        {
+            public ScanFinishedEventArgs (string info)
+            {
+                Info = info;
+            }
+
+            public string Info {
+                get;
+                private set;
+            }
+        }
+
+        //Event Handler which is called when the zoom level has changed
+        public event ScanFinishedEvent OnScanFinished {
+            add { scan_event += value; }
+            remove { scan_event -= value; }
+        }
     }
 }
 

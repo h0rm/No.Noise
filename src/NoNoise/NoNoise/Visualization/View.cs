@@ -26,6 +26,7 @@
 using System;
 using Clutter;
 using System.Collections.Generic;
+using Banshee.NoNoise;
 using NoNoise.Visualization.Gui;
 
 namespace NoNoise.Visualization
@@ -123,7 +124,10 @@ namespace NoNoise.Visualization
 
         public void GetPcaCoordinates ()
         {
-            analyzer = Banshee.NoNoise.BansheeLibraryAnalyzer.Init (null);
+            if (BansheeLibraryAnalyzer.Singleton == null)
+                analyzer = BansheeLibraryAnalyzer.Init (null);  // TODO this should not happen (missing callback)
+            else
+                analyzer = BansheeLibraryAnalyzer.Singleton;
             point_group.LoadPcaData (analyzer.PcaCoordinates);
         }
 

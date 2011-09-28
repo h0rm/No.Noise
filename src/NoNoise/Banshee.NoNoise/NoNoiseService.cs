@@ -212,11 +212,15 @@ namespace Banshee.NoNoise
 
                 if (no_noise_contents is NoNoiseSourceContents)
                     ((NoNoiseSourceContents)no_noise_contents).Scan (false);
+                else if (no_noise_contents is NoNoiseClutterSourceContents)
+                    ((NoNoiseClutterSourceContents)no_noise_contents).Scan (false);
             } else {
                 ScanAction.Label = "Pause no.Noise scan";
 
                 if (no_noise_contents is NoNoiseSourceContents)
                     ((NoNoiseSourceContents)no_noise_contents).Scan (true);
+                else if (no_noise_contents is NoNoiseClutterSourceContents)
+                    ((NoNoiseClutterSourceContents)no_noise_contents).Scan (true);
             }
 
             scan_action_enabled = !scan_action_enabled;
@@ -237,7 +241,7 @@ namespace Banshee.NoNoise
             }
         }
 
-        private void ScanFinished (object source, NoNoiseSourceContents.ScanFinishedEventArgs args)
+        private void ScanFinished (object source, NoNoiseClutterSourceContents.ScanFinishedEventArgs args)
         {
             scan_action_enabled = false;
             ScanAction.Label = "Start no.Noise scan";
@@ -257,8 +261,8 @@ namespace Banshee.NoNoise
 
             source_contents_set_up = true;
 
-            if (no_noise_contents is NoNoiseSourceContents)
-                (no_noise_contents as NoNoiseSourceContents).OnScanFinished += ScanFinished;
+            if (no_noise_contents is NoNoiseClutterSourceContents)
+                (no_noise_contents as NoNoiseClutterSourceContents).OnScanFinished += ScanFinished;
 
             no_noise_contents.SetSource(music_library);
 

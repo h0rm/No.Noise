@@ -351,7 +351,8 @@ namespace NoNoise.PCA
 
             base1 = eigenVectors.GetColumnVector(maxInds[0]).Normalize();
             base2 = eigenVectors.GetColumnVector(maxInds[1]).Normalize();
-            Log.Debug ("NoNoise/PCA - base vectors: " + base1 + " and " + base2);
+//            Log.Debug ("NoNoise/PCA - base vectors: " + base1 + " and " + base2);
+            Log.Debug ("NoNoise/PCA - pca complete. computing coordinates...");
 
             ComputeCoordinates ();
         }
@@ -404,6 +405,8 @@ namespace NoNoise.PCA
                 de.X /= diff[0];
                 de.Y /= diff[1];
             }
+
+            Log.Debug ("NoNoise/PCA - coordinates ready to use.");
         }
 
         /// <summary>

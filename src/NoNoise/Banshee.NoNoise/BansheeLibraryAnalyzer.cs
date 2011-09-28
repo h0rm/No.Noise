@@ -36,7 +36,7 @@ using NoNoise.Data;
 using NoNoise.PCA;
 
 // TODO something like compute_pca button
-// TODO track_added/track_removed/track_updated listener + db updates
+// TODO track_updated listener + db updates
 
 namespace Banshee.NoNoise
 {
@@ -55,7 +55,7 @@ namespace Banshee.NoNoise
         #region Members
         private Banshee.Library.MusicLibrarySource ml;
         private SortedDictionary<int, TrackInfo> library;
-        private NoNoiseSourceContents sc;
+        private NoNoiseClutterSourceContents sc;
         private NoNoiseDBHandler db;
         private PCAnalyzer ana;
         private List<DataEntry> coords;
@@ -133,15 +133,10 @@ namespace Banshee.NoNoise
 
             Hyena.Log.Debug ("NoNoise/BLA - starting pca/write track data threads");
             if (STORE_ENTIRE_MATRIX)
-//                PcaForMusicLibrary ();
                 new Thread (new ThreadStart (PcaForMusicLibrary)).Start ();
             else
-//                PcaForMusicLibraryVectorEdition ();
                 new Thread (new ThreadStart (PcaForMusicLibraryVectorEdition)).Start ();
-//            WriteTrackInfosToDB ();
             new Thread (new ThreadStart (WriteTrackInfosToDB)).Start ();
-
-//            CheckGetTrackID ();
         }
 
         /// <summary>
@@ -150,21 +145,43 @@ namespace Banshee.NoNoise
         /// TrackData to be written to the database if it is not current anymore.
         /// </summary>
         /// <param name="sc">
-        /// The <see cref="NoNoiseSourceContents"/> which is used as callback.
+        /// The <see cref="NoNoiseClutterSourceContents"/> which is used as callback.
+        /// </param>
+        /// <param name="forceNew">
+        /// If this is true then a new instance will be initialized even if an
+        /// old one already exists. Otherwise Init () might return an existing
+        /// instance.
+        /// </param>
+        /// <returns>
+        /// The singleton instance of <see cref="BansheeLibraryAnalyzer"/>
+        /// </returns>
+        public static BansheeLibraryAnalyzer Init (NoNoiseClutterSourceContents sc, bool forceNew)
+        {
+            if (!forceNew && bla != null)
+                return bla;
+
+            bla = new BansheeLibraryAnalyzer ();
+            bla.sc = sc;
+
+            return bla;
+        }
+
+        /// <summary>
+        /// Initializes the singleton instance of this class and starts PCA
+        /// computations if the library has been scanned already. Also causes
+        /// TrackData to be written to the database if it is not current anymore.
+        /// Calling this method is similar to calling Init (sc, false).
+        /// </summary>
+        /// <param name="sc">
+        /// The <see cref="NoNoiseClutterSourceContents"/> which is used as callback.
         /// May NOT be null.
         /// </param>
         /// <returns>
         /// The singleton instance of <see cref="BansheeLibraryAnalyzer"/>
         /// </returns>
-        public static BansheeLibraryAnalyzer Init (NoNoiseSourceContents sc)
+        public static BansheeLibraryAnalyzer Init (NoNoiseClutterSourceContents sc)
         {
-            bla = new BansheeLibraryAnalyzer ();
-            bla.sc = sc;
-
-//            bla.PcaForMusicLibrary ();
-//            bla.WriteTrackInfosToDB ();
-
-            return bla;
+            return Init (sc, false);
         }
 
         private SortedDictionary<int, TrackInfo> ConvertMusicLibrary ()
@@ -198,7 +215,6 @@ namespace Banshee.NoNoise
         /// </returns>
         private bool CheckLibScanned ()
         {
-//            tm = ServiceManager.SourceManager.MusicLibrary.TrackModel;
             int cnt = -1;
             lock (db_synch) {       // TODO check for removed (<)
                 cnt = db.GetMirDataCount ();
@@ -226,7 +242,6 @@ namespace Banshee.NoNoise
         /// </returns>
         private bool CheckDataUpToDate ()
         {
-//            tm = ServiceManager.SourceManager.MusicLibrary.TrackModel;
             int cnt = -1;
             bool eq = false;
             lock (db_synch) {       // TODO check for removed (<)
@@ -265,9 +280,6 @@ namespace Banshee.NoNoise
             }
             /// SIHT EVOMER
 
-//            ml = ServiceManager.SourceManager.MusicLibrary;
-//            Hyena.Log.Debug ("NN Scan - tm count: " + ml.TrackModel.Count);
-
             if (start) {
                 if (CheckLibScanned ()) {
                     Finished ();
@@ -297,7 +309,6 @@ namespace Banshee.NoNoise
         /// </summary>
         private void ScanMusicLibrary ()
         {
-//            ml = ServiceManager.SourceManager.MusicLibrary;
             int ml_cnt = ml.TrackModel.Count;
             int db_cnt = 0;
             DateTime dt = DateTime.Now;
@@ -354,7 +365,6 @@ namespace Banshee.NoNoise
         /// </summary>
         private void ScanMusicLibraryVectorEdition ()
         {
-//            ml = ServiceManager.SourceManager.MusicLibrary;
             int ml_cnt = library.Count;
             int db_cnt = 0;
             DateTime dt = DateTime.Now;
@@ -445,8 +455,6 @@ namespace Banshee.NoNoise
         /// </summary>
         private void PcaForMusicLibrary ()
         {
-//            Hyena.Log.Debug ("NoNoise/PCA - ml.TrackModel count: "  + ml.TrackModel.Count);
-
             if (data_up_to_date) {
                 Hyena.Log.Information ("NoNoise - Data already up2date - aborting pca.");
                 return;
@@ -454,7 +462,7 @@ namespace Banshee.NoNoise
 
             if (analyzing_lib) {
                 Hyena.Log.Information ("NoNoise - Music library is currently beeing scanned - aborting pca.");
-                return;     // TODO react!
+                return;
             }
 
             if (!lib_scanned) {
@@ -485,7 +493,6 @@ namespace Banshee.NoNoise
 
             try {
                 ana.PerformPCA ();
-//                    Hyena.Log.Debug(ana.GetCoordinateStrings ());
 
                 lock (db_synch) {
                     db.ClearPcaData ();
@@ -506,8 +513,6 @@ namespace Banshee.NoNoise
         /// </summary>
         private void PcaForMusicLibraryVectorEdition ()
         {
-//            Hyena.Log.Debug ("NoNoise/PCA - ml.TrackModel count: "  + ml.TrackModel.Count);
-
             if (data_up_to_date) {
                 Hyena.Log.Information ("NoNoise - Data already up2date - aborting pca.");
                 return;
@@ -515,7 +520,7 @@ namespace Banshee.NoNoise
 
             if (analyzing_lib) {
                 Hyena.Log.Information ("NoNoise - Music library is currently beeing scanned - aborting pca.");
-                return;     // TODO react!
+                return;
             }
 
             if (!lib_scanned) {
@@ -551,22 +556,19 @@ namespace Banshee.NoNoise
     //                    if (!ana.AddEntry (bid, ConvertMfccMean (vectorMap [bid])))
     //                        throw new Exception ("AddEntry failed!");
                         if (!ana.AddEntry (bid, ConvertMfccMean (vectorMap [bid]),
-                                           ti.Duration.TotalSeconds)) {
-//                            Hyena.Log.Debug ("Getting uri again..." + ml.GetTrackIdForUri (ti.Uri));
+                                           ti.Duration.TotalSeconds))
                             throw new Exception("AddEntry failed!");
-                        }
     //                        if (!ana.AddEntry (bid, null, ti.Bpm, ti.Duration.TotalSeconds))
     //                            throw new Exception("AddEntry failed!");
                     } catch (Exception e) {
                         Hyena.Log.Exception ("NoNoise - PCA Problem", e);
-                        return;
+//                        return;
                     }
                 }
             }
 
             try {
                 ana.PerformPCA ();
-//                    Hyena.Log.Debug(ana.GetCoordinateStrings ());
 
                 lock (db_synch) {
                     db.ClearPcaData ();
@@ -646,14 +648,10 @@ namespace Banshee.NoNoise
         /// </summary>
         private void WriteTrackInfosToDB ()
         {
-//            Hyena.Log.Debug ("NoNoise/TI - tm count: "  + ml.TrackModel.Count);
-
             if (data_up_to_date) {
                 Hyena.Log.Information ("NoNoise - Data already up2date - aborting write-track-infos.");
                 return;
             }
-
-//            ml = ServiceManager.SourceManager.MusicLibrary;
 
 //            for (int i = 0; i < ml.TrackModel.Count; i++) {
             foreach (int bid in library.Keys) {
@@ -694,6 +692,7 @@ namespace Banshee.NoNoise
             Dictionary<int, TrackData> trackMap = null;
             Dictionary<int, DataEntry> pcaMap = null;
 
+            // get data from db
             lock (db_synch) {
                 if (STORE_ENTIRE_MATRIX)
                     mfccMap = db.GetMirageMatrices ();
@@ -703,6 +702,7 @@ namespace Banshee.NoNoise
                 pcaMap = db.GetPcaCoordinatesDictionary ();
             }
 
+            // remove deleted MIRData
             if (STORE_ENTIRE_MATRIX) {
                 foreach (int id in mfccMap.Keys) {
                     lock (lib_synch) {
@@ -737,6 +737,7 @@ namespace Banshee.NoNoise
                 }
             }
 
+            // remove deleted TrackData
             foreach (int id in trackMap.Keys) {
                 lock (lib_synch) {
                     if (!library.ContainsKey (id)) {
@@ -753,6 +754,7 @@ namespace Banshee.NoNoise
                 }
             }
 
+            // remove deleted PCAData
             foreach (int id in pcaMap.Keys) {
                 lock (lib_synch) {
                     if (!library.ContainsKey (id)) {
@@ -830,7 +832,7 @@ namespace Banshee.NoNoise
                 UpdateMusicLibrary ();
     
                 if (analyzing_lib) {
-                    // TODO check for missed files after the scan finished...
+                    // check for missed files after the scan finished...
                     lock (scan_synch) {
                         added_while_scanning = true;
                     }
@@ -888,6 +890,7 @@ namespace Banshee.NoNoise
         private void HandleTracksChanged (Source sender, TrackEventArgs args)
         {
             try {
+                // TODO implement
                 Hyena.Log.Debug ("NoNoise/BLA - tracks changed (unhandled): " +
                                  args.ChangedFields.ToString ());
             } catch (Exception e) {

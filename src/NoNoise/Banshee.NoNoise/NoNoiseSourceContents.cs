@@ -91,7 +91,7 @@ namespace Banshee.NoNoise
 
             db = new NoNoiseDBHandler ();
 
-            BansheeLibraryAnalyzer bla = BansheeLibraryAnalyzer.Init (this);
+            BansheeLibraryAnalyzer bla = BansheeLibraryAnalyzer.Init (null);
 
             if (dotests)
                 PerformTests ();
