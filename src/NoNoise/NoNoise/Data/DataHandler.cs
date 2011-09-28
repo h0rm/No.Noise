@@ -138,7 +138,8 @@ namespace NoNoise.Data
             return string.Format ("[DataEntry: ID={0}, X={1}, Y={2}, Value={3}]", ID, X, Y, Value);
         }
 	}
-	
+
+    // TODO remove if unused
 	interface DataHandler
     {
 		List<DataEntry> GetData ();		//returns a list of all tracks

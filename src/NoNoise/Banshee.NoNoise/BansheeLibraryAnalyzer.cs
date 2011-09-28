@@ -687,55 +687,57 @@ namespace Banshee.NoNoise
 //            foreach (int bid in library.Keys)
 //                ids.Add (bid, bid);
 
-            Dictionary<int, Mirage.Vector> vectorMap = null;
-            Dictionary<int, Mirage.Matrix> mfccMap = null;
+            /// make one table the reference and let db synch the rest!!
+
+//            Dictionary<int, Mirage.Vector> vectorMap = null;
+//            Dictionary<int, Mirage.Matrix> mfccMap = null;
             Dictionary<int, TrackData> trackMap = null;
-            Dictionary<int, DataEntry> pcaMap = null;
+//            Dictionary<int, DataEntry> pcaMap = null;
 
             // get data from db
             lock (db_synch) {
-                if (STORE_ENTIRE_MATRIX)
-                    mfccMap = db.GetMirageMatrices ();
-                else
-                    vectorMap = db.GetMirageVectors ();
+//                if (STORE_ENTIRE_MATRIX)
+//                    mfccMap = db.GetMirageMatrices ();
+//                else
+//                    vectorMap = db.GetMirageVectors ();
                 trackMap = db.GetTrackDataDictionary ();
-                pcaMap = db.GetPcaCoordinatesDictionary ();
+//                pcaMap = db.GetPcaCoordinatesDictionary ();
             }
 
             // remove deleted MIRData
-            if (STORE_ENTIRE_MATRIX) {
-                foreach (int id in mfccMap.Keys) {
-                    lock (lib_synch) {
-                        if (!library.ContainsKey (id)) {
-                            Hyena.Log.DebugFormat ("NoNoise/BLA - removing bid {0} from MIRData...", id);
-                            try {
-                                lock (db_synch) {
-                                    // remove from MIRData
-                                    db.RemoveMirDataForTrack (id);
-                                }
-                            } catch (Exception e) {
-                                Hyena.Log.Exception("NoNoise - DB remove problem", e);
-                            }
-                        }
-                    }
-                }
-            } else {
-                foreach (int id in vectorMap.Keys) {
-                    lock (lib_synch) {
-                        if (!library.ContainsKey (id)) {
-                            Hyena.Log.DebugFormat ("NoNoise/BLA - removing bid {0} from MIRData...", id);
-                            try {
-                                lock (db_synch) {
-                                    // remove from MIRData
-                                    db.RemoveMirDataForTrack (id);
-                                }
-                            } catch (Exception e) {
-                                Hyena.Log.Exception("NoNoise - DB remove problem", e);
-                            }
-                        }
-                    }
-                }
-            }
+//            if (STORE_ENTIRE_MATRIX) {
+//                foreach (int id in mfccMap.Keys) {
+//                    lock (lib_synch) {
+//                        if (!library.ContainsKey (id)) {
+//                            Hyena.Log.DebugFormat ("NoNoise/BLA - removing bid {0} from MIRData...", id);
+//                            try {
+//                                lock (db_synch) {
+//                                    // remove from MIRData
+//                                    db.RemoveMirDataForTrack (id);
+//                                }
+//                            } catch (Exception e) {
+//                                Hyena.Log.Exception("NoNoise - DB remove problem", e);
+//                            }
+//                        }
+//                    }
+//                }
+//            } else {
+//                foreach (int id in vectorMap.Keys) {
+//                    lock (lib_synch) {
+//                        if (!library.ContainsKey (id)) {
+//                            Hyena.Log.DebugFormat ("NoNoise/BLA - removing bid {0} from MIRData...", id);
+//                            try {
+//                                lock (db_synch) {
+//                                    // remove from MIRData
+//                                    db.RemoveMirDataForTrack (id);
+//                                }
+//                            } catch (Exception e) {
+//                                Hyena.Log.Exception("NoNoise - DB remove problem", e);
+//                            }
+//                        }
+//                    }
+//                }
+//            }
 
             // remove deleted TrackData
             foreach (int id in trackMap.Keys) {
@@ -754,22 +756,26 @@ namespace Banshee.NoNoise
                 }
             }
 
-            // remove deleted PCAData
-            foreach (int id in pcaMap.Keys) {
-                lock (lib_synch) {
-                    if (!library.ContainsKey (id)) {
-                        Hyena.Log.DebugFormat ("NoNoise/BLA - removing bid {0} from PCAData...", id);
-                        try {
-                            lock (db_synch) {
-                                // remove from PCAData
-                                db.RemovePcaDataForTrack (id);
-                            }
-                        } catch (Exception e) {
-                            Hyena.Log.Exception("NoNoise - DB remove problem", e);
-                        }
-                    }
-                }
+            lock (db_synch) {
+                db.SynchTablesWithTrackData ();
             }
+
+            // remove deleted PCAData
+//            foreach (int id in pcaMap.Keys) {
+//                lock (lib_synch) {
+//                    if (!library.ContainsKey (id)) {
+//                        Hyena.Log.DebugFormat ("NoNoise/BLA - removing bid {0} from PCAData...", id);
+//                        try {
+//                            lock (db_synch) {
+//                                // remove from PCAData
+//                                db.RemovePcaDataForTrack (id);
+//                            }
+//                        } catch (Exception e) {
+//                            Hyena.Log.Exception("NoNoise - DB remove problem", e);
+//                        }
+//                    }
+//                }
+//            }
         }
 
         private void UpdateMusicLibrary ()
