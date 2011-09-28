@@ -197,6 +197,7 @@ namespace NoNoise.Visualization
 
         public void MarkHidded (List<int> not_hidden)
         {
+            Hyena.Log.Information ("Mark hidden");
             foreach (SongPoint p in tree_list[max_clustering_level].GetAllObjects())
                 p.MarkHidden ();
 

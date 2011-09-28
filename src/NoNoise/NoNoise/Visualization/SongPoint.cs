@@ -71,6 +71,9 @@ namespace NoNoise.Visualization
             private set;
         }
 
+        public bool IsVisible {
+            get { return !IsRemoved && !IsHidden; }
+        }
         public bool IsSelected {
             get { return Selection == SongPoint.SelectionMode.Full; }
             set { Selection = value ? SelectionMode.Full : SelectionMode.None; }
@@ -81,7 +84,7 @@ namespace NoNoise.Visualization
         /// </summary>
         public double X {
             get {
-                if (IsLeaf)
+                if (IsLeaf || MainChild == null)
                     return x;
 
                 return MainChild.X;
@@ -95,7 +98,7 @@ namespace NoNoise.Visualization
         /// </summary>
         public double Y {
             get {
-                if (IsLeaf)
+                if (IsLeaf || MainChild == null)
                     return y;
 
                 return MainChild.Y;
@@ -111,7 +114,7 @@ namespace NoNoise.Visualization
 
         public SongPoint MainChild {
             get {
-                if (!LeftChild.IsRemoved && !LeftChild.IsHidden)
+                if (LeftChild.IsVisible)
                     return LeftChild;
 
                 return RightChild;

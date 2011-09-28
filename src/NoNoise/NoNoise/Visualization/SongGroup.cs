@@ -506,12 +506,12 @@ namespace NoNoise.Visualization
         private void AddClusteringAnimation (SongPoint p)
         {
             if (p.Parent == null) {
-                Hyena.Log.Information ("No parent" + p.ID);
                 return;
             }
 
 //            if (p.Parent.RightChild == null)
 //                return;
+
 
             if (p.Parent.MainChild.Equals (p)) {
 //                Hyena.Log.Information ("Not mainchild" + p.ID);
@@ -621,7 +621,7 @@ namespace NoNoise.Visualization
                 if (p.Actor != null)
                     continue;
 
-                if (p.IsRemoved)
+                if (!p.IsVisible)
                     continue;
 
                 p.Actor = actor_manager.AllocateAtPosition (p);
