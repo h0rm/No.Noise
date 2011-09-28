@@ -185,6 +185,10 @@ namespace Banshee.NoNoise
             return Init (sc, false);
         }
 
+        /// <summary>
+        /// Stores the trackinfos from the music library in a sorted dictionary
+        /// mapped to the banshee_id.
+        /// </summary>
         private void ConvertMusicLibrary ()
         {
             lock (lib_synch) {
@@ -196,8 +200,13 @@ namespace Banshee.NoNoise
                     library.Add (dti.TrackId, dti as TrackInfo);
                 }
             }
+
+            Hyena.Log.Debug ("NoNoise/BLA - library conversion finished");
         }
 
+        /// <summary>
+        /// Sets the PcaCoordinates field with the coordinates from the database.
+        /// </summary>
         private void GetPcaData ()
         {
             lock (db_synch) {
@@ -677,6 +686,8 @@ namespace Banshee.NoNoise
             }
         }
 
+        #region Library updates
+
         /// <summary>
         /// Checks the music library for deleted tracks and removes them from the database.
         /// </summary>
@@ -783,6 +794,10 @@ namespace Banshee.NoNoise
 //            }
         }
 
+        /// <summary>
+        /// Compares the dictionary with the trackinfos to the music library
+        /// and updates it (removes deleted tracks and adds new ones).
+        /// </summary>
         private void UpdateMusicLibrary ()
         {
 //            for (int i = 0; i < ml.TrackModel.Count; i++) {
@@ -825,6 +840,9 @@ namespace Banshee.NoNoise
 
             Hyena.Log.DebugFormat ("NoNoise/BLA - Updated music library. new size: {0}", library.Count);
         }
+        #endregion
+
+        #region Library change handlers
 
         /// <summary>
         /// Handles the tracks added event when the user adds new files to the music library.
@@ -911,6 +929,7 @@ namespace Banshee.NoNoise
                     Hyena.Log.Debug ("NoNoise/BLA - tracks changed (unhandled): CF not null");
             }
         }
+        #endregion
     }
 }
 
