@@ -96,12 +96,13 @@ namespace Banshee.NoNoise
         private BansheeLibraryAnalyzer ()
         {
             ml = ServiceManager.SourceManager.MusicLibrary;
-            Hyena.Log.Debug ("NoNoise/BLA - converting music lib");
-            library = ConvertMusicLibrary ();
 
             scan_synch = new object ();
             lib_synch = new object ();
             db_synch = new object ();
+
+            Hyena.Log.Debug ("NoNoise/BLA - converting music lib");
+            new Thread (new ThreadStart (ConvertMusicLibrary)).Start ();
 
             db = new NoNoiseDBHandler ();
 
@@ -184,17 +185,17 @@ namespace Banshee.NoNoise
             return Init (sc, false);
         }
 
-        private SortedDictionary<int, TrackInfo> ConvertMusicLibrary ()
+        private void ConvertMusicLibrary ()
         {
-            SortedDictionary<int, TrackInfo> ret = new SortedDictionary<int, TrackInfo> ();
+            lock (lib_synch) {
+                library = new SortedDictionary<int, TrackInfo> ();
 
-            for (int i = 0; i < ml.TrackModel.Count; i++) {
-                TrackInfo ti = ml.TrackModel [i];
-                int bid = ml.GetTrackIdForUri (ti.Uri);
-                ret.Add (bid, ti);
+                for (int i = 0; i < ml.TrackModel.Count; i++) {
+                    DatabaseTrackInfo dti = ml.TrackModel [i] as DatabaseTrackInfo;
+    //                int bid = ml.GetTrackIdForUri (ti.Uri);
+                    library.Add (dti.TrackId, dti as TrackInfo);
+                }
             }
-
-            return ret;
         }
 
         private void GetPcaData ()
@@ -654,22 +655,24 @@ namespace Banshee.NoNoise
             }
 
 //            for (int i = 0; i < ml.TrackModel.Count; i++) {
-            foreach (int bid in library.Keys) {
-                try {
-//                    TrackInfo ti = ml.TrackModel [i];
-                    TrackInfo ti = library [bid];
-//                    int bid = ml.GetTrackIdForUri (ti.Uri);     // DB call from different thread! think that's the problem...
-
-                    lock (db_synch) {
-                        if (!db.ContainsInfoForTrack (bid)) {
-                            if (!db.InsertTrackInfo (new TrackData (
-                                                       bid, ti.ArtistName, ti.TrackTitle,
-                                                       ti.AlbumTitle, (int)ti.Duration.TotalSeconds)))
-                                Hyena.Log.Error ("NoNoise - TrackInfo insert failed");
+            lock (lib_synch) {
+                foreach (int bid in library.Keys) {
+                    try {
+    //                    TrackInfo ti = ml.TrackModel [i];
+                        TrackInfo ti = library [bid];
+    //                    int bid = ml.GetTrackIdForUri (ti.Uri);     // DB call from different thread! think that's the problem...
+    
+                        lock (db_synch) {
+                            if (!db.ContainsInfoForTrack (bid)) {
+                                if (!db.InsertTrackInfo (new TrackData (
+                                                           bid, ti.ArtistName, ti.TrackTitle,
+                                                           ti.AlbumTitle, (int)ti.Duration.TotalSeconds)))
+                                    Hyena.Log.Error ("NoNoise - TrackInfo insert failed");
+                            }
                         }
+                    } catch (Exception e) {
+                        Hyena.Log.Exception("NoNoise - DB Problem", e);
                     }
-                } catch (Exception e) {
-                    Hyena.Log.Exception("NoNoise - DB Problem", e);
                 }
             }
         }
@@ -756,6 +759,8 @@ namespace Banshee.NoNoise
                 }
             }
 
+            // update other tables
+            Hyena.Log.Debug ("NoNoise/BLA - updating other tables...");
             lock (db_synch) {
                 db.SynchTablesWithTrackData ();
             }

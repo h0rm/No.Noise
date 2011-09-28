@@ -35,7 +35,7 @@ namespace NoNoise.Visualization
     {
         SongGroup point_group;
         MainGui gui;
-        Banshee.NoNoise.BansheeLibraryAnalyzer analyzer;
+        BansheeLibraryAnalyzer analyzer;
 
         public View () : base ()
         {
