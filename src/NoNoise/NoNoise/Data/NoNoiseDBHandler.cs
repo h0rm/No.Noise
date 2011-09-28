@@ -593,8 +593,10 @@ namespace NoNoise.Data
                 dbcmd.CommandText = "SELECT pca_x, pca_y, banshee_id FROM PCAData";
                 System.Data.IDataReader reader = dbcmd.ExecuteReader ();
                 while (reader.Read ()) {
-                    DataEntry de = new DataEntry (reader.GetInt32 (2), reader.GetDouble (0),
-                                                  reader.GetDouble (1), null);
+                    int bid = reader.GetInt32 (2);
+                    TrackData td = GetTrackData (bid);
+                    DataEntry de = new DataEntry (bid, reader.GetDouble (0),
+                                                  reader.GetDouble (1), td);
                     ret.Add (de);
                 }
 
@@ -807,7 +809,6 @@ namespace NoNoise.Data
                 while (reader.Read ()) {
                     try {
                         int bid = reader.GetInt32 (0);
-                        reader.GetValue (1);
                         string artist = (string) reader.GetValue (1);// ?? "";
                         string title = (string) reader.GetValue (2);// ?? "";
                         string album = (string) reader.GetValue (3);// ?? "";
@@ -893,9 +894,13 @@ namespace NoNoise.Data
                                                     "FROM TrackData WHERE banshee_id = '{0}'", bid);
                 System.Data.IDataReader reader = dbcmd.ExecuteReader ();
                 if (reader.Read ()) {
-                    td = new TrackData (reader.GetInt32 (0), reader.GetString (1),
-                                                  reader.GetString (2), reader.GetString (3),
-                                                  reader.GetInt32 (4));
+                    string artist = (string) reader.GetValue (1);// ?? "";
+                    string title = (string) reader.GetValue (2);// ?? "";
+                    string album = (string) reader.GetValue (3);// ?? "";
+                    int duration = reader.GetInt32 (4);
+                    td = new TrackData (bid, artist,
+                                                  title, album,
+                                                  duration);
                 } else
                     throw new Exception ("No track for given banshee_id.");
 

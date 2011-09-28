@@ -95,6 +95,7 @@ namespace Banshee.NoNoise
         private BansheeLibraryAnalyzer ()
         {
             ml = ServiceManager.SourceManager.MusicLibrary;
+            Hyena.Log.Debug ("NoNoise/BLA - converting music lib");
             library = ConvertMusicLibrary ();
 
             scan_synch = new object ();
@@ -102,9 +103,6 @@ namespace Banshee.NoNoise
             db_synch = new object ();
 
             db = new NoNoiseDBHandler ();
-            coords = db.GetPcaCoordinates ();
-
-            Hyena.Log.Debug ("NoNoise/BLA - PCA coords size: " + coords.Count);
 
             /// REMOVE THIS
             if (DB_CHEATER_MODE) {
@@ -121,10 +119,15 @@ namespace Banshee.NoNoise
             lib_scanned = CheckLibScanned ();
             data_up_to_date = CheckDataUpToDate ();
 
+            Hyena.Log.Debug ("NoNoise/BLA - adding library change handler");
             ml.TracksAdded += HandleTracksAdded;
             ml.TracksDeleted += HandleTracksDeleted;
             ml.TracksChanged += HandleTracksChanged;
 
+            Hyena.Log.Debug ("NoNoise/BLA - starting pca query");
+            new Thread (new ThreadStart (GetPcaData)).Start ();
+
+            Hyena.Log.Debug ("NoNoise/BLA - starting pca/write track data threads");
             if (STORE_ENTIRE_MATRIX)
 //                PcaForMusicLibrary ();
                 new Thread (new ThreadStart (PcaForMusicLibrary)).Start ();
@@ -171,6 +174,15 @@ namespace Banshee.NoNoise
             }
 
             return ret;
+        }
+
+        private void GetPcaData ()
+        {
+            lock (db_synch) {
+                coords = db.GetPcaCoordinates ();
+            }
+
+            Hyena.Log.Debug ("NoNoise/BLA - PCA coords size: " + coords.Count);
         }
 
         /// <summary>
@@ -470,12 +482,12 @@ namespace Banshee.NoNoise
             try {
                 ana.PerformPCA ();
 //                    Hyena.Log.Debug(ana.GetCoordinateStrings ());
-                coords = ana.Coordinates;
 
                 lock (db_synch) {
                     db.ClearPcaData ();
-                    if (!db.InsertPcaCoordinates (coords))
+                    if (!db.InsertPcaCoordinates (ana.Coordinates))
                         Hyena.Log.Error ("NoNoise - PCA coord insert failed");
+                    coords = db.GetPcaCoordinates ();
                 }
             } catch (Exception e) {
                 Hyena.Log.Exception("PCA Problem", e);
@@ -551,12 +563,12 @@ namespace Banshee.NoNoise
             try {
                 ana.PerformPCA ();
 //                    Hyena.Log.Debug(ana.GetCoordinateStrings ());
-                coords = ana.Coordinates;
 
                 lock (db_synch) {
                     db.ClearPcaData ();
-                    if (!db.InsertPcaCoordinates (coords))
+                    if (!db.InsertPcaCoordinates (ana.Coordinates))
                         Hyena.Log.Error ("NoNoise - PCA coord insert failed");
+                    coords = db.GetPcaCoordinates ();
                 }
             } catch (Exception e) {
                 Hyena.Log.Exception ("PCA Problem", e);
@@ -808,7 +820,7 @@ namespace Banshee.NoNoise
             Hyena.Log.Debug ("NoNoise/BLA - tracks added (untested)");
 
             try {
-                UpdateMusicLibrary ();
+//                UpdateMusicLibrary ();
     
                 if (analyzing_lib) {
                     // TODO check for missed files after the scan finished...
@@ -849,7 +861,7 @@ namespace Banshee.NoNoise
 
             if (!CheckDataUpToDate ()) {
                 try {
-                    UpdateMusicLibrary ();
+//                    UpdateMusicLibrary ();
                     RemoveDeletedTracks ();     // TODO in new thread
                 } catch (Exception e) {
                     Hyena.Log.Exception ("NoNoise/BLA - tracks deleted handler exception", e);
