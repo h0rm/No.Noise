@@ -81,11 +81,20 @@ namespace NoNoise.Visualization
                 return null;
 
             SongActor actor = free_actors.Pop ();
-            if (!p.IsSelected) {
-                actor.SetPrototypeByColor (SongActor.Color.White);
-            } else {
+
+            switch (p.Selection) {
+
+            case SongPoint.SelectionMode.Full:
                 actor.SetPrototypeByColor (SongActor.Color.Red);
-                Hyena.Log.Information ("Point selected");
+                break;
+
+            case SongPoint.SelectionMode.Partial:
+                actor.SetPrototypeByColor (SongActor.Color.LightRed);
+                break;
+
+            default:
+                actor.SetPrototypeByColor (SongActor.Color.White);
+                break;
             }
 
             actor.SetPosition ((float)p.X, (float)p.Y);

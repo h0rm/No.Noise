@@ -34,6 +34,10 @@ namespace NoNoise.Visualization
     /// </summary>
     public class SongPoint :IStorable<SongPoint>
     {
+        private double x;
+        private double y;
+        public enum SelectionMode {None, Partial, Full};
+
         public SongPoint (double x, double y, int id)
         {
             X = x;
@@ -46,8 +50,18 @@ namespace NoNoise.Visualization
             IsSelected = false;
             IsRemoved = false;
             IsHidden = false;
+            Selection = SelectionMode.None;
         }
 
+        public SelectionMode Selection {
+            get;
+            private set;
+        }
+        public bool IsLeaf {
+            get {
+                return LeftChild == null && RightChild == null;
+            }
+        }
         public bool IsHidden {
             get;
             private set;
@@ -57,25 +71,40 @@ namespace NoNoise.Visualization
             private set;
         }
 
+        public bool IsVisible {
+            get { return !IsRemoved && !IsHidden; }
+        }
         public bool IsSelected {
-            get;
-            set;
+            get { return Selection == SongPoint.SelectionMode.Full; }
+            set { Selection = value ? SelectionMode.Full : SelectionMode.None; }
         }
         
         /// <summary>
         /// The X position in the 2D space
         /// </summary>
         public double X {
-            get;
-            private set;
+            get {
+                if (IsLeaf || MainChild == null)
+                    return x;
+
+                return MainChild.X;
+            }
+
+            private set { x = value; }
         }
 
         /// <summary>
         /// The Y position in the 2D space
         /// </summary>
         public double Y {
-            get;
-            private set;
+            get {
+                if (IsLeaf || MainChild == null)
+                    return y;
+
+                return MainChild.Y;
+            }
+
+            private set { y = value; }
         }
 
         public SongPoint Parent {
@@ -83,6 +112,14 @@ namespace NoNoise.Visualization
             private set;
         }
 
+        public SongPoint MainChild {
+            get {
+                if (LeftChild.IsVisible)
+                    return LeftChild;
+
+                return RightChild;
+            }
+        }
         public SongPoint LeftChild {
             get;
             private set;
@@ -114,7 +151,6 @@ namespace NoNoise.Visualization
 
         public void MarkHidden ()
         {
-
             IsHidden = true;
 
             if (LeftChild != null)
@@ -133,30 +169,31 @@ namespace NoNoise.Visualization
 
         private void MarkShownUpwards ()
         {
-            if (Parent == null)
+            /// Cases
+            /// 1 - this node is show - do nothing visited
+            /// 2 - the only child (left) is shown - node is shown
+            /// 3 - at least one child is shown - node is shown
+            ///
+
+            if (!IsHidden) //not hidden - stop node has been visited
                 return;
 
-             if (!Parent.IsHidden)
-                return;
-
-            if (LeftChild == null && RightChild == null)
-                return;
-
-            if (LeftChild == null && !RightChild.IsHidden) {
-                IsHidden = false;
-                Parent.MarkShownUpwards ();
-                return;
-            }
-
+            //rightchild null - check only left child
             if (RightChild == null && !LeftChild.IsHidden) {
                 IsHidden = false;
-                Parent.MarkShownUpwards ();
+                if (Parent != null) //if parent exists, propergate
+                    Parent.MarkShownUpwards ();
                 return;
             }
 
-            if (!LeftChild.IsSelected || !RightChild.IsHidden) {
+            if (RightChild == null)
+                return;
+
+            //both not null, check both
+            if (!LeftChild.IsHidden || !RightChild.IsHidden) {
                 IsHidden = false;
-                Parent.MarkShownUpwards ();
+                if (Parent != null) //if parent exists, propergate
+                    Parent.MarkShownUpwards ();
             }
         }
 
@@ -186,30 +223,45 @@ namespace NoNoise.Visualization
 
         private void SelectUpwards ()
         {
-            if (Parent == null)
+            /// Cases
+            /// 1 - this node is selected - do nothing visited and nothing more to do
+            /// 2 - only child (left) - node has same selection
+            /// 3 - at least one child is partially selected - node is partially selected
+            /// 4 - both children are fully selected - node is fully selected
+            ///
+
+            // case 1
+            if (IsSelected) //selected - stop node has been visited
                 return;
 
-             if (Parent.IsSelected)
-                return;
-
-            if (LeftChild == null && RightChild == null)
-                return;
-
-            if (LeftChild == null && RightChild.IsSelected) {
-                IsSelected = true;
-                Parent.SelectUpwards ();
-                return;
-            }
-
-            if (RightChild == null && LeftChild.IsSelected) {
-                IsSelected = true;
-                Parent.SelectUpwards ();
+            // case 2
+            if (RightChild == null) {
+                Selection = LeftChild.Selection;
+                if (Parent != null) //if parent exists, propergate
+                    Parent.SelectUpwards ();
                 return;
             }
 
+            if (RightChild == null)
+                return;
+
+            // case 4
             if (LeftChild.IsSelected && RightChild.IsSelected) {
                 IsSelected = true;
-                Parent.SelectUpwards ();
+
+                if (Parent != null) //if parent exists, propergate
+                    Parent.SelectUpwards ();
+                return;
+            }
+
+            // case 3
+            if (LeftChild.Selection != SelectionMode.None ||
+                            RightChild.Selection != SelectionMode.None) {
+                Selection = SelectionMode.Partial;
+
+                if (Parent != null) //if parent exists, propergate
+                    Parent.SelectUpwards ();
+                return;
             }
         }
 
@@ -240,7 +292,7 @@ namespace NoNoise.Visualization
         public List<int> GetAllIDs ()
         {
             List<int> ids = new List<int> ();
-            if (LeftChild == null && !IsRemoved)
+            if (IsLeaf && !IsRemoved)
                 ids.Add (ID);
 
             if (LeftChild != null)
@@ -263,12 +315,14 @@ namespace NoNoise.Visualization
 //                merged.Normalize (2);
 //            }
 
-            SongPoint parent = new SongPoint (merged.X, merged.Y, ID + other.ID);
+            SongPoint parent = new SongPoint (merged.X, merged.Y, -1);
             parent.LeftChild = this;
             parent.RightChild = other;
 
             this.Parent = parent;
-            other.Parent = parent;
+
+            if (other != null)
+                other.Parent = parent;
 
             return parent;
         }

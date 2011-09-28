@@ -33,7 +33,7 @@ namespace NoNoise.Visualization
     {
         private int max_clustering_level = 8;
         private List<QuadTree<SongPoint>> tree_list;
-        private const int min_points = 400;
+        private const int min_points = 2;
         private int level = 0;
         private Dictionary<int,SongPoint> dict;
 
@@ -197,6 +197,7 @@ namespace NoNoise.Visualization
 
         public void MarkHidded (List<int> not_hidden)
         {
+            Hyena.Log.Information ("Mark hidden");
             foreach (SongPoint p in tree_list[max_clustering_level].GetAllObjects())
                 p.MarkHidden ();
 

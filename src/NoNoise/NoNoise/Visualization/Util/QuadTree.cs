@@ -186,7 +186,7 @@ namespace NoNoise.Visualization.Util
                 //check if item is found
                 if (other == null) {
 
-                    clustered_tree.Add (item);
+                    clustered_tree.Add (item.GetMerged (default (T)));
 
                 } else {
 
