@@ -42,12 +42,12 @@ namespace NoNoise.Data
         private readonly string CONNECTION_STRING = "URI=file:nonoise.db,version=3";
 
         private readonly string CREATE_TABLE_MIRDATA =
-            "CREATE TABLE IF NOT EXISTS MIRData (banshee_id INTEGER, data CLOB, id INTEGER PRIMARY KEY)";
+            "CREATE TABLE IF NOT EXISTS MIRData (banshee_id INTEGER NOT NULL, data CLOB NOT NULL, id INTEGER PRIMARY KEY)";
         private readonly string CREATE_TABLE_PCADATA =
-            "CREATE TABLE IF NOT EXISTS PCAData (banshee_id INTEGER, id INTEGER PRIMARY KEY, pca_x DOUBLE, " +
-            "pca_y DOUBLE)";
+            "CREATE TABLE IF NOT EXISTS PCAData (banshee_id INTEGER NOT NULL, id INTEGER PRIMARY KEY, pca_x DOUBLE NOT NULL, " +
+            "pca_y DOUBLE NOT NULL)";
         private readonly string CREATE_TABLE_TRACKDATA =
-            "CREATE TABLE IF NOT EXISTS TrackData (album VARCHAR, artist VARCHAR, banshee_id INTEGER, " +
+            "CREATE TABLE IF NOT EXISTS TrackData (album VARCHAR, artist VARCHAR, banshee_id INTEGER NOT NULL, " +
             "duration INTEGER, id INTEGER PRIMARY KEY, title VARCHAR)";
 
         private readonly string SELECT_MIRDATA_COUNT = "SELECT COUNT(*) FROM MIRData";
@@ -856,9 +856,9 @@ namespace NoNoise.Data
                 System.Data.IDataReader reader = dbcmd.ExecuteReader ();
                 while (reader.Read ()) {
                     int bid = reader.GetInt32 (0);
-                    string artist = (string) reader.GetValue (1);// ?? "";
-                    string title = (string) reader.GetValue (2);// ?? "";
-                    string album = (string) reader.GetValue (3);// ?? "";
+                    string artist = (reader.GetValue (1) as string ?? "");
+                    string title = (reader.GetValue (2) as string ?? "");
+                    string album = (reader.GetValue (3) as string ?? "");
                     int duration = reader.GetInt32 (4);
                     TrackData td = new TrackData (bid, artist, title, album, duration);
                     ret.Add (td);
@@ -898,9 +898,9 @@ namespace NoNoise.Data
                                                     "FROM TrackData WHERE banshee_id = '{0}'", bid);
                 System.Data.IDataReader reader = dbcmd.ExecuteReader ();
                 if (reader.Read ()) {
-                    string artist = (string) reader.GetValue (1);// ?? "";
-                    string title = (string) reader.GetValue (2);// ?? "";
-                    string album = (string) reader.GetValue (3);// ?? "";
+                    string artist = (reader.GetValue (1) as string ?? "");
+                    string title = (reader.GetValue (2) as string ?? "");
+                    string album = (reader.GetValue (3) as string ?? "");
                     int duration = reader.GetInt32 (4);
                     td = new TrackData (bid, artist, title, album, duration);
                 } else

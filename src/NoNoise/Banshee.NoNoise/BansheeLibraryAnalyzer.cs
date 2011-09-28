@@ -869,7 +869,7 @@ namespace Banshee.NoNoise
             if (!CheckDataUpToDate ()) {
                 try {
                     UpdateMusicLibrary ();
-                    RemoveDeletedTracks ();     // TODO in new thread
+                    RemoveDeletedTracks ();     // TODO in new thread ?
                 } catch (Exception e) {
                     Hyena.Log.Exception ("NoNoise/BLA - tracks deleted handler exception", e);
                 }
