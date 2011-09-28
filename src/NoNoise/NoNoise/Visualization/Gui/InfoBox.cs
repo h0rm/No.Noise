@@ -28,28 +28,30 @@ using Clutter;
 using System.Collections.Generic;
 using Cairo;
 
-namespace NoNoise
+namespace NoNoise.Visualization.Gui
 {
     public class InfoBox : Clutter.Group
     {
         private List<String> info_strings;
         private CairoTexture texture;
+        private StyleSheet style;
 
-        public uint Width{
+        public new uint Width{
             get;
             private set;
         }
 
-        public uint Height {
+        public new uint Height {
             get;
             private set;
 
         }
-        public InfoBox (uint width, uint height)
+        public InfoBox (StyleSheet style, uint width, uint height)
         {
             Width = width;
             Height = height;
 
+            this.style = style;
             info_strings = new List<string> ();
             texture = new CairoTexture (width, height);
             texture.SetSize (width, height);
@@ -60,7 +62,7 @@ namespace NoNoise
 
         private void GenerateBackground ()
         {
-            double x = 5, y = 5;
+            double x = 5+0.5, y = 5+0.5;
             double w = Width - 10;
             double h = Height -10;
 
@@ -79,11 +81,11 @@ namespace NoNoise
 
             cr.ClosePath ();
 
-            cr.Color = new Cairo.Color (0,0,0);
+            cr.Color = style.Background;
             cr.FillPreserve ();
 
-            cr.Color = new Cairo.Color (0.95,0.95,0.95);
-            cr.LineWidth = 2.0;
+            cr.Color = style.Border;
+            cr.LineWidth = style.BorderSize;
             cr.Stroke ();
 
             ((IDisposable) cr.Target).Dispose ();
@@ -101,9 +103,9 @@ namespace NoNoise
             Cairo.Context cr = texture.Create ();
             double x = 5 + 10, y = 5 + 10 ;
 
-            cr.Color = new Cairo.Color (0.95,0.95,0.0);
-            cr.SelectFontFace ("Verdana", Cairo.FontSlant.Normal, Cairo.FontWeight.Bold);
-            cr.SetFontSize (14);
+            cr.Color = style.Highlighted.Color;
+            cr.SelectFontFace (style.Highlighted.Family, style.Highlighted.Slant, style.Highlighted.Weight);
+            cr.SetFontSize (style.Highlighted.Size);
 
             TextExtents te = cr.TextExtents ("Song List");
 

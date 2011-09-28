@@ -153,6 +153,36 @@ namespace NoNoise.Visualization
             Level = i-1;
             Hyena.Log.Information ("Default level set to " + Level);
         }
+
+        public void RemoveSelection ()
+        {
+            foreach (SongPoint p in tree_list[max_clustering_level].GetAllObjects())
+                p.MarkRemovedifSelected ();
+        }
+
+        public void ClearSelection ()
+        {
+            foreach (SongPoint p in tree_list[max_clustering_level].GetAllObjects())
+                p.ClearSelection ();
+        }
+
+        public void ShowRemoved ()
+        {
+            foreach (SongPoint p in tree_list[max_clustering_level].GetAllObjects())
+                p.UnmarkRemoved ();
+        }
+
+        public List<SongPoint> GetSelected ()
+        {
+            List<SongPoint> ret = new List<SongPoint> ();
+
+            foreach (SongPoint p in tree_list[0].GetAllObjects ()) {
+                if (p.IsSelected)
+                    ret.Add (p);
+            }
+
+            return ret;
+        }
     }
 }
 

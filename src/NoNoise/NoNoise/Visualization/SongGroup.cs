@@ -103,6 +103,9 @@ namespace NoNoise.Visualization
         private bool selection_enabled = false;
         private List<SongPoint> points_selected = new List<SongPoint> ();
 
+        private bool selection_toggle = false;
+
+        private bool mouse_button_locked = false;
         #endregion
 
         #region Getter + Setter
@@ -126,10 +129,10 @@ namespace NoNoise.Visualization
         public void LoadPcaData (List<DataEntry> entries)
         {
 
-            point_manager = new SongPointManager (0, 0, 3000, 3000);
+            point_manager = new SongPointManager (0, 0, 30000, 30000);
 
             foreach (DataEntry e in entries)
-                point_manager.Add (e.X*3000, e.Y*3000, e.ID);
+                point_manager.Add (e.X*30000, e.Y*30000, e.ID);
 
             point_manager.Cluster ();
 //            point_manager.SetDefaultLevel (500);
@@ -282,7 +285,9 @@ namespace NoNoise.Visualization
         /// </param>
         public void ClusterOneStep (bool inwards)
         {
-            ClearSelection ();
+//            Hyena.Log.Information ("Zoom");
+//            ClearSelection ();
+            mouse_button_locked = true;
             if (inwards)
             {
                 AnimateClustering (false);
@@ -293,19 +298,58 @@ namespace NoNoise.Visualization
             }
         }
 
+        public void ToggleSelection ()
+        {
+            mouse_button_locked = true;
+            selection_toggle = !selection_toggle;
+        }
+
+        public void RemoveSelected ()
+        {
+            mouse_button_locked = true;
+            point_manager.RemoveSelection ();
+            point_manager.ClearSelection ();
+            UpdateView ();
+        }
+
+        public void ResetRemovedPoints ()
+        {
+            mouse_button_locked = true;
+            point_manager.ShowRemoved ();
+            point_manager.ClearSelection ();
+            UpdateView ();
+        }
+
+        public List<int> GetSelectedSongIDs ()
+        {
+            List<SongPoint> selected = point_manager.GetSelected ();
+
+//            if (selected.Count == 0)
+//                return null;
+
+            List<int> ret = new List<int> (selected.Count);
+
+            foreach (SongPoint p in selected)
+                ret.Add (p.ID);
+
+            return ret;
+        }
+
+
         /// <summary>
         /// This function is used to zoom in or out.
         /// </summary>
         /// <param name="inwards">
         /// A <see cref="System.Boolean"/> specifies the zooming direction.
         /// </param>
-        public void ZoomOnCenter (bool inwards)
+        private void ZoomOnCenter (bool inwards)
         {
             selection.Reset ();
-            ZoomOnPosition (inwards, Stage.Width/2.0f, Stage.Height/2.0f);
+            ZoomOnPosition (inwards, stage.Width/2.0f, stage.Height/2.0f);
+
         }
 
-        public void SetZoomLevel (double scale)
+        private void SetZoomLevel (double scale)
         {
             zoom_level = scale;
             SetScale (zoom_level, zoom_level);
@@ -314,7 +358,7 @@ namespace NoNoise.Visualization
                 s.SetScale (1/zoom_level, 1/zoom_level);
         }
 
-        public void ZoomOnPosition (bool inwards, float x, float y)
+        private void ZoomOnPosition (bool inwards, float x, float y)
         {
             //Transformed position
             float trans_x = 0, trans_y = 0;
@@ -328,11 +372,12 @@ namespace NoNoise.Visualization
             float trans_x_unif = 0, trans_y_unif = 0;
             this.TransformStagePoint (x, y, out trans_x_unif, out trans_y_unif);
 
-            float pos_x = this.X + (trans_x_unif - trans_x);
-            float pos_y = this.Y + (trans_y_unif - trans_y);
+            double pos_x = (double)this.X + ((double)trans_x_unif - (double)trans_x);
+            double pos_y = (double)this.Y + ((double)trans_y_unif - (double)trans_y);
+
 
             //punkt auf objekt schieben
-            this.SetPosition (pos_x, pos_y);
+            this.SetPosition ((float)pos_x, (float)pos_y);
 
             double old_zoom_level = zoom_level;
 
@@ -358,8 +403,8 @@ namespace NoNoise.Visualization
 
 
             zoom_animation_behave.SetBounds (old_zoom_level, old_zoom_level, zoom_level, zoom_level);
-            animation_behave.SetBounds (1.0f / old_zoom_level, 1.0f /
-                                        old_zoom_level, 1.0f / zoom_level, 1.0f / zoom_level);
+            animation_behave.SetBounds (1.0 / old_zoom_level, 1.0 /
+                                        old_zoom_level, 1.0 / zoom_level, 1.0 / zoom_level);
 
             //update clipping every new frame
             animation_timeline.NewFrame += delegate {
@@ -471,18 +516,10 @@ namespace NoNoise.Visualization
                 clustering_animation_behave.Remove (p.Actor);
         }
 
-        void HandleClusteringTimelineMarkerReached (object o, MarkerReachedArgs args)
-        {
-            if (clustering_animation_timeline.Direction == TimelineDirection.Forward)
-                ZoomOnCenter (false);
-//            else
-//                ZoomOnCenter (true);
-        }
-
         private void HandleClusteringTimelineCompleted (object sender, EventArgs e)
         {
-            Hyena.Log.Information ("Animations finished: "
-                     + (clustering_animation_timeline.Direction == TimelineDirection.Forward ? "forward" : "backward"));
+//            Hyena.Log.Information ("Animations finished: "
+//                     + (clustering_animation_timeline.Direction == TimelineDirection.Forward ? "forward" : "backward"));
 
             if (clustering_animation_timeline.Direction == TimelineDirection.Forward)
                 point_manager.IncreaseLevel ();
@@ -493,7 +530,7 @@ namespace NoNoise.Visualization
 
         private void UpdateView ()
         {
-            Hyena.Log.Information ("Update view");
+//            Hyena.Log.Information ("Update view");
             //remove all visible points
             for (int i = 0; i < points_visible.Count; i++) {
                 actor_manager.Free (points_visible[i].Actor);
@@ -514,7 +551,7 @@ namespace NoNoise.Visualization
             GetTransformedPosition (out tx, out ty);
             GetScale (out sx, out sy);
 
-            Hyena.Log.Information (System.String.Format("Clipping ({0},{1}) with {2}x{3}",tx,ty,sx,sy));
+//            Hyena.Log.Information (System.String.Format("Clipping ({0},{1}) with {2}x{3}",tx,ty,sx,sy));
 
             x = (-(float)SongActor.CircleSize-tx)/sx;
             y = (-(float)SongActor.CircleSize-ty)/sy;
@@ -524,7 +561,7 @@ namespace NoNoise.Visualization
 
         public void UpdateClipping ()
         {
-            Hyena.Log.Information ("Update Clipping");
+//            Hyena.Log.Information ("Update Clipping");
             double x, y, width, height;
             GetClippingWindow (out x, out y, out width, out height );
 
@@ -569,6 +606,9 @@ namespace NoNoise.Visualization
                 if (p.Actor != null)
                     continue;
 
+                if (p.IsRemoved)
+                    continue;
+
                 p.Actor = actor_manager.AllocateAtPosition (p);
 
                 points_visible.Add (p);
@@ -577,6 +617,7 @@ namespace NoNoise.Visualization
             }
 
         }
+
 
          #region private Handler
 
@@ -653,16 +694,22 @@ namespace NoNoise.Visualization
 
         private void ClearSelection ()
         {
-            foreach (SongPoint p in points_selected)
-            {
-                if (p.Actor != null)
-                    p.Actor.SetPrototypeByColor (SongActor.Color.White);
-                p.Selected = false;
-            }
+//            foreach (SongPoint p in points_selected)
+//            {
+//                if (p.Actor != null)
+//                    p.Actor.SetPrototypeByColor (SongActor.Color.White);
+//                p.Selected = false;
+//            }
+
+            Hyena.Log.Information ("Clear selection");
+            point_manager.ClearSelection ();
+
+            UpdateView ();
 
             points_selected = new List<SongPoint> ();
 
             selection.Reset ();
+
         }
 
         private void UpdateSelection ()
@@ -670,14 +717,15 @@ namespace NoNoise.Visualization
             points_selected = selection.GetPointsInside (points_visible);
             for (int i = 0; i < points_selected.Count; i ++)
             {
-                points_selected[i].Selected = true;
+//                points_selected[i].Selected = true;
+                points_selected[i].MarkAsSelected ();
                 points_selected[i].Actor.SetPrototypeByColor (SongActor.Color.Red);
             }
 
             UpdateClipping ();
         }
 
-        void InitializeZoomLevel ()
+        private void InitializeZoomLevel ()
         {
             int i = 0;
 
@@ -703,7 +751,8 @@ namespace NoNoise.Visualization
             this.SetPosition (0, stage.Height / 2f - (float)point_manager.Height*(float)zoom_level/2f);
 
         }
-        void HandleWindowSizeChanged (object o, AllocationChangedArgs args)
+
+        private void HandleWindowSizeChanged (object o, AllocationChangedArgs args)
         {
             if (stage.Width == 1)
                 return;
@@ -729,7 +778,11 @@ namespace NoNoise.Visualization
         /// </param>
         private void HandleStageButtonReleaseEvent (object o, ButtonReleaseEventArgs args)
         {
-//            Hyena.Log.Information ("Mouse Up.");
+            if (mouse_button_locked) {
+                mouse_button_locked = false;
+                return;
+            }
+
             uint button = EventHelper.GetButton (args.Event);
 
             if (selection_enabled) {
@@ -738,46 +791,8 @@ namespace NoNoise.Visualization
             }
 
             selection_enabled = false;
-//            SelectionEnd ();
 
             mouse_down = false;
-        }
-
-        void HandleHandleLeaveEvent (object o, LeaveEventArgs args)
-        {
-            mouse_down = false;
-        }
-
-        /// <summary>
-        /// Handles the entering of the mouse cursor at a circle position.
-        /// </summary>
-        /// <param name="o">
-        /// A <see cref="System.Object"/>
-        /// </param>
-        /// <param name="args">
-        /// A <see cref="EnterEventArgs"/>
-        /// </param>
-        private void HandleCircleMouseEnter (object o, EnterEventArgs args)
-        {
-
-            //Maus Koordinaten holen
-            float mouse_x = 0, mouse_y = 0;
-            EventHelper.GetCoords(args.Event, out mouse_x, out mouse_y);
-
-            //Ausgabe von name + x:y (x,y) irgendwie falsch
-            //Hyena.Log.Information("Mouse Enter Clone "+(o as Clone).Name + " - " + mouse_x +":"+mouse_y);
-
-            //Punkt transformieren - damit an richtiger position mit scale und so
-            float x=0, y=0;
-            (o as Clone).GetTransformedPosition(out x,out y);
-
-            //TODO ersetzen mit handler
-            //An position von circle infobox setzen + namen
-//            info_group.SetPosition(x,y);
-//            info_text.Value = (o as Clone).Name;
-//
-//            //infobox anzeigen
-//            info_group.Show();
         }
 
         /// <summary>
@@ -791,6 +806,8 @@ namespace NoNoise.Visualization
         /// </param>
         private void HandleStageButtonPressEvent (object o, ButtonPressEventArgs args)
         {
+            if (mouse_button_locked)
+                return;
 
             uint button = EventHelper.GetButton (args.Event);
 
@@ -798,8 +815,9 @@ namespace NoNoise.Visualization
             selection.Reset ();
 
             if (button != 1)
-            {
-                Hyena.Log.Debug ("Rechtsklick.");
+                return;
+
+            if (selection_toggle) {
 
                 ClearSelection ();
                 selection_enabled = true;

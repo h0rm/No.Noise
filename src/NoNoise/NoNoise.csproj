@@ -291,6 +291,11 @@
     <Compile Include="Banshee.NoNoise\NoNoiseClutterSourceContents.cs" />
     <Compile Include="NoNoise\Visualization\SelectionActor.cs" />
     <Compile Include="NoNoise\Visualization\Gui\InfoBox.cs" />
+    <Compile Include="NoNoise\Visualization\Gui\Button.cs" />
+    <Compile Include="NoNoise\Visualization\Gui\ZoomButton.cs" />
+    <Compile Include="NoNoise\Visualization\Gui\ToolbarButton.cs" />
+    <Compile Include="NoNoise\Visualization\Gui\StyleSheet.cs" />
+    <Compile Include="NoNoise\Visualization\Gui\ToolbarToggleButton.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ProjectExtensions>

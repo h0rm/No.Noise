@@ -33,12 +33,17 @@ using Banshee.Library;
 using Clutter;
 using GLib;
 using Banshee.ServiceStack;
+using Banshee.Collection;
+using Banshee.Collection.Database;
+using Banshee.Playlist;
+using Mono.Unix;
 
 namespace Banshee.NoNoise
 {
     public class NoNoiseClutterSourceContents : ISourceContents
     {
 
+        MusicLibrarySource source;
         View view;
 
         public NoNoiseClutterSourceContents (bool pcadata)
@@ -65,18 +70,7 @@ namespace Banshee.NoNoise
             Clutter.Threads.Leave ();
             //GLib.Thread thread = new GLib.Thread(cv.Init);
 
-            this.Widget.Shown += delegate{
-                Hyena.Log.Information("Widget shown");
-                //(w as ClutterView).GenerateOverview();
-            };
-
-            this.Widget.VisibilityNotifyEvent += delegate {
-                Hyena.Log.Information ("Widget visible");
-            };
-
-            this.Widget.Focused += delegate {
-                Hyena.Log.Information ("Focused");
-            };
+            view.OnAddToPlaylist += HandleViewOnAddToPlaylist;
 
             Banshee.ServiceStack.Application.ClientStarted += delegate {
                 Threads.Enter ();
@@ -84,6 +78,38 @@ namespace Banshee.NoNoise
                 Threads.Leave ();
             };
 
+        }
+
+        void HandleViewOnAddToPlaylist (object sender, View.AddToPlaylistEventArgs args)
+        {
+
+            if (args.SongIDs.Count == 0)
+                return;
+            
+            ITrackModelSource trackmodel = (ITrackModelSource)source;
+
+            trackmodel.TrackModel.Selection.SelectAll ();
+
+            foreach (TrackInfo t in trackmodel.TrackModel.SelectedItems) {
+                DatabaseTrackInfo track_info = (t as DatabaseTrackInfo);
+
+                if (!args.SongIDs.Contains (track_info.TrackId)) {
+
+                    trackmodel.TrackModel.Selection.Unselect (trackmodel.TrackModel.IndexOf (t));
+
+                } else {
+
+                    Hyena.Log.Information (String.Format ("Added {0}: {1} - {2}",track_info.TrackId,
+                                                      track_info.ArtistName, track_info.TrackTitle));
+                }
+            }
+
+            PlaylistSource playlist = new PlaylistSource (Catalog.GetString ("NoNoise"), source);
+            playlist.Save ();
+            playlist.PrimarySource.AddChildSource (playlist);
+
+            playlist.AddSelectedTracks (source);
+            playlist.NotifyUser ();
         }
 
         ~ NoNoiseClutterSourceContents ()
@@ -100,6 +126,7 @@ namespace Banshee.NoNoise
             if ((source as MusicLibrarySource) == this.Source)
                 return true;
 
+            this.source = source as MusicLibrarySource;
             return true;
         }
 
@@ -118,7 +145,7 @@ namespace Banshee.NoNoise
         }
         public void ResetSource () { }
         public Widget Widget { get { return view; } }
-        public ISource Source { get { return null; } }
+        public ISource Source { get { return source; } }
     }
 }
 

@@ -42,26 +42,26 @@ namespace NoNoise.Visualization
             SetSizeRequest (100,100);
             Stage.Color = new Color (0,0,0,255);
             point_group = new SongGroup (Stage);
-            gui = new MainGui ();
+            gui = new MainGui (Stage);
 
 
             Stage.Add (point_group);
             Stage.Add (gui);
-            point_group.LowerBottom ();
+
+                      point_group.LowerBottom ();
 //            Stage.SetClip (0,0,Stage.Width, Stage.Height);
+
+            InitHandler ();
+        }
+
+        private void InitHandler ()
+        {
+            gui.ButtonClicked += HandleGuiButtonClicked;
 
             Stage.AllocationChanged += delegate {
                 Stage.SetClip (0,0,Stage.Width, Stage.Height);
                 Hyena.Log.Information ("Clutter stage allocation changed to " + Stage.Width + "x" + Stage.Height);
                 point_group.QueueRelayout ();
-            };
-
-            Stage.Shown += delegate {
-                Hyena.Log.Information ("Clutter stage shown " + Stage.Width + "x" + Stage.Height);
-            };
-
-            Stage.Realized += delegate {
-                Hyena.Log.Information ("Clutter stage realized");
             };
 
             point_group.SongEntered += delegate (object source, SongHighlightArgs args) {
@@ -71,18 +71,45 @@ namespace NoNoise.Visualization
                     songs.Add (i.ToString());
 
                 gui.UpdateInfoText (songs);
-//                Hyena.Log.Information ("Entered "+args.ID + "\n" + ids);
             };
-
-            point_group.SongLeft += delegate (object source, SongHighlightArgs args) {
-//                Hyena.Log.Information ("Left");
-            };
-
-
-            //Event Handler to handle zoom
-            gui.ZoomChangedEvent += HandleGuiZoomChangedEvent;
 
             gui.DebugButtonPressedEvent += HandleGuiDebugButtonPressedEvent;
+        }
+
+        void HandleGuiButtonClicked (object source, MainGui.ButtonClickedArgs args)
+        {
+            switch (args.ButtonClicked) {
+
+            case MainGui.ButtonClickedArgs.Button.ZoomIn:
+                point_group.ClusterOneStep (true);
+                break;
+
+            case MainGui.ButtonClickedArgs.Button.ZoomOut:
+                point_group.ClusterOneStep (false);
+                break;
+
+            case MainGui.ButtonClickedArgs.Button.Select:
+                point_group.ToggleSelection ();
+                break;
+
+            case MainGui.ButtonClickedArgs.Button.Remove:
+                point_group.RemoveSelected ();
+                break;
+
+            case MainGui.ButtonClickedArgs.Button.Reset:
+                point_group.ResetRemovedPoints ();
+                break;
+
+            case MainGui.ButtonClickedArgs.Button.Playlist:
+                GeneratePlaylist (point_group.GetSelectedSongIDs ());
+                break;
+            }
+        }
+
+        public void GeneratePlaylist (List<int> list)
+        {
+            if (add_to_playlist_event != null)
+                    add_to_playlist_event (this, new AddToPlaylistEventArgs (list));
         }
 
         public void FinishedInit ()
@@ -92,12 +119,6 @@ namespace NoNoise.Visualization
         void HandleGuiDebugButtonPressedEvent  (object source, MainGui.DebugEventArgs args)
         {
             point_group.UpdateClipping ();
-        }
-
-        void HandleGuiZoomChangedEvent (object source, MainGui.ZoomLevelArgs args)
-        {
-            point_group.ClusterOneStep (args.Inwards);
-            //point_group.ZoomOnCenter (args.Inwards);
         }
 
         public void GetPcaCoordinates ()
@@ -110,6 +131,28 @@ namespace NoNoise.Visualization
         {
             //point_group.TestGenerateCircles(5000,5000,2000);
             point_group.ParseTextFile ("../../airport_locations.tsv", 8000);
+        }
+
+        public event AddToPlaylistEvent OnAddToPlaylist {
+            add { add_to_playlist_event += value; }
+            remove { add_to_playlist_event -= value;}
+        }
+
+        public delegate void AddToPlaylistEvent (Object source, AddToPlaylistEventArgs args);
+
+        private AddToPlaylistEvent add_to_playlist_event;
+
+        public struct AddToPlaylistEventArgs
+        {
+            public List<int> SongIDs {
+                get;
+                private set;
+            }
+
+            public AddToPlaylistEventArgs (List<int> ids)
+            {
+                SongIDs = ids;
+            }
         }
     }
 }

@@ -43,10 +43,16 @@ namespace NoNoise.Visualization
             Parent = null;
             LeftChild = null;
             RightChild = null;
-            Selected = false;
+            IsSelected = false;
+            IsRemoved = false;
         }
 
-        public bool Selected {
+        public bool IsRemoved {
+            get;
+            private set;
+        }
+
+        public bool IsSelected {
             get;
             set;
         }
@@ -101,16 +107,80 @@ namespace NoNoise.Visualization
             private set;
         }
 
+        public void UnmarkRemoved ()
+        {
+            IsRemoved = false;
+
+            if (LeftChild != null)
+                LeftChild.UnmarkRemoved ();
+
+            if (RightChild != null)
+                RightChild.UnmarkRemoved ();
+        }
+
+        public void MarkRemovedifSelected ()
+        {
+            if (IsSelected)
+                IsRemoved = true;
+
+
+            if (LeftChild != null)
+                LeftChild.MarkRemovedifSelected ();
+
+            if (RightChild != null)
+                RightChild.MarkRemovedifSelected ();
+        }
+        private void SelectUpwards ()
+        {
+            if (LeftChild == null || RightChild == null || Parent == null)
+                return;
+
+            if (Parent.IsSelected)
+                return;
+
+            if (LeftChild.IsSelected && RightChild.IsSelected) {
+                IsSelected = true;
+                Parent.SelectUpwards ();
+            }
+
+        }
+
+        public void MarkAsSelected ()
+        {
+            IsSelected = true;
+
+            if (LeftChild != null)
+                LeftChild.MarkAsSelected ();
+
+            if (RightChild != null)
+                RightChild.MarkAsSelected ();
+
+            if (Parent != null)
+                Parent.SelectUpwards ();
+        }
+
+        public void ClearSelection ()
+        {
+            IsSelected = false;
+
+            if (LeftChild != null)
+                LeftChild.ClearSelection ();
+
+            if (RightChild != null)
+                RightChild.ClearSelection ();
+        }
         public List<int> GetAllIDs ()
         {
             List<int> ids = new List<int> ();
-            if (LeftChild == null)
+            if (LeftChild == null && !IsRemoved)
                 ids.Add (ID);
 
             if (LeftChild != null)
-                ids.AddRange (LeftChild.GetAllIDs ());
+                if (!LeftChild.IsRemoved)
+                    ids.AddRange (LeftChild.GetAllIDs ());
             if (RightChild != null)
-                ids.AddRange (RightChild.GetAllIDs ());
+                if (!RightChild.IsRemoved)
+                    ids.AddRange (RightChild.GetAllIDs ());
 
             return ids;
         }
