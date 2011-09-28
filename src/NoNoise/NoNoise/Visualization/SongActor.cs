@@ -40,7 +40,7 @@ namespace NoNoise.Visualization
         static private uint circle_size = 50;
         static private int max_prototypes = 4;
 
-        public enum Color {Green, Red, Blue, White, NoColor};
+        public enum Color {Green, Red, LightRed, White, NoColor};
 
 
         static public uint CircleSize {
@@ -79,26 +79,29 @@ namespace NoNoise.Visualization
             switch (color_index)
             {
             case (int)Color.Green:
-                UpdatePrototype (actor,0.0, 1.0, 0.0);
+                UpdatePrototype (actor,0.0, 1.0, 0.0, 0);
                 break;
 
             case (int)Color.Red:
-                UpdatePrototype (actor,1.0, 0.0, 0.0);
+                UpdatePrototype (actor,1.0, 0.0, 0.0, 0);
                 break;
 
-            case (int)Color.Blue:
-                UpdatePrototype (actor,0.0, 0.0, 1.0);
+            case (int)Color.LightRed:
+                UpdatePrototype (actor,1.0, 0.2, 0.0, 0.2);
                 break;
 
             case (int)Color.White:
-                UpdatePrototype (actor,1.0, 1.0, 1.0);
+                UpdatePrototype (actor,1.0, 1.0, 1.0, 0);
                 break;
             }
         }
 
-        static private void UpdatePrototype (CairoTexture actor, double r, double g, double b)
+        static private void UpdatePrototype (CairoTexture actor, double r, double g, double b, double a)
         {
-            UpdatePrototype (actor,r,g,b,0.55,0,0,0,0);
+            if ( a == 0)
+                a = 0.55;
+
+            UpdatePrototype (actor,r,g,b,a,0,0,0,0);
         }
 
         /// <summary>

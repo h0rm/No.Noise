@@ -242,11 +242,14 @@ namespace NoNoise.Visualization
             stage.MotionEvent += HandleMotionEvent;
             stage.AllocationChanged += HandleWindowSizeChanged;
 
+            int count = 0;
             foreach (SongActor a in actor_manager.Actors) {
                 a.EnterEvent += delegate(object o, EnterEventArgs args) {
                     SongActor sender = o as SongActor;
                     if (sender.Owner != null)
                         FireSongEnter (new SongHighlightArgs (sender.Owner.GetAllIDs ()));
+                    else
+                        Hyena.Log.Information ("No owner ");
                 };
 
 
@@ -255,8 +258,10 @@ namespace NoNoise.Visualization
                     if (sender.Owner != null)
                         FireSongLeave (new SongHighlightArgs (sender.Owner.GetAllIDs ()));
                 };
+                count ++;
             }
 
+            Hyena.Log.Information ("Event count = " + count);
         }
 
 
@@ -500,14 +505,19 @@ namespace NoNoise.Visualization
 
         private void AddClusteringAnimation (SongPoint p)
         {
-            if (p.Parent == null)
+            if (p.Parent == null) {
+                Hyena.Log.Information ("No parent" + p.ID);
                 return;
+            }
 
-            if (p.Parent.RightChild == null)
-                return;
+//            if (p.Parent.RightChild == null)
+//                return;
 
-            if (!p.Parent.RightChild.Equals (p))
+            if (p.Parent.MainChild.Equals (p)) {
+//                Hyena.Log.Information ("Not mainchild" + p.ID);
                 return;
+            }
+
 
             if (clustering_animation_behave.IsApplied (p.Actor))
                 return;
@@ -611,7 +621,7 @@ namespace NoNoise.Visualization
                 if (p.Actor != null)
                     continue;
 
-                if (p.IsRemoved || p.IsHidden)
+                if (p.IsRemoved)
                     continue;
 
                 p.Actor = actor_manager.AllocateAtPosition (p);

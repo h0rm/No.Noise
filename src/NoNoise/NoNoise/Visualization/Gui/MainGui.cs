@@ -121,6 +121,7 @@ namespace NoNoise.Visualization.Gui
             this.Add (infobox);
 //            InitDebug ();
 
+            this.Reactive = false;
             InitHandler ();
         }
 

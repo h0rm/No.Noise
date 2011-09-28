@@ -74,6 +74,10 @@ namespace NoNoise.Visualization
                 gui.UpdateInfoText (songs);
             };
 
+            point_group.SongLeft += delegate {
+                gui.UpdateInfoText (new List<String> ());            
+            };
+
             gui.DebugButtonPressedEvent += HandleGuiDebugButtonPressedEvent;
         }
 
