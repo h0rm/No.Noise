@@ -133,6 +133,12 @@ namespace NoNoise.Visualization
             point_group.ParseTextFile ("../../airport_locations.tsv", 8000);
         }
 
+        public void UpdateHiddenSongs (List<int> not_hidden)
+        {
+            point_group.UpdateHiddenSongs (not_hidden);
+            Hyena.Log.Information ("Update hidden songs. Not hidden: " + not_hidden.Count);
+        }
+
         public event AddToPlaylistEvent OnAddToPlaylist {
             add { add_to_playlist_event += value; }
             remove { add_to_playlist_event -= value;}
