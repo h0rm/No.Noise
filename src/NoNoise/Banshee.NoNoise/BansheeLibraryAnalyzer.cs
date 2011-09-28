@@ -53,7 +53,6 @@ namespace Banshee.NoNoise
 
         #region Members
         private Banshee.Library.MusicLibrarySource ml;
-//        private Banshee.Collection.TrackListModel tm;
         private SortedDictionary<int, TrackInfo> library;
         private NoNoiseSourceContents sc;
         private NoNoiseDBHandler db;
@@ -93,20 +92,9 @@ namespace Banshee.NoNoise
             get { return analyzing_lib; }
         }
 
-//        public TrackListModel TrackModel {
-//            get { return tm; }
-//            set { tm = value;
-//            Hyena.Log.Debug ("tm set, cnt: " + tm.Count); }
-//        }
-
         private BansheeLibraryAnalyzer ()
         {
-            ml = ServiceManager.SourceManager.MusicLibrary;     // used to be null on startup
-//            Hyena.Log.Debug ("NoNoise - ml count: " + ml.TrackModel.Count);
-//            if (ml.TrackModel.Count == 0) {
-//                Hyena.Log.Debug ("NoNoise - tm count 0, adding handler");
-//                ServiceManager.SourceManager.SourceAdded += OnSourceAdded;
-//            }
+            ml = ServiceManager.SourceManager.MusicLibrary;
             library = ConvertMusicLibrary ();
 
             scan_synch = new object ();
@@ -138,8 +126,8 @@ namespace Banshee.NoNoise
             ml.TracksChanged += HandleTracksChanged;
 
             if (STORE_ENTIRE_MATRIX)
-                PcaForMusicLibrary ();
-//                new Thread (new ThreadStart (PcaForMusicLibrary)).Start ();
+//                PcaForMusicLibrary ();
+                new Thread (new ThreadStart (PcaForMusicLibrary)).Start ();
             else
 //                PcaForMusicLibraryVectorEdition ();
                 new Thread (new ThreadStart (PcaForMusicLibraryVectorEdition)).Start ();
@@ -206,6 +194,9 @@ namespace Banshee.NoNoise
                 lib_scanned = (cnt == ml.TrackModel.Count);
             }
             Hyena.Log.Debug ("NoNoise/BLA - lib scanned: " + lib_scanned);
+
+            if (cnt > ml.TrackModel.Count)      // FIXME should be in both checks, but who knows what happens
+                new Thread (new ThreadStart (RemoveDeletedTracks)).Start (); // when they both run at the same time
 
             return lib_scanned;
         }
@@ -700,6 +691,7 @@ namespace Banshee.NoNoise
                 foreach (int id in mfccMap.Keys) {
                     lock (lib_synch) {
                         if (!library.ContainsKey (id)) {
+                            Hyena.Log.DebugFormat ("NoNoise/BLA - removing bid {0} from MIRData...", id);
                             try {
                                 lock (db_synch) {
                                     // remove from MIRData
@@ -715,6 +707,7 @@ namespace Banshee.NoNoise
                 foreach (int id in vectorMap.Keys) {
                     lock (lib_synch) {
                         if (!library.ContainsKey (id)) {
+                            Hyena.Log.DebugFormat ("NoNoise/BLA - removing bid {0} from MIRData...", id);
                             try {
                                 lock (db_synch) {
                                     // remove from MIRData
@@ -731,6 +724,7 @@ namespace Banshee.NoNoise
             foreach (int id in trackMap.Keys) {
                 lock (lib_synch) {
                     if (!library.ContainsKey (id)) {
+                        Hyena.Log.DebugFormat ("NoNoise/BLA - removing bid {0} from TrackData...", id);
                         try {
                             lock (db_synch) {
                                 // remove from TrackData
@@ -746,6 +740,7 @@ namespace Banshee.NoNoise
             foreach (int id in pcaMap.Keys) {
                 lock (lib_synch) {
                     if (!library.ContainsKey (id)) {
+                        Hyena.Log.DebugFormat ("NoNoise/BLA - removing bid {0} from PCAData...", id);
                         try {
                             lock (db_synch) {
                                 // remove from PCAData
@@ -766,8 +761,33 @@ namespace Banshee.NoNoise
                 int bid = ml.GetTrackIdForUri (ti.Uri);
 
                 lock (lib_synch) {
-                    if (!library.ContainsKey (bid))
+                    if (!library.ContainsKey (bid)) {
+                        Hyena.Log.DebugFormat ("NoNoise/BLA - adding bid {0} to library...", bid);
                         library.Add (bid, ti);
+                    }
+                }
+            }
+
+            SortedList<int, int> ids = new SortedList<int, int> (ml.TrackModel.Count);
+            for (int i = 0; i < ml.TrackModel.Count; i++) {
+                int bid = ml.GetTrackIdForUri (ml.TrackModel [i].Uri);
+                ids.Add (bid, bid);
+            }
+
+            List<int> rem = new List<int> ();
+
+            lock (lib_synch) {
+                foreach (int bid in library.Keys) {
+                    if (!ids.ContainsKey (bid)) {
+                        Hyena.Log.DebugFormat ("NoNoise/BLA - removing track {0} from library...", bid);
+                        rem.Add (bid);
+                    }
+                }
+            }
+
+            foreach (int r in rem) {
+                lock (lib_synch) {
+                    library.Remove (r);
                 }
             }
 
@@ -785,28 +805,32 @@ namespace Banshee.NoNoise
         /// </param>
         private void HandleTracksAdded (Source sender, TrackEventArgs args)
         {
-            Hyena.Log.Debug ("NoNoise/BLA - tracks added (unhandled)");
+            Hyena.Log.Debug ("NoNoise/BLA - tracks added (untested)");
 
-            UpdateMusicLibrary ();
-
-            if (analyzing_lib) {
-                // TODO check for missed files after the scan finished...
-                lock (scan_synch) {
-                    added_while_scanning = true;
+            try {
+                UpdateMusicLibrary ();
+    
+                if (analyzing_lib) {
+                    // TODO check for missed files after the scan finished...
+                    lock (scan_synch) {
+                        added_while_scanning = true;
+                    }
+    
+                    return;
                 }
-
-                return;
-            }
-
-            CheckLibScanned ();
-            CheckDataUpToDate ();
-
-            if (!data_up_to_date) {
-                if (STORE_ENTIRE_MATRIX)
-                    new Thread (new ThreadStart (PcaForMusicLibrary)).Start ();
-                else
-                    new Thread (new ThreadStart (PcaForMusicLibraryVectorEdition)).Start ();
-                new Thread (new ThreadStart (WriteTrackInfosToDB)).Start ();
+    
+                CheckLibScanned ();
+                CheckDataUpToDate ();
+    
+                if (!data_up_to_date) {
+                    if (STORE_ENTIRE_MATRIX)
+                        new Thread (new ThreadStart (PcaForMusicLibrary)).Start ();
+                    else
+                        new Thread (new ThreadStart (PcaForMusicLibraryVectorEdition)).Start ();
+                    new Thread (new ThreadStart (WriteTrackInfosToDB)).Start ();
+                }
+            } catch (Exception e) {
+                Hyena.Log.Exception ("NoNoise/BLA - tracks added handler exception", e);
             }
         }
 
@@ -821,10 +845,15 @@ namespace Banshee.NoNoise
         /// </param>
         private void HandleTracksDeleted (Source sender, TrackEventArgs args)
         {
-            Hyena.Log.Debug ("NoNoise/BLA - tracks deleted (unhandled)");
+            Hyena.Log.Debug ("NoNoise/BLA - tracks deleted (untested)");
 
             if (!CheckDataUpToDate ()) {
-                RemoveDeletedTracks ();     // TODO in new thread
+                try {
+                    UpdateMusicLibrary ();
+                    RemoveDeletedTracks ();     // TODO in new thread
+                } catch (Exception e) {
+                    Hyena.Log.Exception ("NoNoise/BLA - tracks deleted handler exception", e);
+                }
             }
         }
 
