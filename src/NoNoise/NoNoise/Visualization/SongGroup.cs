@@ -335,6 +335,11 @@ namespace NoNoise.Visualization
             return ret;
         }
 
+        public void UpdateHiddenSongs (List<int> not_hidden)
+        {
+            point_manager.MarkHidded (not_hidden);
+            UpdateView ();
+        }
 
         /// <summary>
         /// This function is used to zoom in or out.
@@ -606,7 +611,7 @@ namespace NoNoise.Visualization
                 if (p.Actor != null)
                     continue;
 
-                if (p.IsRemoved)
+                if (p.IsRemoved || p.IsHidden)
                     continue;
 
                 p.Actor = actor_manager.AllocateAtPosition (p);

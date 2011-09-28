@@ -45,8 +45,13 @@ namespace NoNoise.Visualization
             RightChild = null;
             IsSelected = false;
             IsRemoved = false;
+            IsHidden = false;
         }
 
+        public bool IsHidden {
+            get;
+            private set;
+        }
         public bool IsRemoved {
             get;
             private set;
@@ -107,6 +112,54 @@ namespace NoNoise.Visualization
             private set;
         }
 
+        public void MarkHidden ()
+        {
+
+            IsHidden = true;
+
+            if (LeftChild != null)
+                LeftChild.MarkHidden ();
+
+            if (RightChild != null)
+                RightChild.MarkHidden ();
+        }
+
+        public void MarkShown ()
+        {
+            IsHidden = false;
+
+            Parent.MarkShownUpwards ();
+        }
+
+        private void MarkShownUpwards ()
+        {
+            if (Parent == null)
+                return;
+
+             if (!Parent.IsHidden)
+                return;
+
+            if (LeftChild == null && RightChild == null)
+                return;
+
+            if (LeftChild == null && !RightChild.IsHidden) {
+                IsHidden = false;
+                Parent.MarkShownUpwards ();
+                return;
+            }
+
+            if (RightChild == null && !LeftChild.IsHidden) {
+                IsHidden = false;
+                Parent.MarkShownUpwards ();
+                return;
+            }
+
+            if (!LeftChild.IsSelected || !RightChild.IsHidden) {
+                IsHidden = false;
+                Parent.MarkShownUpwards ();
+            }
+        }
+
         public void UnmarkRemoved ()
         {
             IsRemoved = false;
@@ -130,19 +183,34 @@ namespace NoNoise.Visualization
             if (RightChild != null)
                 RightChild.MarkRemovedifSelected ();
         }
+
         private void SelectUpwards ()
         {
-            if (LeftChild == null || RightChild == null || Parent == null)
+            if (Parent == null)
                 return;
 
-            if (Parent.IsSelected)
+             if (Parent.IsSelected)
                 return;
+
+            if (LeftChild == null && RightChild == null)
+                return;
+
+            if (LeftChild == null && RightChild.IsSelected) {
+                IsSelected = true;
+                Parent.SelectUpwards ();
+                return;
+            }
+
+            if (RightChild == null && LeftChild.IsSelected) {
+                IsSelected = true;
+                Parent.SelectUpwards ();
+                return;
+            }
 
             if (LeftChild.IsSelected && RightChild.IsSelected) {
                 IsSelected = true;
                 Parent.SelectUpwards ();
             }
-
         }
 
         public void MarkAsSelected ()

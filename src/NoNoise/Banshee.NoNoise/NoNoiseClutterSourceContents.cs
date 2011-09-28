@@ -24,14 +24,13 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 using System;
+using System.Collections.Generic;
 using NoNoise.Visualization.Util;
 using NoNoise.Visualization;
 using Banshee.Sources.Gui;
 using Banshee.Sources;
 using Gtk;
 using Banshee.Library;
-using Clutter;
-using GLib;
 using Banshee.ServiceStack;
 using Banshee.Collection;
 using Banshee.Collection.Database;
@@ -77,9 +76,9 @@ namespace Banshee.NoNoise
             view.OnAddToPlaylist += HandleViewOnAddToPlaylist;
 
             Banshee.ServiceStack.Application.ClientStarted += delegate {
-                Threads.Enter ();
+                Clutter.Threads.Enter ();
                 view.FinishedInit ();
-                Threads.Leave ();
+                Clutter.Threads.Leave ();
             };
 
         }
@@ -108,6 +107,9 @@ namespace Banshee.NoNoise
 
             foreach (TrackInfo t in trackmodel.TrackModel.SelectedItems) {
                 DatabaseTrackInfo track_info = (t as DatabaseTrackInfo);
+
+                if (track_info == null)
+                    continue;
 
                 if (!args.SongIDs.Contains (track_info.TrackId)) {
 
@@ -143,7 +145,44 @@ namespace Banshee.NoNoise
                 return true;
 
             this.source = source as MusicLibrarySource;
+
+            this.source.TrackModel.Reloaded += delegate {
+                UpdateView ();
+            };
             return true;
+        }
+
+        void UpdateView ()
+        {
+
+            ITrackModelSource trackmodel = (ITrackModelSource)source;
+
+            trackmodel.TrackModel.Selection.SelectAll ();
+
+            Hyena.Log.Information ("Count= "+trackmodel.TrackModel.Count);
+
+            List<int> lst = new List<int> ();
+
+            foreach (TrackInfo t in trackmodel.TrackModel.SelectedItems) {
+                if (t == null)
+                    continue;
+                
+                DatabaseTrackInfo track_info = (t as DatabaseTrackInfo);
+
+                lst.Add (track_info.TrackId);
+            }
+
+            view.UpdateHiddenSongs (lst);
+        }
+
+        void HandleSourcehandleTracksDeleted (Source sender, TrackEventArgs args)
+        {
+            UpdateView ();
+        }
+
+        void HandleSourcehandleTracksAdded (Source sender, TrackEventArgs args)
+        {
+            UpdateView ();
         }
 
         public void Dispose ()

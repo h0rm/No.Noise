@@ -35,6 +35,7 @@ namespace NoNoise.Visualization
         private List<QuadTree<SongPoint>> tree_list;
         private const int min_points = 400;
         private int level = 0;
+        private Dictionary<int,SongPoint> dict;
 
         public double Width {
             get;
@@ -81,6 +82,7 @@ namespace NoNoise.Visualization
             Height = height;
 
             tree_list = new List<QuadTree<SongPoint>> ();
+            dict = new Dictionary<int, SongPoint> ();
 
             tree_list.Add (new QuadTree<SongPoint> (x, y, width, height));
         }
@@ -109,13 +111,22 @@ namespace NoNoise.Visualization
             Hyena.Log.Information ("Max clustering level " + max_clustering_level);
         }
 
+        public SongPoint GetPoint (int id)
+        {
+            if (!dict.ContainsKey(id))
+                return null;
+
+            return dict[id];
+        }
         public List<SongPoint> Points {
             get { return tree_list[level].GetAllObjects (); }
         }
 
         public void Add (double x, double y, int id)
         {
-            tree_list[0].Add (new SongPoint (x, y, id));
+            SongPoint point = new SongPoint (x, y, id);
+            tree_list[0].Add (point);
+            dict.Add (id,point);
         }
 
         public List<SongPoint> GetPointsInWindow (double x, double y, double width, double height)
@@ -182,6 +193,17 @@ namespace NoNoise.Visualization
             }
 
             return ret;
+        }
+
+        public void MarkHidded (List<int> not_hidden)
+        {
+            foreach (SongPoint p in tree_list[max_clustering_level].GetAllObjects())
+                p.MarkHidden ();
+
+            foreach (int i in not_hidden) {
+                if (dict.ContainsKey (i))
+                    dict[i].MarkShown ();
+            }
         }
     }
 }
