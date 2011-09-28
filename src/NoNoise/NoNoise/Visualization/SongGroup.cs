@@ -320,6 +320,21 @@ namespace NoNoise.Visualization
             UpdateView ();
         }
 
+        public List<int> GetSelectedSongIDs ()
+        {
+            List<SongPoint> selected = point_manager.GetSelected ();
+
+//            if (selected.Count == 0)
+//                return null;
+
+            List<int> ret = new List<int> (selected.Count);
+
+            foreach (SongPoint p in selected)
+                ret.Add (p.ID);
+
+            return ret;
+        }
+
 
         /// <summary>
         /// This function is used to zoom in or out.

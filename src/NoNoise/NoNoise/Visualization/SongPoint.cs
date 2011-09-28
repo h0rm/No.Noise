@@ -43,7 +43,7 @@ namespace NoNoise.Visualization
             Parent = null;
             LeftChild = null;
             RightChild = null;
-            Selected = false;
+            IsSelected = false;
             IsRemoved = false;
         }
 
@@ -52,7 +52,7 @@ namespace NoNoise.Visualization
             private set;
         }
 
-        public bool Selected {
+        public bool IsSelected {
             get;
             set;
         }
@@ -120,7 +120,7 @@ namespace NoNoise.Visualization
 
         public void MarkRemovedifSelected ()
         {
-            if (Selected)
+            if (IsSelected)
                 IsRemoved = true;
 
 
@@ -135,11 +135,11 @@ namespace NoNoise.Visualization
             if (LeftChild == null || RightChild == null || Parent == null)
                 return;
 
-            if (Parent.Selected)
+            if (Parent.IsSelected)
                 return;
 
-            if (LeftChild.Selected && RightChild.Selected) {
-                Selected = true;
+            if (LeftChild.IsSelected && RightChild.IsSelected) {
+                IsSelected = true;
                 Parent.SelectUpwards ();
             }
 
@@ -147,7 +147,7 @@ namespace NoNoise.Visualization
 
         public void MarkAsSelected ()
         {
-            Selected = true;
+            IsSelected = true;
 
             if (LeftChild != null)
                 LeftChild.MarkAsSelected ();
@@ -161,7 +161,7 @@ namespace NoNoise.Visualization
 
         public void ClearSelection ()
         {
-            Selected = false;
+            IsSelected = false;
 
             if (LeftChild != null)
                 LeftChild.ClearSelection ();

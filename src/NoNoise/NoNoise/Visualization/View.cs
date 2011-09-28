@@ -99,8 +99,19 @@ namespace NoNoise.Visualization
             case MainGui.ButtonClickedArgs.Button.Reset:
                 point_group.ResetRemovedPoints ();
                 break;
+
+            case MainGui.ButtonClickedArgs.Button.Playlist:
+                GeneratePlaylist (point_group.GetSelectedSongIDs ());
+                break;
             }
         }
+
+        public void GeneratePlaylist (List<int> list)
+        {
+            if (add_to_playlist_event != null)
+                    add_to_playlist_event (this, new AddToPlaylistEventArgs (list));
+        }
+
         public void FinishedInit ()
         {
             point_group.UpdateClipping ();
@@ -120,6 +131,28 @@ namespace NoNoise.Visualization
         {
             //point_group.TestGenerateCircles(5000,5000,2000);
             point_group.ParseTextFile ("../../airport_locations.tsv", 8000);
+        }
+
+        public event AddToPlaylistEvent OnAddToPlaylist {
+            add { add_to_playlist_event += value; }
+            remove { add_to_playlist_event -= value;}
+        }
+
+        public delegate void AddToPlaylistEvent (Object source, AddToPlaylistEventArgs args);
+
+        private AddToPlaylistEvent add_to_playlist_event;
+
+        public struct AddToPlaylistEventArgs
+        {
+            public List<int> SongIDs {
+                get;
+                private set;
+            }
+
+            public AddToPlaylistEventArgs (List<int> ids)
+            {
+                SongIDs = ids;
+            }
         }
     }
 }

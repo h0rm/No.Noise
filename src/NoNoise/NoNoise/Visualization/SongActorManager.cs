@@ -81,7 +81,7 @@ namespace NoNoise.Visualization
                 return null;
 
             SongActor actor = free_actors.Pop ();
-            if (!p.Selected) {
+            if (!p.IsSelected) {
                 actor.SetPrototypeByColor (SongActor.Color.White);
             } else {
                 actor.SetPrototypeByColor (SongActor.Color.Red);
