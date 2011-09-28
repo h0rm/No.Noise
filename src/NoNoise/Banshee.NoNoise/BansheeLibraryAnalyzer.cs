@@ -28,6 +28,7 @@ using System.Collections.Generic;
 using System.Threading;
 
 using Banshee.Collection;
+using Banshee.Collection.Database;
 using Banshee.ServiceStack;
 using Banshee.Sources;
 
@@ -771,21 +772,24 @@ namespace Banshee.NoNoise
 
         private void UpdateMusicLibrary ()
         {
-            for (int i = 0; i < ml.TrackModel.Count; i++) {
-                TrackInfo ti = ml.TrackModel [i];
-                int bid = ml.GetTrackIdForUri (ti.Uri);
+//            for (int i = 0; i < ml.TrackModel.Count; i++) {
+            foreach (DatabaseTrackInfo dti in DatabaseTrackInfo.Provider.FetchAll ()) {
+//                TrackInfo ti = ml.TrackModel [i];
+//                int bid = ml.GetTrackIdForUri (ti.Uri);
+                int bid = dti.TrackId;
 
                 lock (lib_synch) {
                     if (!library.ContainsKey (bid)) {
                         Hyena.Log.DebugFormat ("NoNoise/BLA - adding bid {0} to library...", bid);
-                        library.Add (bid, ti);
+                        library.Add (bid, dti as TrackInfo);
                     }
                 }
             }
 
             SortedList<int, int> ids = new SortedList<int, int> (ml.TrackModel.Count);
-            for (int i = 0; i < ml.TrackModel.Count; i++) {
-                int bid = ml.GetTrackIdForUri (ml.TrackModel [i].Uri);
+//            for (int i = 0; i < ml.TrackModel.Count; i++) {
+            foreach (DatabaseTrackInfo dti in DatabaseTrackInfo.Provider.FetchAll ()) {
+                int bid = dti.TrackId;
                 ids.Add (bid, bid);
             }
 
@@ -823,7 +827,7 @@ namespace Banshee.NoNoise
             Hyena.Log.Debug ("NoNoise/BLA - tracks added (untested)");
 
             try {
-//                UpdateMusicLibrary ();
+                UpdateMusicLibrary ();
     
                 if (analyzing_lib) {
                     // TODO check for missed files after the scan finished...
@@ -864,7 +868,7 @@ namespace Banshee.NoNoise
 
             if (!CheckDataUpToDate ()) {
                 try {
-//                    UpdateMusicLibrary ();
+                    UpdateMusicLibrary ();
                     RemoveDeletedTracks ();     // TODO in new thread
                 } catch (Exception e) {
                     Hyena.Log.Exception ("NoNoise/BLA - tracks deleted handler exception", e);

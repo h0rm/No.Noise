@@ -812,9 +812,9 @@ namespace NoNoise.Data
                 while (reader.Read ()) {
                     try {
                         int bid = reader.GetInt32 (0);
-                        string artist = (string) reader.GetValue (1);// ?? "";
-                        string title = (string) reader.GetValue (2);// ?? "";
-                        string album = (string) reader.GetValue (3);// ?? "";
+                        string artist = (reader.GetValue (1) as string ?? "");
+                        string title = (reader.GetValue (2) as string ?? "");
+                        string album = (reader.GetValue (3) as string ?? "");
                         int duration = reader.GetInt32 (4);
                         TrackData td = new TrackData (bid, artist, title, album, duration);
                         ret.Add (bid, td);
