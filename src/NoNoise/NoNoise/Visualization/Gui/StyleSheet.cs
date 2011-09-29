@@ -87,6 +87,11 @@ namespace NoNoise.Visualization.Gui
             set;
         }
 
+        public Font Subtitle {
+            get;
+            set;
+        }
+
         public Color Border {
             get;
             set;
@@ -98,7 +103,7 @@ namespace NoNoise.Visualization.Gui
         }
 
         public StyleSheet (Color foreground, Color background,
-                           Font standard, Font highlighted, Color border, double border_size)
+                           Font standard, Font highlighted, Font subtitle, Color border, double border_size)
         {
             Foreground = foreground;
             Background = background;

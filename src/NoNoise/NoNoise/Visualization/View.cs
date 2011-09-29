@@ -36,6 +36,10 @@ namespace NoNoise.Visualization
         SongGroup point_group;
         MainGui gui;
         Banshee.NoNoise.BansheeLibraryAnalyzer analyzer;
+        Dictionary<int, NoNoise.Data.TrackData> info;
+
+        object enter_counter_lock = new Object ();
+        int enter_counter = 0;
 
         public View () : base ()
         {
@@ -67,15 +71,23 @@ namespace NoNoise.Visualization
 
             point_group.SongEntered += delegate (object source, SongHighlightArgs args) {
                 List<String> songs = new List<String> ();
+                List<String> artists = new List<String> ();
 
-                foreach (int i in args.SongIDs)
-                    songs.Add (i.ToString());
+                foreach (int i in args.SongIDs) {
+                    if (!info.ContainsKey (i))
+                        continue;
 
-                gui.UpdateInfoText (songs);
+//                    Hyena.Log.Information (String.Format ("{0} - {1}",info[i].Title, info[i].Artist));
+                    songs.Add (info[i].Title);
+                    artists.Add (info[i].Artist);
+                }
+
+                gui.UpdateInfoText (songs, artists);
             };
 
             point_group.SongLeft += delegate {
-                gui.UpdateInfoText (new List<String> ());            
+
+                gui.ClearInfoText ();
             };
 
             gui.DebugButtonPressedEvent += HandleGuiDebugButtonPressedEvent;
@@ -132,7 +144,15 @@ namespace NoNoise.Visualization
                 analyzer = BansheeLibraryAnalyzer.Init (null);  // TODO this should not happen (missing callback)
             else
                 analyzer = BansheeLibraryAnalyzer.Singleton;
-            point_group.LoadPcaData (analyzer.PcaCoordinates);
+
+
+            List<NoNoise.Data.DataEntry> data = analyzer.PcaCoordinates;
+            info = new Dictionary<int, NoNoise.Data.TrackData> (data.Count);
+
+            foreach (NoNoise.Data.DataEntry d in data)
+                info.Add (d.ID, d.Value);
+
+            point_group.LoadPcaData (data);
         }
 
         public void TestGenerateData ()

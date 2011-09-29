@@ -106,6 +106,7 @@ namespace NoNoise.Visualization
         private bool selection_toggle = false;
 
         private bool mouse_button_locked = false;
+
         #endregion
 
         #region Getter + Setter

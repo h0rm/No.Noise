@@ -27,6 +27,7 @@ using System;
 using Clutter;
 using System.Collections.Generic;
 using Cairo;
+using System.Linq;
 
 namespace NoNoise.Visualization.Gui
 {
@@ -55,12 +56,19 @@ namespace NoNoise.Visualization.Gui
             info_strings = new List<string> ();
             texture = new CairoTexture (width, height);
             texture.SetSize (width, height);
-            GenerateBackground ();
+//            GenerateBackground ();
             Add (texture);
 //            Update (new List<String>(new string[]{"Song 1", "Song 2", "blabal"}));
         }
 
-        private void GenerateBackground ()
+        public void Clear ()
+        {
+            texture.Clear ();
+            Cairo.Context cr = texture.Create ();
+            ((IDisposable) cr.Target).Dispose ();
+            ((IDisposable) cr).Dispose ();
+        }
+        private void GenerateBackground (int height)
         {
             double x = 5+0.5, y = 5+0.5;
             double w = Width - 10;
@@ -69,6 +77,13 @@ namespace NoNoise.Visualization.Gui
 //            Hyena.Log.Information ("Infobox background");
             texture.Clear ();
             Cairo.Context cr = texture.Create ();
+
+            cr.Color = style.Highlighted.Color;
+            cr.SelectFontFace (style.Highlighted.Family, style.Highlighted.Slant, style.Highlighted.Weight);
+            cr.SetFontSize (style.Highlighted.Size);
+            TextExtents te_title = cr.TextExtents ("Song List");
+
+            h = height * (2 * te_title.Height + te_title.Height /2)+30;
 
             double r = 10;
 
@@ -92,32 +107,101 @@ namespace NoNoise.Visualization.Gui
             ((IDisposable) cr).Dispose ();
         }
 
-        public void Update (List<String> lines)
-        {
-            GenerateBackground ();
-            AddText (lines);
+        private class CountedSubtitles {
+            public String Name { get; set; }
+            public int Count { get; set; }
         }
 
-        public void AddText (List<String> lines)
+        public void Update (List<String> titles, List<String> subtitles)
         {
+            List<String> t, s;
+            if (titles.Count > 5) {
+                List<CountedSubtitles> cs = new List<CountedSubtitles> ();
+
+                foreach (String a in subtitles) {
+
+                    if (cs.Find (delegate (CountedSubtitles i) { return i.Name == a; }) == null) {
+
+                        cs.Add (new CountedSubtitles
+                          { Name = a,
+                            Count = subtitles.FindAll (
+                                     delegate (String i) { return i == a; }).Count
+                          });
+                    }
+                }
+
+                var collection = from c in cs
+                                 orderby c.Count descending
+                                 select c;
+
+                t = new List<string> ();
+                s = new List<string> ();
+
+                foreach (CountedSubtitles c in collection) {
+                    t.Add (c.Name);
+                    s.Add (c.Count + " songs");
+                }
+
+            } else {
+                t = titles;
+                s = subtitles;
+            }
+
+            GenerateBackground (t.Count);
+            AddText (t, s);
+        }
+
+        public void AddText (List<String> titles, List<String> subtitles)
+        {
+            if (titles.Count != subtitles.Count)
+                return;
+
             Cairo.Context cr = texture.Create ();
             double x = 5 + 10, y = 5 + 10 ;
 
             cr.Color = style.Highlighted.Color;
             cr.SelectFontFace (style.Highlighted.Family, style.Highlighted.Slant, style.Highlighted.Weight);
             cr.SetFontSize (style.Highlighted.Size);
+            TextExtents te_title;
 
-            TextExtents te = cr.TextExtents ("Song List");
+//            cr.Color = style.Subtitle.Color;
+//            cr.SelectFontFace (style.Subtitle.Family, style.Subtitle.Slant, style.Subtitle.Weight);
+//            cr.SetFontSize (style.Subtitle.Size);
+//
+            TextExtents te_subtitle;
 
-            foreach (String s in lines) {
+            for (int i = 0; i < titles.Count; i++) {
 
-                y += te.Height + te.Height /3;
+                Hyena.Log.Information (String.Format ("{0} - {1}", titles[i], subtitles[i]));
+
+                cr.Color = style.Highlighted.Color;
+                cr.SelectFontFace (style.Highlighted.Family, style.Highlighted.Slant, style.Highlighted.Weight);
+                cr.SetFontSize (style.Highlighted.Size);
+                te_title = cr.TextExtents ("Song List");
+
+                y += te_title.Height + te_title.Height / 2;
                 cr.MoveTo (x, y);
-                cr.ShowText (s);
-//                Hyena.Log.Information ("Line "+ s);
+
+                cr.ShowText (CheckString(titles[i]));
+
+                cr.SetFontSize (10);
+//
+                y += te_title.Height;
+                cr.MoveTo (x,y);
+                cr.ShowText (subtitles[i]);
             }
+
+//            }
             ((IDisposable) cr.Target).Dispose ();
             ((IDisposable) cr).Dispose ();
+        }
+
+        public String CheckString (String s)
+        {
+            if (s.Length > 28) {
+                s = s.Substring (0, 25) + "...";
+            }
+            return s;
         }
 
     }

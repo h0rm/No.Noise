@@ -67,10 +67,14 @@ namespace NoNoise.Visualization.Gui
                                                Cairo.FontSlant.Normal,
                                                Cairo.FontWeight.Normal,
                                                12, new Cairo.Color (0.1, 0.1, 0.1)),
-                                               new Font ("Verdana",
+                                               new Font ("Arial",
                                                Cairo.FontSlant.Normal,
                                                Cairo.FontWeight.Bold,
                                                12, new Cairo.Color (0.1, 0.1, 0.1)),
+                                               new Font ("Verdana",
+                                               Cairo.FontSlant.Normal,
+                                               Cairo.FontWeight.Normal,
+                                               9, new Cairo.Color (0.1, 0.1, 0.1)),
                                                new Cairo.Color (1, 1, 1, 1), 1.0
                                                );
 
@@ -116,7 +120,7 @@ namespace NoNoise.Visualization.Gui
             this.Add (toolbar);
 
             this.Reactive = true;
-            infobox = new InfoBox (style, 150,200);
+            infobox = new InfoBox (style, 200,400);
             infobox.AnchorPointFromGravity = Gravity.NorthEast;
             this.Add (infobox);
 //            InitDebug ();
@@ -174,9 +178,14 @@ namespace NoNoise.Visualization.Gui
             infobox.SetPosition (stage.Width, 0);
         }
 
-        public void UpdateInfoText (List<String> lines)
+        public void UpdateInfoText (List<String> titles, List<String> subtitles)
         {
-            infobox.Update (lines);
+            infobox.Update (titles, subtitles);
+        }
+
+        public void ClearInfoText ()
+        {
+            infobox.Clear ();
         }
 
 
