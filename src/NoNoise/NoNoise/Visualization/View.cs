@@ -87,7 +87,7 @@ namespace NoNoise.Visualization
 
             point_group.SongLeft += delegate {
 
-                gui.ClearInfoText ();
+//                gui.ClearInfoText ();
             };
 
             gui.DebugButtonPressedEvent += HandleGuiDebugButtonPressedEvent;

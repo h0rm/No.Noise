@@ -118,6 +118,7 @@ namespace NoNoise.Visualization.Gui
             if (titles.Count > 5) {
                 List<CountedSubtitles> cs = new List<CountedSubtitles> ();
 
+                // sort
                 foreach (String a in subtitles) {
 
                     if (cs.Find (delegate (CountedSubtitles i) { return i.Name == a; }) == null) {
@@ -137,9 +138,25 @@ namespace NoNoise.Visualization.Gui
                 t = new List<string> ();
                 s = new List<string> ();
 
+                // Show 5 artists with the most songs, and other
+                int count = 0, num_count = 0;
                 foreach (CountedSubtitles c in collection) {
-                    t.Add (c.Name);
-                    s.Add (c.Count + " songs");
+
+                    if (count < 5) {
+                        t.Add (c.Name);
+                        s.Add (c.Count + " songs");
+                    }
+
+                    if (count == 5) {
+                        t.Add ("Other");
+                        s.Add ("");
+                    }
+
+                    if (count >= 5) {
+                        num_count += c.Count;
+                        s[s.Count-1] = num_count + " songs";
+                    }
+                    count ++;
                 }
 
             } else {
@@ -168,7 +185,7 @@ namespace NoNoise.Visualization.Gui
 
             for (int i = 0; i < titles.Count; i++) {
 
-                Hyena.Log.Information (String.Format ("{0} - {1}", titles[i], subtitles[i]));
+//                Hyena.Log.Information (String.Format ("{0} - {1}", titles[i], subtitles[i]));
 
                 cr.Color = style.Highlighted.Color;
                 cr.SelectFontFace (style.Highlighted.Family, style.Highlighted.Slant, style.Highlighted.Weight);
