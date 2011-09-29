@@ -87,6 +87,11 @@ namespace NoNoise.Visualization.Gui
             set;
         }
 
+        public Color Selection {
+            get;
+            set;
+        }
+
         public Font Subtitle {
             get;
             set;
@@ -97,13 +102,19 @@ namespace NoNoise.Visualization.Gui
             set;
         }
 
+        public Color SelectionBoarder {
+            get;
+            set;
+        }
+
         public double BorderSize {
             get;
             set;
         }
 
-        public StyleSheet (Color foreground, Color background,
-                           Font standard, Font highlighted, Font subtitle, Color border, double border_size)
+        public StyleSheet (Color foreground, Color background, Color selection,
+                           Font standard, Font highlighted, Font subtitle,
+                           Color border, Color selection_boarder, double border_size)
         {
             Foreground = foreground;
             Background = background;
@@ -111,6 +122,8 @@ namespace NoNoise.Visualization.Gui
             Highlighted = highlighted;
             Border = border;
             BorderSize = border_size;
+            Selection = selection;
+            SelectionBoarder = selection_boarder;
         }
 
     }

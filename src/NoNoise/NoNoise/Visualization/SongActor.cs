@@ -81,11 +81,11 @@ namespace NoNoise.Visualization
                 break;
 
             case (int)Color.Red:
-                UpdatePrototype (actor,1.0, 0.0, 0.0, 0);
+                UpdatePrototype (actor,1.0, 0.0, 0.0, 0.8);
                 break;
 
             case (int)Color.LightRed:
-                UpdatePrototype (actor,1.0, 0.65, 0.65, 0.55);
+                UpdatePrototype (actor,0.8, 0.1, 0.1, 0.55);
                 break;
 
             case (int)Color.White:

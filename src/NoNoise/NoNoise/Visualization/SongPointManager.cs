@@ -33,7 +33,7 @@ namespace NoNoise.Visualization
     {
         private int max_clustering_level = 8;
         private List<QuadTree<SongPoint>> tree_list;
-        private const int min_points = 2;
+        private const int min_points = 5;
         private int level = 0;
         private Dictionary<int,SongPoint> dict;
 
@@ -168,6 +168,15 @@ namespace NoNoise.Visualization
                 p.MarkRemovedifSelected ();
         }
 
+        public void RemoveInvisibleSelection ()
+        {
+            foreach (SongPoint p in tree_list[0].GetAllObjects()) {
+                if (p.IsSelected && !p.IsVisible)
+                    p.IsSelected = false;
+            }
+
+        }
+
         public void ClearSelection ()
         {
             foreach (SongPoint p in tree_list[0].GetAllObjects())
@@ -185,7 +194,7 @@ namespace NoNoise.Visualization
             List<SongPoint> ret = new List<SongPoint> ();
 
             foreach (SongPoint p in tree_list[0].GetAllObjects ()) {
-                if (p.IsSelected)
+                if (p.IsSelected && p.IsVisible)
                     ret.Add (p);
             }
 

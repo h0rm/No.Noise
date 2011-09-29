@@ -39,6 +39,7 @@ namespace NoNoise.Visualization.Gui
         private CairoTexture debug_out;
 
         private InfoBox infobox;
+        private InfoBox selection_info;
 
         private ZoomButton zoom_button_in;
         private ZoomButton zoom_button_out;
@@ -63,6 +64,7 @@ namespace NoNoise.Visualization.Gui
 
             StyleSheet style = new StyleSheet (new Cairo.Color (0.1, 0.1, 0.1,0.5),
                                                new Cairo.Color (1, 1, 1, 0.9),
+                                               new Cairo.Color (1, 0, 0, 0.9),
                                                new Font ("Arial",
                                                Cairo.FontSlant.Normal,
                                                Cairo.FontWeight.Bold,
@@ -75,13 +77,15 @@ namespace NoNoise.Visualization.Gui
                                                Cairo.FontSlant.Normal,
                                                Cairo.FontWeight.Normal,
                                                9, new Cairo.Color (0.1, 0.1, 0.1)),
-                                               new Cairo.Color (1, 1, 1, 1), 1.0
+                                               new Cairo.Color (1, 1, 1, 1),
+                                               new Cairo.Color (1, 0, 0, 0),
+                                               1.0
                                                );
 
             zoom_button_in = new ZoomButton (style, true);
 
             zoom_button_out = new ZoomButton (style, false);
-            zoom_button_out.SetPosition (0,40);
+            zoom_button_out.SetPosition (0,30);
 
             this.Add (zoom_button_in);
             this.Add (zoom_button_out);
@@ -125,11 +129,17 @@ namespace NoNoise.Visualization.Gui
             this.Add (toolbar);
 
             this.Reactive = true;
-            infobox = new InfoBox (style, 200,400);
+            infobox = new InfoBox (style, 200,400, false);
             infobox.AnchorPointFromGravity = Gravity.NorthEast;
             this.Add (infobox);
-//            InitDebug ();
+            infobox.Reactive = true;
 
+            selection_info = new InfoBox (style, 200, 400, true);
+            selection_info.AnchorPointFromGravity = Gravity.SouthEast;
+            this.Add (selection_info);
+            selection_info.Reactive = true;
+//            selection_info.SetPosition (500,500);
+//            InitDebug ();
             this.Reactive = false;
             InitHandler ();
         }
@@ -159,21 +169,37 @@ namespace NoNoise.Visualization.Gui
             };
 
             zoom_button_in.ButtonPressEvent += delegate(object o, ButtonPressEventArgs args) {
-//                Clutter.EventHelper.Free (args.Event);
-                 if (button_clicked != null)
+
+                if (button_clicked != null)
                     button_clicked (this, new ButtonClickedArgs (ButtonClickedArgs.Button.ZoomIn));
             };
 
-//            delegate {
-//                if (button_clicked != null)
-//                    button_clicked (this, new ButtonClickedArgs (ButtonClickedArgs.Button.ZoomIn));
-//            };
-//
             zoom_button_out.ButtonPressEvent += delegate(object o, ButtonPressEventArgs args) {
-//                Clutter.EventHelper.Free (args.Event);
+
                 if (button_clicked != null)
                     button_clicked (this, new ButtonClickedArgs (ButtonClickedArgs.Button.ZoomOut));
             };
+
+//            infobox.ButtonPressEvent += delegate {
+//
+//                infobox.Mode = infobox.Mode == InfoBox.Size.Expanded
+//                    ? InfoBox.Size.Collapsed : InfoBox.Size.Expanded;
+//
+////                selection_info.Mode = infobox.Mode == InfoBox.Size.Expanded
+////                    ? InfoBox.Size.Collapsed : InfoBox.Size.Expanded;
+//
+////                selection_info.Update ();
+//                infobox.Update ();
+//            };
+
+
+//            infobox.AllocationChanged += HandleInfoboxAllocationChanged;
+
+        }
+
+        void HandleInfoboxAllocationChanged (object o, AllocationChangedArgs args)
+        {
+            selection_info.SetPosition (selection_info.X, infobox.Y + infobox.Height + 10);
         }
 
 
@@ -181,6 +207,8 @@ namespace NoNoise.Visualization.Gui
         {
             toolbar.SetPosition (0.5f+(float)Math.Round (stage.Width/2f-infobox.Width/2f+zoom_button_in.Width), toolbar.Y);
             infobox.SetPosition (stage.Width, 0);
+            selection_info.SetPosition (stage.Width, stage.Height);
+            Hyena.Log.Information ("Stage size x " + stage.X + "x" + stage.Height);
         }
 
         public void UpdateInfoText (List<String> titles, List<String> subtitles)
@@ -188,9 +216,19 @@ namespace NoNoise.Visualization.Gui
             infobox.Update (titles, subtitles);
         }
 
+        public void UpdateSelection (List<String> titles, List<String> subtitles)
+        {
+            selection_info.Update (titles, subtitles);
+        }
+
         public void ClearInfoText ()
         {
             infobox.Clear ();
+        }
+
+        public void ClearInfoSelection ()
+        {
+            selection_info.Clear ();
         }
 
 

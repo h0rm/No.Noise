@@ -66,19 +66,12 @@ namespace NoNoise.Visualization
                 point_group.QueueRelayout ();
             };
 
-            point_group.SongEntered += delegate (object source, SongHighlightArgs args) {
+            point_group.SongEntered += delegate (object source, SongInfoArgs args) {
                 List<String> songs = new List<String> ();
                 List<String> artists = new List<String> ();
 
-                foreach (int i in args.SongIDs) {
-                    if (!info.ContainsKey (i))
-                        continue;
 
-//                    Hyena.Log.Information (String.Format ("{0} - {1}",info[i].Title, info[i].Artist));
-                    songs.Add (info[i].Title == "" ? "Unknown Title" : info[i].Title);
-                    artists.Add (info[i].Artist == "" ? "Unknown Artist" : info[i].Artist);
-                }
-
+                GetSongLists (args, ref songs, ref artists);
                 gui.UpdateInfoText (songs, artists);
             };
 
@@ -87,7 +80,40 @@ namespace NoNoise.Visualization
 //                gui.ClearInfoText ();
             };
 
+            point_group.SongSelected += delegate(object source, SongInfoArgs args) {
+
+                List<String> songs = new List<String> ();
+                List<String> artists = new List<String> ();
+
+                Hyena.Log.Information ("Selected songs: " + args.SongIDs.Count);
+
+                if(args.SongIDs.Count == 0) {
+                    gui.ClearInfoSelection ();
+                } else {
+                    GetSongLists (args, ref songs, ref artists);
+                    gui.UpdateSelection (songs, artists);
+                }
+
+                Hyena.Log.Information ("Songs selected");
+            };
+
+            point_group.SelectionCleared += delegate {
+                Hyena.Log.Information ("Selection cleared");
+                gui.ClearInfoSelection ();
+            };
+
             gui.DebugButtonPressedEvent += HandleGuiDebugButtonPressedEvent;
+        }
+
+        private void GetSongLists (SongInfoArgs args, ref List<String> titles, ref List<String> artists)
+        {
+            foreach (int i in args.SongIDs) {
+                if (!info.ContainsKey (i))
+                    continue;
+
+                titles.Add (info[i].Title == "" ? "Unknown Title" : info[i].Title);
+                artists.Add (info[i].Artist == "" ? "Unknown Artist" : info[i].Artist);
+            }
         }
 
         void HandleGuiButtonClicked (object source, MainGui.ButtonClickedArgs args)

@@ -36,6 +36,17 @@ namespace NoNoise.Visualization.Gui
         private List<String> info_strings;
         private CairoTexture texture;
         private StyleSheet style;
+        private bool selection_info;
+
+        public enum Size {Expanded, Collapsed};
+
+        private Size size_mode;
+        private List<String> title, subtile;
+
+        public Size Mode {
+            get { return size_mode; }
+            set { size_mode = value; }
+        }
 
         public new uint Width{
             get;
@@ -47,11 +58,12 @@ namespace NoNoise.Visualization.Gui
             private set;
 
         }
-        public InfoBox (StyleSheet style, uint width, uint height)
+        public InfoBox (StyleSheet style, uint width, uint height, bool selection)
         {
             Width = width;
             Height = height;
-
+            selection_info = selection;
+            size_mode = InfoBox.Size.Expanded;
             this.style = style;
             info_strings = new List<string> ();
             texture = new CairoTexture (width, height);
@@ -68,6 +80,7 @@ namespace NoNoise.Visualization.Gui
             ((IDisposable) cr.Target).Dispose ();
             ((IDisposable) cr).Dispose ();
         }
+
         private void GenerateBackground (int height)
         {
             double x = 5+0.5, y = 5+0.5;
@@ -96,15 +109,17 @@ namespace NoNoise.Visualization.Gui
 
             cr.ClosePath ();
 
-            cr.Color = style.Background;
+            cr.Color = selection_info ? style.Selection : style.Background;
             cr.FillPreserve ();
 
-            cr.Color = style.Border;
+            cr.Color = selection_info ? style.SelectionBoarder : style.Border;
             cr.LineWidth = style.BorderSize;
             cr.Stroke ();
 
             ((IDisposable) cr.Target).Dispose ();
             ((IDisposable) cr).Dispose ();
+
+            this.SetSize (Width, (float)h+10);
         }
 
         private class CountedSubtitles {
@@ -112,10 +127,17 @@ namespace NoNoise.Visualization.Gui
             public int Count { get; set; }
         }
 
+        public void Update ()
+        {
+            Update (title, subtile);
+        }
         public void Update (List<String> titles, List<String> subtitles)
         {
+            this.title = titles;
+            this.subtile = subtitles;
+
             List<String> t, s;
-            if (titles.Count > 5) {
+            if (titles.Count > (Mode == InfoBox.Size.Expanded ? 5 : 2)) {
                 List<CountedSubtitles> cs = new List<CountedSubtitles> ();
 
                 // sort
@@ -179,7 +201,7 @@ namespace NoNoise.Visualization.Gui
             Cairo.Context cr = texture.Create ();
             double x = 5 + 10, y = 5 + 10 ;
 
-            cr.Color = style.Highlighted.Color;
+            cr.Color = selection_info ? style.Background : style.Highlighted.Color;
             cr.SelectFontFace (style.Highlighted.Family, style.Highlighted.Slant, style.Highlighted.Weight);
             cr.SetFontSize (style.Highlighted.Size);
             TextExtents te_title;
@@ -190,7 +212,7 @@ namespace NoNoise.Visualization.Gui
 
 //                Hyena.Log.Information (String.Format ("{0} - {1}", titles[i], subtitles[i]));
 
-                cr.Color = style.Highlighted.Color;
+//                cr.Color = style.Highlighted.Color;
                 cr.SelectFontFace (style.Highlighted.Family, style.Highlighted.Slant, style.Highlighted.Weight);
                 cr.SetFontSize (style.Highlighted.Size);
                 te_title = cr.TextExtents ("Song List");

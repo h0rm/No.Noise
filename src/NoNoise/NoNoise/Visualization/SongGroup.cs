@@ -35,14 +35,14 @@ using NoNoise.Data;
 
 namespace NoNoise.Visualization
 {
-    public class SongHighlightArgs
+    public class SongInfoArgs
     {
-        public SongHighlightArgs (List<int> song_ids)
+        public SongInfoArgs (List<int> song_ids)
         {
             SongIDs = song_ids;
         }
 
-        public SongHighlightArgs (int id)
+        public SongInfoArgs (int id)
         {
             SongIDs = new List<int> ();
             SongIDs.Add (id);
@@ -58,14 +58,20 @@ namespace NoNoise.Visualization
         }
     }
 
-    public delegate void SongHighlightEvent (Object source, SongHighlightArgs args);
+    public delegate void SongSelectedEvent (Object source, SongInfoArgs args);
+    public delegate void SongHighlightEvent (Object source, SongInfoArgs args);
+    public delegate void SelectionClearedEvent (Object source);
+    public delegate void SongLeaveEvent (Object source);
 
     public class SongGroup: Clutter.Group
     {
 
         #region Member variables
         SongHighlightEvent song_enter;
-        SongHighlightEvent song_leave;
+        SongLeaveEvent song_leave;
+
+        SongSelectedEvent song_selected;
+        SelectionClearedEvent selection_cleared;
 
         private readonly double zoom_level_mult = Math.Sqrt (2);
         private double zoom_level = 1.0;
@@ -115,9 +121,19 @@ namespace NoNoise.Visualization
             remove { song_enter -= value; }
         }
 
-        public event SongHighlightEvent SongLeft {
+        public event SongLeaveEvent SongLeft {
             add { song_leave += value; }
             remove { song_leave -= value; }
+        }
+
+        public event SongSelectedEvent SongSelected {
+            add { song_selected += value; }
+            remove { song_selected -= value; }
+        }
+
+        public event SelectionClearedEvent SelectionCleared {
+            add { selection_cleared += value; }
+            remove { selection_cleared -= value; }
         }
         #endregion
 
@@ -197,7 +213,7 @@ namespace NoNoise.Visualization
 
         private void InitSelectionActor ()
         {
-            selection = new SelectionActor (1000,1000, new Cairo.Color (1,0,0,0.8));
+            selection = new SelectionActor (1000,1000, new Cairo.Color (1,0,0,0.9));
             selection.SetPosition (0,0);
             stage.Add (selection);
 
@@ -232,7 +248,7 @@ namespace NoNoise.Visualization
                 a.EnterEvent += delegate(object o, EnterEventArgs args) {
                     SongActor sender = o as SongActor;
                     if (sender.Owner != null)
-                        FireSongEnter (new SongHighlightArgs (sender.Owner.GetAllIDs ()));
+                        FireSongEnter (new SongInfoArgs (sender.Owner.GetAllIDs ()));
                     else
                         Hyena.Log.Information ("No owner ");
                 };
@@ -241,7 +257,7 @@ namespace NoNoise.Visualization
                 a.LeaveEvent += delegate(object o, LeaveEventArgs args) {
                     SongActor sender = o as SongActor;
                     if (sender.Owner != null)
-                        FireSongLeave (new SongHighlightArgs (sender.Owner.GetAllIDs ()));
+                        FireSongLeave ();
                 };
                 count ++;
             }
@@ -294,7 +310,8 @@ namespace NoNoise.Visualization
         {
             mouse_button_locked = true;
             point_manager.RemoveSelection ();
-            point_manager.ClearSelection ();
+
+            ClearSelection ();
             UpdateView ();
         }
 
@@ -302,7 +319,8 @@ namespace NoNoise.Visualization
         {
             mouse_button_locked = true;
             point_manager.ShowRemoved ();
-            point_manager.ClearSelection ();
+
+            ClearSelection ();
             UpdateView ();
         }
 
@@ -321,6 +339,7 @@ namespace NoNoise.Visualization
         public void UpdateHiddenSongs (List<int> not_hidden)
         {
             point_manager.MarkHidded (not_hidden);
+            UpdateShownSelection ();
             UpdateView ();
         }
 
@@ -684,18 +703,40 @@ namespace NoNoise.Visualization
 
             selection.Reset ();
 
+            FireSelectionCleared ();
+        }
+
+        private void UpdateShownSelection ()
+        {
+            List<int> selected_ids = new List<int> ();
+
+            foreach (SongPoint p in point_manager.GetSelected ())
+                foreach (int id in p.GetAllIDs ()) {
+                        if (!selected_ids.Contains(id))
+                            selected_ids.Add (id);
+                }
+            FireSongSelected (new SongInfoArgs (selected_ids));
         }
 
         private void UpdateSelection ()
         {
             points_selected = selection.GetPointsInside (points_visible);
+
+            List<int> selected_ids = new List<int> ();
+
             for (int i = 0; i < points_selected.Count; i ++)
             {
                 points_selected[i].MarkAsSelected ();
                 points_selected[i].Actor.SetPrototypeByColor (SongActor.Color.Red);
+
+                foreach (int id in points_selected[i].GetAllIDs ()) {
+                    if (!selected_ids.Contains(id))
+                        selected_ids.Add (id);
+                }
             }
 
             UpdateClipping ();
+            FireSongSelected (new SongInfoArgs (selected_ids));
         }
 
         private void InitializeZoomLevel ()
@@ -807,16 +848,28 @@ namespace NoNoise.Visualization
 
         }
 
-        private void FireSongEnter (SongHighlightArgs args)
+        private void FireSongEnter (SongInfoArgs args)
         {
             if (song_enter != null)
                 song_enter (this, args);
         }
 
-        private void FireSongLeave (SongHighlightArgs args)
+        private void FireSongLeave ()
         {
             if (song_leave != null)
-                song_leave (this, args);
+                song_leave (this);
+        }
+
+        private void FireSongSelected (SongInfoArgs args)
+        {
+            if (song_selected != null)
+                song_selected (this, args);
+        }
+
+        private void FireSelectionCleared ()
+        {
+            if (selection_cleared != null)
+                selection_cleared (this);
         }
 
 
