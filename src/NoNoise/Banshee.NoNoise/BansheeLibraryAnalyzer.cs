@@ -29,8 +29,11 @@ using System.Threading;
 
 using Banshee.Collection;
 using Banshee.Collection.Database;
+using Banshee.MediaEngine;
 using Banshee.ServiceStack;
 using Banshee.Sources;
+
+using Banshee.NoNoise.Bpm;
 
 using NoNoise.Data;
 using NoNoise.PCA;
@@ -69,6 +72,8 @@ namespace Banshee.NoNoise
         private object scan_synch;
         private object lib_synch;   // WARN make sure it is never locked on lib_synch inside of another lock
         private object db_synch;
+
+        private IBpmDetector detector;
         #endregion
 
         /// <summary>
@@ -105,6 +110,15 @@ namespace Banshee.NoNoise
             new Thread (new ThreadStart (ConvertMusicLibrary)).Start ();
 
             db = new NoNoiseDBHandler ();
+
+            Testing ();
+            // BPM detector
+//            detector = BpmDetectJob.GetDetector ();
+//            if (detector != null) {
+//                detector.FileFinished += OnFileFinished;
+//                Hyena.Log.Debug("NoNoise - Detector is not null");
+//            }
+//            new Thread (new ThreadStart (DetectBPMs)).Start ();
 
             /// REMOVE THIS
             if (DB_CHEATER_MODE) {
@@ -609,6 +623,50 @@ namespace Banshee.NoNoise
             }
 
             return data;
+        }
+
+        private void Testing ()
+        {
+            TrackInfo ti = ml.TrackModel [0];
+//            int bid = ml.GetTrackIdForUri (ti.Uri);
+
+            try {
+                int ind = DatabaseTrackInfo.GetTrackIdForUri (ti.Uri);
+                TrackInfo ti2 = DatabaseTrackInfo.Provider.FetchSingle (ind);
+                Hyena.Log.DebugFormat ("NoNoise/BLA - index: {0}", ind);
+                Hyena.Log.DebugFormat ("NoNoise/BLA - test result. title: {0} vs {1}",
+                                       ti.TrackTitle, ti2.TrackTitle);
+            } catch (Exception e) {
+                Hyena.Log.Exception ("NoNoise/BLA - test failed", e);
+            }
+        }
+
+        private void DetectBPMs (TrackInfo track)
+        {
+            // on button pressed
+            if (track != null) {
+                detector.ProcessFile (track.Uri);
+            }
+        }
+
+        private void DetectBPMs ()
+        {
+            TrackInfo ti = ml.TrackModel [0];
+            DetectBPMs (ti);
+        }
+
+        private void OnFileFinished (object o, BpmEventArgs args)
+        {
+            Hyena.ThreadAssist.ProxyToMain (delegate {
+                int id = DatabaseTrackInfo.GetTrackIdForUri (args.Uri);
+                if (id >= 0) {
+                    TrackInfo ti = DatabaseTrackInfo.Provider.FetchSingle (id);
+                    Hyena.Log.Debug("NoNoise - BPM...Track: " + ti.TrackTitle);
+                    ti.Bpm = args.Bpm;
+                    ti.Update ();
+                    Hyena.Log.DebugFormat ("NoNoise - Detected BPM of {0} for {1}", args.Bpm, ti.TrackTitle);
+                }
+            });
         }
 
         /*
