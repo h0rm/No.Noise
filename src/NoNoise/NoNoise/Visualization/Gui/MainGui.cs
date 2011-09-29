@@ -63,9 +63,9 @@ namespace NoNoise.Visualization.Gui
 
             StyleSheet style = new StyleSheet (new Cairo.Color (0.1, 0.1, 0.1,0.5),
                                                new Cairo.Color (1, 1, 1, 0.9),
-                                               new Font ("Verdana",
+                                               new Font ("Arial",
                                                Cairo.FontSlant.Normal,
-                                               Cairo.FontWeight.Normal,
+                                               Cairo.FontWeight.Bold,
                                                12, new Cairo.Color (0.1, 0.1, 0.1)),
                                                new Font ("Arial",
                                                Cairo.FontSlant.Normal,
@@ -88,6 +88,7 @@ namespace NoNoise.Visualization.Gui
 
 
             toolbar = new Group ();
+//            toolbar.SetSize (306,20);
             select_button = new ToolbarToggleButton ("select", style,
                                                      ToolbarButton.Border.Left, 75,20);
             select_button.SetPosition (0,0);
@@ -95,24 +96,28 @@ namespace NoNoise.Visualization.Gui
 
             remove_button = new ToolbarButton ("remove", style,
                                                ToolbarButton.Border.None, 75,20);
-            remove_button.SetPosition (77, 0);
+            remove_button.SetPosition (76, 0);
 
 
             reset_button = new ToolbarButton ("reset", style,
                                                ToolbarButton.Border.None,
                                                75,20);
-            reset_button.SetPosition (154, 0);
+            reset_button.SetPosition (152, 0);
 
 
             playlist_button = new ToolbarButton ("playlist", style,
                                                ToolbarButton.Border.Right, 75,20);
-            playlist_button.SetPosition (231, 0);
+            playlist_button.SetPosition (228, 0);
+
 
 
             toolbar.Add (select_button);
             toolbar.Add (remove_button);
             toolbar.Add (reset_button);
+//            toolbar.
             toolbar.Add (playlist_button);
+//            this.Add (playlist_button);
+//            toolbar.SetScale (1,1);
 
             toolbar.AnchorPointFromGravity = Gravity.North;
             toolbar.SetPosition (500,5);
