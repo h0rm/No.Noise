@@ -81,7 +81,7 @@ namespace NoNoise.Visualization.Gui
             zoom_button_in = new ZoomButton (style, true);
 
             zoom_button_out = new ZoomButton (style, false);
-            zoom_button_out.SetPosition (0,40);
+            zoom_button_out.SetPosition (0,30);
 
             this.Add (zoom_button_in);
             this.Add (zoom_button_out);
