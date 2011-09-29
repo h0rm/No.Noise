@@ -77,7 +77,7 @@ namespace NoNoise.Visualization.Util
 
         public QuadTree (double x, double y, double width, double height)
         {
-            Hyena.Log.Debug ("New quad tree at " + new Point (x,y) + " width: " + width + " height: " + height);
+//            Hyena.Log.Debug ("New quad tree at " + new Point (x,y) + " width: " + width + " height: " + height);
             quadTreeRoot = new QuadTreeNode<T> (x,y,width,height);
         }
 
@@ -165,12 +165,12 @@ namespace NoNoise.Visualization.Util
 
         public QuadTree<T> GetClusteredTree ()
         {
-            Hyena.Log.Debug ("Cluster Tree");
+//            Hyena.Log.Debug ("Cluster Tree");
             QuadTree<T> clustered_tree = new QuadTree<T> (quadTreeRoot.Rectangle);
             QuadTree<T> clone_tree = (QuadTree<T>)Clone ();
 
             List<T> items = GetAllObjects ();
-            Hyena.Log.Debug ("Cluster " + items.Count + " items.");
+//            Hyena.Log.Debug ("Cluster " + items.Count + " items.");
             T other;
 
             foreach (T item in items) {
@@ -196,7 +196,7 @@ namespace NoNoise.Visualization.Util
             }
 
             clone_tree = null;
-            Hyena.Log.Debug ("Clustered Tree count: " + clustered_tree.GetAllObjects().Count);
+//            Hyena.Log.Debug ("Clustered Tree count: " + clustered_tree.GetAllObjects().Count);
             return clustered_tree;
         }
 

@@ -161,8 +161,6 @@ namespace Banshee.NoNoise
 
             trackmodel.TrackModel.Selection.SelectAll ();
 
-            Hyena.Log.Information ("Count= "+trackmodel.TrackModel.Count);
-
             List<int> lst = new List<int> ();
 
             foreach (TrackInfo t in trackmodel.TrackModel.SelectedItems) {

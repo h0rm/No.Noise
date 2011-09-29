@@ -132,16 +132,11 @@ namespace NoNoise.Visualization
 
             point_manager = new SongPointManager (0, 0, 30000, 30000);
 
-//            Hyena.Log.Information ("Song point manager created");
-
             foreach (DataEntry e in entries) {
-//                Hyena.Log.Information (String.Format ("Add song {0} at ({1},{2})",e.ID, e.X, e.Y));
                 point_manager.Add (e.X*30000, e.Y*30000, e.ID);
             }
 
-            Hyena.Log.Information ("Clustering started");
             point_manager.Cluster ();
-//            point_manager.SetDefaultLevel (500);
 
             points_visible = new List<SongPoint> (num_of_actors);
 
@@ -184,24 +179,8 @@ namespace NoNoise.Visualization
                 point_manager.Add (points[i].X, points[i].Y, i);
 
 
-
-            Stopwatch stop = new Stopwatch();
-            stop.Start ();
             point_manager.Cluster ();
-            stop.Stop ();
-
-
-//            point_manager.SetDefaultLevel (500);
-//            point_manager.GetWindowDimensions (0, 500, out cluster_w, out cluster_h);
-//            cluster_w *= Math.Pow (zoom_level_mult, point_manager.Level);
-//            cluster_h *= Math.Pow (zoom_level_mult, point_manager.Level);
-
-//            SetZoomLevel (0.5);
-
-            Hyena.Log.Information ("Clustering time: "+stop.ElapsedMilliseconds);
-
             points_visible = new List<SongPoint> (num_of_actors);
-
         }
 
         private void InitSongActors ()
@@ -266,8 +245,6 @@ namespace NoNoise.Visualization
                 };
                 count ++;
             }
-
-            Hyena.Log.Information ("Event count = " + count);
         }
 
 
@@ -276,7 +253,7 @@ namespace NoNoise.Visualization
         /// </summary>
         public void Init ()
         {
-            Hyena.Log.Information ("Initializing Song Group.");
+            Hyena.Log.Debug ("Initializing Song Group.");
 
             Reactive = true;
 
@@ -296,8 +273,6 @@ namespace NoNoise.Visualization
         /// </param>
         public void ClusterOneStep (bool inwards)
         {
-//            Hyena.Log.Information ("Zoom");
-//            ClearSelection ();
             mouse_button_locked = true;
             if (inwards)
             {
@@ -334,9 +309,6 @@ namespace NoNoise.Visualization
         public List<int> GetSelectedSongIDs ()
         {
             List<SongPoint> selected = point_manager.GetSelected ();
-
-//            if (selected.Count == 0)
-//                return null;
 
             List<int> ret = new List<int> (selected.Count);
 
@@ -460,30 +432,28 @@ namespace NoNoise.Visualization
             // nach vorne aber kein clustering mehr
             if (forward && point_manager.IsMaxLevel) {
                 diff_zoom_clustering ++;
-                Hyena.Log.Information ("Diff ++" + diff_zoom_clustering);
+//                Hyena.Log.Information ("Diff ++" + diff_zoom_clustering);
                 return;
             }
 
             // nach vorne aber kein clustering mehr
             if (!forward && point_manager.IsMinLevel) {
                 diff_zoom_clustering --;
-                Hyena.Log.Information ("Diff --" + diff_zoom_clustering);
+//                Hyena.Log.Information ("Diff --" + diff_zoom_clustering);
                 return;
             }
 
             if (forward && diff_zoom_clustering != 0) {
                 diff_zoom_clustering ++;
-                Hyena.Log.Information ("Diff --" + diff_zoom_clustering);
+//                Hyena.Log.Information ("Diff --" + diff_zoom_clustering);
                 return;
             }
 
             if (!forward && diff_zoom_clustering != 0) {
                 diff_zoom_clustering --;
-                Hyena.Log.Information ("Diff ++" + diff_zoom_clustering);
+//                Hyena.Log.Information ("Diff ++" + diff_zoom_clustering);
                 return;
             }
-
-//            Hyena.Log.Information ("Diff " + diff_zoom_clustering);
 
             //back -> back or back
             if (!forward && (!playing || dir != TimelineDirection.Forward)) {
@@ -498,15 +468,12 @@ namespace NoNoise.Visualization
             if (!playing || dir ==  clustering_animation_timeline.Direction) {
                 clustering_animation_timeline.Rewind ();
                 clustering_animation_behave.RemoveAll ();
-                Hyena.Log.Information ("Rewind");
             }
 
             clustering_animation_timeline.Start ();
 
             UpdateClipping ();
 
-            Hyena.Log.Information ("Animations started: "
-                     + (clustering_animation_timeline.Direction == TimelineDirection.Forward ? "forward" : "backward"));
         }
 
         private void AddClusteringAnimation (SongPoint p)
@@ -539,9 +506,6 @@ namespace NoNoise.Visualization
 
         private void HandleClusteringTimelineCompleted (object sender, EventArgs e)
         {
-//            Hyena.Log.Information ("Animations finished: "
-//                     + (clustering_animation_timeline.Direction == TimelineDirection.Forward ? "forward" : "backward"));
-
             if (clustering_animation_timeline.Direction == TimelineDirection.Forward)
                 point_manager.IncreaseLevel ();
 
@@ -551,7 +515,6 @@ namespace NoNoise.Visualization
 
         private void UpdateView ()
         {
-//            Hyena.Log.Information ("Update view");
             //remove all visible points
             for (int i = 0; i < points_visible.Count; i++) {
                 actor_manager.Free (points_visible[i].Actor);
@@ -571,8 +534,6 @@ namespace NoNoise.Visualization
             double sx, sy;
             GetTransformedPosition (out tx, out ty);
             GetScale (out sx, out sy);
-
-//            Hyena.Log.Information (System.String.Format("Clipping ({0},{1}) with {2}x{3}",tx,ty,sx,sy));
 
             x = (-(float)SongActor.CircleSize-tx)/sx;
             y = (-(float)SongActor.CircleSize-ty)/sy;
@@ -715,14 +676,6 @@ namespace NoNoise.Visualization
 
         private void ClearSelection ()
         {
-//            foreach (SongPoint p in points_selected)
-//            {
-//                if (p.Actor != null)
-//                    p.Actor.SetPrototypeByColor (SongActor.Color.White);
-//                p.Selected = false;
-//            }
-
-            Hyena.Log.Information ("Clear selection");
             point_manager.ClearSelection ();
 
             UpdateView ();
@@ -738,7 +691,6 @@ namespace NoNoise.Visualization
             points_selected = selection.GetPointsInside (points_visible);
             for (int i = 0; i < points_selected.Count; i ++)
             {
-//                points_selected[i].Selected = true;
                 points_selected[i].MarkAsSelected ();
                 points_selected[i].Actor.SetPrototypeByColor (SongActor.Color.Red);
             }
@@ -751,7 +703,7 @@ namespace NoNoise.Visualization
             int i = 0;
 
             point_manager.GetWindowDimensions (0, 1500, out cluster_w, out cluster_h);
-            Hyena.Log.Information ("Window dimensions " + cluster_w + "x" + cluster_h);
+            Hyena.Log.Debug ("Window dimensions " + cluster_w + "x" + cluster_h);
             // as long as window size is too small zoom out
             while (cluster_w < point_manager.Width) {
                 cluster_w *= zoom_level_mult;
@@ -762,7 +714,7 @@ namespace NoNoise.Visualization
             point_manager.Level = i;
             diff_zoom_clustering = i - point_manager.Level;
 
-            Hyena.Log.Information ("Zoom initialized with scale="+
+            Hyena.Log.Debug ("Zoom initialized with \nscale="+
                                    stage.Width / point_manager.Width + " level="+ point_manager.Level +
                                    " diff=" + diff_zoom_clustering);
 

@@ -46,7 +46,6 @@ namespace NoNoise.Visualization.Gui
 
             texture_width = width;
             texture_height = height;
-//            texture.SetSize (width,height);
         }
 
         protected void Initialize ()
