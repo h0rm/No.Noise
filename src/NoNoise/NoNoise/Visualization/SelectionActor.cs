@@ -116,7 +116,6 @@ namespace NoNoise.Visualization
             Point p = new Point (x,y);
 
             if (p.DistanceTo (new Point (segment_x, segment_y)) > 20) {
-//            if (count == 5) {
                 AddSegment (x, y);
                 count = 0;
             } else {
@@ -127,8 +126,6 @@ namespace NoNoise.Visualization
 
         private void DrawLine (double x, double y)
         {
-//            Hyena.Log.Information ("Paint line " + count );
-
             Cairo.Context context = texture.Create();
             context.LineWidth = 5;
             context.Color = new Cairo.Color (1,0,0,0.7);
@@ -147,7 +144,6 @@ namespace NoNoise.Visualization
         private Point GetTransformedPoint (double x, double y)
         {
             return new Point ((x+shift_x)/scale, (y+shift_y)/scale);
-//            return new Point (x, y);
         }
         private void AddSegment (double x, double y)
         {
@@ -184,11 +180,9 @@ namespace NoNoise.Visualization
 
                 if (IsPointInside (p.XY)) {
                     inside.Add (p);
-                    Hyena.Log.Information (p.ID + " is inside");
                 }
             }
 
-            Hyena.Log.Information ("Inside : " + inside.Count);
             return inside;
         }
 

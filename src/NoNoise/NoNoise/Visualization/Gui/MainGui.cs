@@ -179,7 +179,7 @@ namespace NoNoise.Visualization.Gui
 
         void HandleWindowSizeChanged (object o, AllocationChangedArgs args)
         {
-            toolbar.SetPosition (stage.Width/2f-infobox.Width+zoom_button_in.Width, toolbar.Y);
+            toolbar.SetPosition (0.5f+(float)Math.Round (stage.Width/2f-infobox.Width/2f+zoom_button_in.Width), toolbar.Y);
             infobox.SetPosition (stage.Width, 0);
         }
 

@@ -74,8 +74,6 @@ namespace NoNoise.Visualization
         {
             color_index = color_index % max_prototypes;
 
-//            Hyena.Log.Debug ("Color changed to "+color_index);
-
             switch (color_index)
             {
             case (int)Color.Green:
@@ -113,7 +111,6 @@ namespace NoNoise.Visualization
         {
             double size = (double)circle_size;
 
-//            Hyena.Log.Debug ("Color : " + r + " " + g + " " + b + " ");
             actor.Clear();
             Cairo.Context context = actor.Create();
 
@@ -121,8 +118,6 @@ namespace NoNoise.Visualization
             Cairo.Gradient pattern = new Cairo.RadialGradient(size/2.0,size/2.0,size/3.0,
                                                             size/2.0,size/2.0,size/2.0);
 
-
-            //Cairo.Gradient pattern = new Cairo.LinearGradient(0,0,circle_size,circle_size);
             pattern.AddColorStop(0,new Cairo.Color (r,g,b,a));
             pattern.AddColorStop(1.0,new Cairo.Color (r,g,b,0.1));
 
@@ -133,10 +128,7 @@ namespace NoNoise.Visualization
             context.Save();
 
             context.Pattern = pattern;
-            //context.Color = new Cairo.Color (r,g,b,0.3);
             context.Fill();
-
-            //context.Restore ();
 
             if (arc != 0) {
 

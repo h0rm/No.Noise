@@ -43,7 +43,6 @@ namespace NoNoise.Visualization
 
         public View () : base ()
         {
-            Hyena.Log.Information ("View Start");
             SetSizeRequest (100,100);
             Stage.Color = new Color (0,0,0,255);
             point_group = new SongGroup (Stage);
@@ -53,8 +52,7 @@ namespace NoNoise.Visualization
             Stage.Add (point_group);
             Stage.Add (gui);
 
-                      point_group.LowerBottom ();
-//            Stage.SetClip (0,0,Stage.Width, Stage.Height);
+            point_group.LowerBottom ();
 
             InitHandler ();
         }
@@ -65,7 +63,6 @@ namespace NoNoise.Visualization
 
             Stage.AllocationChanged += delegate {
                 Stage.SetClip (0,0,Stage.Width, Stage.Height);
-                Hyena.Log.Information ("Clutter stage allocation changed to " + Stage.Width + "x" + Stage.Height);
                 point_group.QueueRelayout ();
             };
 
@@ -164,7 +161,6 @@ namespace NoNoise.Visualization
         public void UpdateHiddenSongs (List<int> not_hidden)
         {
             point_group.UpdateHiddenSongs (not_hidden);
-            Hyena.Log.Information ("Update hidden songs. Not hidden: " + not_hidden.Count);
         }
 
         public event AddToPlaylistEvent OnAddToPlaylist {

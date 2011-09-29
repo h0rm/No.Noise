@@ -102,8 +102,6 @@ namespace NoNoise.Visualization
                 //only left child
                 return LeftChild.IsVisible;
             }
-
-//            get { return !IsRemoved && !IsHidden; }
         }
 
         public bool IsSelected {
@@ -181,121 +179,12 @@ namespace NoNoise.Visualization
             private set;
         }
 
-//        public void MarkHidden ()
-//        {
-//            IsHidden = true;
-//
-////            if (LeftChild != null)
-////                LeftChild.MarkHidden ();
-////
-////            if (RightChild != null)
-////                RightChild.MarkHidden ();
-//        }
-
-//        public void MarkShown ()
-//        {
-//            IsHidden = false;
-//
-////            Parent.MarkShownUpwards ();
-//        }
-
-//        private void MarkShownUpwards ()
-//        {
-//            /// Cases
-//            /// 1 - this node is show - do nothing visited
-//            /// 2 - the only child (left) is shown - node is shown
-//            /// 3 - at least one child is shown - node is shown
-//            ///
-//
-//            if (!IsHidden) //not hidden - stop node has been visited
-//                return;
-//
-//            //rightchild null - check only left child
-//            if (RightChild == null && !LeftChild.IsHidden) {
-//                IsHidden = false;
-//                if (Parent != null) //if parent exists, propergate
-//                    Parent.MarkShownUpwards ();
-//                return;
-//            }
-//
-//            if (RightChild == null)
-//                return;
-//
-//            //both not null, check both
-//            if (!LeftChild.IsHidden || !RightChild.IsHidden) {
-//                IsHidden = false;
-//                if (Parent != null) //if parent exists, propergate
-//                    Parent.MarkShownUpwards ();
-//            }
-//        }
-
-//        public void UnmarkRemoved ()
-//        {
-//            IsRemoved = false;
-//
-////            if (LeftChild != null)
-////                LeftChild.UnmarkRemoved ();
-////
-////            if (RightChild != null)
-////                RightChild.UnmarkRemoved ();
-//        }
-
         public void MarkRemovedifSelected ()
         {
             if (IsSelected && IsVisible && IsLeaf)
                 IsRemoved = true;
-
-
-//            if (LeftChild != null)
-//                LeftChild.MarkRemovedifSelected ();
-//
-//            if (RightChild != null)
-//                RightChild.MarkRemovedifSelected ();
         }
 
-//        private void SelectUpwards ()
-//        {
-//            /// Cases
-//            /// 1 - this node is selected - do nothing visited and nothing more to do
-//            /// 2 - only child (left) - node has same selection
-//            /// 3 - at least one child is partially selected - node is partially selected
-//            /// 4 - both children are fully selected - node is fully selected
-//            ///
-//
-//            // case 1
-//            if (IsSelected) //selected - stop node has been visited
-//                return;
-//
-//            // case 2
-//            if (RightChild == null) {
-//                Selection = LeftChild.Selection;
-//                if (Parent != null) //if parent exists, propergate
-//                    Parent.SelectUpwards ();
-//                return;
-//            }
-//
-//            if (RightChild == null)
-//                return;
-//
-//            // case 4
-//            if (LeftChild.IsSelected && RightChild.IsSelected) {
-//                IsSelected = true;
-//
-//                if (Parent != null) //if parent exists, propergate
-//                    Parent.SelectUpwards ();
-//                return;
-//            }
-//
-//            // case 3
-//            if (LeftChild.Selection != SelectionMode.None ||
-//                            RightChild.Selection != SelectionMode.None) {
-//                Selection = SelectionMode.Partial;
-//
-//                if (Parent != null) //if parent exists, propergate
-//                    Parent.SelectUpwards ();
-//                return;
-//            }
-//        }
 
         public void MarkAsSelected ()
         {
@@ -311,8 +200,6 @@ namespace NoNoise.Visualization
             if (RightChild != null)
                 RightChild.MarkAsSelected ();
 
-//            if (Parent != null)
-//                Parent.SelectUpwards ();
         }
 
 //        public void ClearSelection ()
@@ -345,12 +232,6 @@ namespace NoNoise.Visualization
         public SongPoint GetMerged (SongPoint other)
         {
             Point merged = this.XY;
-
-            //fake merge, only left child
-//            if (other != null) {
-//                merged.Add (other.XY);
-//                merged.Normalize (2);
-//            }
 
             SongPoint parent = new SongPoint (merged.X, merged.Y, -1);
             parent.LeftChild = this;

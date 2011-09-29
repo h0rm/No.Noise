@@ -67,13 +67,11 @@ namespace NoNoise.Visualization
         public void IncreaseLevel ()
         {
             Level = Level + 1;
-            Hyena.Log.Debug ("New Clustering level " + Level);
         }
 
         public void DecreaseLevel ()
         {
             Level = Level - 1;
-            Hyena.Log.Debug ("New Clustering level " + Level);
         }
 
         public SongPointManager (double x, double y, double width, double height)
@@ -102,13 +100,12 @@ namespace NoNoise.Visualization
                     break;
 
                 tree.GetWindowDimesions (500, out w, out h);
-                Hyena.Log.Information ("Window dimension for 500 points: " + w + "x" + h);
                 tree_list.Add (tree);
             }
 
             max_clustering_level = tree_list.Count-1;
 
-            Hyena.Log.Information ("Max clustering level " + max_clustering_level);
+            Hyena.Log.Debug ("Max clustering level " + max_clustering_level);
         }
 
         public SongPoint GetPoint (int id)
@@ -162,7 +159,7 @@ namespace NoNoise.Visualization
             }
 
             Level = i-1;
-            Hyena.Log.Information ("Default level set to " + Level);
+            Hyena.Log.Debug ("Default level set to " + Level);
         }
 
         public void RemoveSelection ()
@@ -197,7 +194,6 @@ namespace NoNoise.Visualization
 
         public void MarkHidded (List<int> not_hidden)
         {
-            Hyena.Log.Information ("Mark hidden");
             foreach (SongPoint p in tree_list[0].GetAllObjects())
 //                p.MarkHidden ();
                 p.IsHidden = true;
