@@ -53,6 +53,11 @@ namespace NoNoise.Data
         private readonly string SELECT_MIRDATA_COUNT = "SELECT COUNT(*) FROM MIRData";
         private readonly string SELECT_PCADATA_COUNT = "SELECT COUNT(*) FROM PCAData";
         private readonly string SELECT_TRACKDATA_COUNT = "SELECT COUNT(*) FROM TrackData";
+
+        private readonly string SYNCH_MIRDATA = "DELETE FROM MIRData WHERE banshee_id NOT IN " +
+            "(SELECT banshee_id FROM TrackData)";
+        private readonly string SYNCH_PCADATA = "DELETE FROM PCAData WHERE banshee_id NOT IN " +
+            "(SELECT banshee_id FROM TrackData)";
         #endregion
 
         #region Members
@@ -949,6 +954,29 @@ namespace NoNoise.Data
             }
         }
         #endregion
+
+        public void SynchTablesWithTrackData ()
+        {
+            IDbCommand dbcmd = null;
+            try {
+                dbcon.Open ();
+                dbcmd = dbcon.CreateCommand ();
+
+                dbcmd.CommandText = SYNCH_MIRDATA;
+                dbcmd.ExecuteNonQuery ();
+
+                dbcmd.CommandText = SYNCH_PCADATA;
+                dbcmd.ExecuteNonQuery ();
+            } catch (Exception e) {
+                Log.Exception ("NoNoise/DB - Synching tables failed.", e);
+            } finally {
+                if (dbcmd != null)
+                    dbcmd.Dispose ();
+                dbcmd = null;
+                if (dbcon != null)
+                    dbcon.Close ();
+            }
+        }
 
         #region Info Queries
 

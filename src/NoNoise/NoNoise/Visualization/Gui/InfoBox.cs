@@ -164,10 +164,6 @@ namespace NoNoise.Visualization.Gui
             cr.SetFontSize (style.Highlighted.Size);
             TextExtents te_title;
 
-//            cr.Color = style.Subtitle.Color;
-//            cr.SelectFontFace (style.Subtitle.Family, style.Subtitle.Slant, style.Subtitle.Weight);
-//            cr.SetFontSize (style.Subtitle.Size);
-//
             TextExtents te_subtitle;
 
             for (int i = 0; i < titles.Count; i++) {
@@ -185,13 +181,12 @@ namespace NoNoise.Visualization.Gui
                 cr.ShowText (CheckString(titles[i]));
 
                 cr.SetFontSize (10);
-//
+
                 y += te_title.Height;
                 cr.MoveTo (x,y);
                 cr.ShowText (subtitles[i]);
             }
 
-//            }
             ((IDisposable) cr.Target).Dispose ();
             ((IDisposable) cr).Dispose ();
         }

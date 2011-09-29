@@ -96,12 +96,13 @@ namespace Banshee.NoNoise
         private BansheeLibraryAnalyzer ()
         {
             ml = ServiceManager.SourceManager.MusicLibrary;
-            Hyena.Log.Debug ("NoNoise/BLA - converting music lib");
-            library = ConvertMusicLibrary ();
 
             scan_synch = new object ();
             lib_synch = new object ();
             db_synch = new object ();
+
+            Hyena.Log.Debug ("NoNoise/BLA - converting music lib");
+            new Thread (new ThreadStart (ConvertMusicLibrary)).Start ();
 
             db = new NoNoiseDBHandler ();
 
@@ -184,19 +185,28 @@ namespace Banshee.NoNoise
             return Init (sc, false);
         }
 
-        private SortedDictionary<int, TrackInfo> ConvertMusicLibrary ()
+        /// <summary>
+        /// Stores the trackinfos from the music library in a sorted dictionary
+        /// mapped to the banshee_id.
+        /// </summary>
+        private void ConvertMusicLibrary ()
         {
-            SortedDictionary<int, TrackInfo> ret = new SortedDictionary<int, TrackInfo> ();
+            lock (lib_synch) {
+                library = new SortedDictionary<int, TrackInfo> ();
 
-            for (int i = 0; i < ml.TrackModel.Count; i++) {
-                TrackInfo ti = ml.TrackModel [i];
-                int bid = ml.GetTrackIdForUri (ti.Uri);
-                ret.Add (bid, ti);
+                for (int i = 0; i < ml.TrackModel.Count; i++) {
+                    DatabaseTrackInfo dti = ml.TrackModel [i] as DatabaseTrackInfo;
+    //                int bid = ml.GetTrackIdForUri (ti.Uri);
+                    library.Add (dti.TrackId, dti as TrackInfo);
+                }
             }
 
-            return ret;
+            Hyena.Log.Debug ("NoNoise/BLA - library conversion finished");
         }
 
+        /// <summary>
+        /// Sets the PcaCoordinates field with the coordinates from the database.
+        /// </summary>
         private void GetPcaData ()
         {
             lock (db_synch) {
@@ -654,25 +664,29 @@ namespace Banshee.NoNoise
             }
 
 //            for (int i = 0; i < ml.TrackModel.Count; i++) {
-            foreach (int bid in library.Keys) {
-                try {
-//                    TrackInfo ti = ml.TrackModel [i];
-                    TrackInfo ti = library [bid];
-//                    int bid = ml.GetTrackIdForUri (ti.Uri);     // DB call from different thread! think that's the problem...
-
-                    lock (db_synch) {
-                        if (!db.ContainsInfoForTrack (bid)) {
-                            if (!db.InsertTrackInfo (new TrackData (
-                                                       bid, ti.ArtistName, ti.TrackTitle,
-                                                       ti.AlbumTitle, (int)ti.Duration.TotalSeconds)))
-                                Hyena.Log.Error ("NoNoise - TrackInfo insert failed");
+            lock (lib_synch) {
+                foreach (int bid in library.Keys) {
+                    try {
+    //                    TrackInfo ti = ml.TrackModel [i];
+                        TrackInfo ti = library [bid];
+    //                    int bid = ml.GetTrackIdForUri (ti.Uri);     // DB call from different thread! think that's the problem...
+    
+                        lock (db_synch) {
+                            if (!db.ContainsInfoForTrack (bid)) {
+                                if (!db.InsertTrackInfo (new TrackData (
+                                                           bid, ti.ArtistName, ti.TrackTitle,
+                                                           ti.AlbumTitle, (int)ti.Duration.TotalSeconds)))
+                                    Hyena.Log.Error ("NoNoise - TrackInfo insert failed");
+                            }
                         }
+                    } catch (Exception e) {
+                        Hyena.Log.Exception("NoNoise - DB Problem", e);
                     }
-                } catch (Exception e) {
-                    Hyena.Log.Exception("NoNoise - DB Problem", e);
                 }
             }
         }
+
+        #region Library updates
 
         /// <summary>
         /// Checks the music library for deleted tracks and removes them from the database.
@@ -687,55 +701,57 @@ namespace Banshee.NoNoise
 //            foreach (int bid in library.Keys)
 //                ids.Add (bid, bid);
 
-            Dictionary<int, Mirage.Vector> vectorMap = null;
-            Dictionary<int, Mirage.Matrix> mfccMap = null;
+            /// make one table the reference and let db synch the rest!!
+
+//            Dictionary<int, Mirage.Vector> vectorMap = null;
+//            Dictionary<int, Mirage.Matrix> mfccMap = null;
             Dictionary<int, TrackData> trackMap = null;
-            Dictionary<int, DataEntry> pcaMap = null;
+//            Dictionary<int, DataEntry> pcaMap = null;
 
             // get data from db
             lock (db_synch) {
-                if (STORE_ENTIRE_MATRIX)
-                    mfccMap = db.GetMirageMatrices ();
-                else
-                    vectorMap = db.GetMirageVectors ();
+//                if (STORE_ENTIRE_MATRIX)
+//                    mfccMap = db.GetMirageMatrices ();
+//                else
+//                    vectorMap = db.GetMirageVectors ();
                 trackMap = db.GetTrackDataDictionary ();
-                pcaMap = db.GetPcaCoordinatesDictionary ();
+//                pcaMap = db.GetPcaCoordinatesDictionary ();
             }
 
             // remove deleted MIRData
-            if (STORE_ENTIRE_MATRIX) {
-                foreach (int id in mfccMap.Keys) {
-                    lock (lib_synch) {
-                        if (!library.ContainsKey (id)) {
-                            Hyena.Log.DebugFormat ("NoNoise/BLA - removing bid {0} from MIRData...", id);
-                            try {
-                                lock (db_synch) {
-                                    // remove from MIRData
-                                    db.RemoveMirDataForTrack (id);
-                                }
-                            } catch (Exception e) {
-                                Hyena.Log.Exception("NoNoise - DB remove problem", e);
-                            }
-                        }
-                    }
-                }
-            } else {
-                foreach (int id in vectorMap.Keys) {
-                    lock (lib_synch) {
-                        if (!library.ContainsKey (id)) {
-                            Hyena.Log.DebugFormat ("NoNoise/BLA - removing bid {0} from MIRData...", id);
-                            try {
-                                lock (db_synch) {
-                                    // remove from MIRData
-                                    db.RemoveMirDataForTrack (id);
-                                }
-                            } catch (Exception e) {
-                                Hyena.Log.Exception("NoNoise - DB remove problem", e);
-                            }
-                        }
-                    }
-                }
-            }
+//            if (STORE_ENTIRE_MATRIX) {
+//                foreach (int id in mfccMap.Keys) {
+//                    lock (lib_synch) {
+//                        if (!library.ContainsKey (id)) {
+//                            Hyena.Log.DebugFormat ("NoNoise/BLA - removing bid {0} from MIRData...", id);
+//                            try {
+//                                lock (db_synch) {
+//                                    // remove from MIRData
+//                                    db.RemoveMirDataForTrack (id);
+//                                }
+//                            } catch (Exception e) {
+//                                Hyena.Log.Exception("NoNoise - DB remove problem", e);
+//                            }
+//                        }
+//                    }
+//                }
+//            } else {
+//                foreach (int id in vectorMap.Keys) {
+//                    lock (lib_synch) {
+//                        if (!library.ContainsKey (id)) {
+//                            Hyena.Log.DebugFormat ("NoNoise/BLA - removing bid {0} from MIRData...", id);
+//                            try {
+//                                lock (db_synch) {
+//                                    // remove from MIRData
+//                                    db.RemoveMirDataForTrack (id);
+//                                }
+//                            } catch (Exception e) {
+//                                Hyena.Log.Exception("NoNoise - DB remove problem", e);
+//                            }
+//                        }
+//                    }
+//                }
+//            }
 
             // remove deleted TrackData
             foreach (int id in trackMap.Keys) {
@@ -754,24 +770,34 @@ namespace Banshee.NoNoise
                 }
             }
 
-            // remove deleted PCAData
-            foreach (int id in pcaMap.Keys) {
-                lock (lib_synch) {
-                    if (!library.ContainsKey (id)) {
-                        Hyena.Log.DebugFormat ("NoNoise/BLA - removing bid {0} from PCAData...", id);
-                        try {
-                            lock (db_synch) {
-                                // remove from PCAData
-                                db.RemovePcaDataForTrack (id);
-                            }
-                        } catch (Exception e) {
-                            Hyena.Log.Exception("NoNoise - DB remove problem", e);
-                        }
-                    }
-                }
+            // update other tables
+            Hyena.Log.Debug ("NoNoise/BLA - updating other tables...");
+            lock (db_synch) {
+                db.SynchTablesWithTrackData ();
             }
+
+            // remove deleted PCAData
+//            foreach (int id in pcaMap.Keys) {
+//                lock (lib_synch) {
+//                    if (!library.ContainsKey (id)) {
+//                        Hyena.Log.DebugFormat ("NoNoise/BLA - removing bid {0} from PCAData...", id);
+//                        try {
+//                            lock (db_synch) {
+//                                // remove from PCAData
+//                                db.RemovePcaDataForTrack (id);
+//                            }
+//                        } catch (Exception e) {
+//                            Hyena.Log.Exception("NoNoise - DB remove problem", e);
+//                        }
+//                    }
+//                }
+//            }
         }
 
+        /// <summary>
+        /// Compares the dictionary with the trackinfos to the music library
+        /// and updates it (removes deleted tracks and adds new ones).
+        /// </summary>
         private void UpdateMusicLibrary ()
         {
 //            for (int i = 0; i < ml.TrackModel.Count; i++) {
@@ -814,6 +840,9 @@ namespace Banshee.NoNoise
 
             Hyena.Log.DebugFormat ("NoNoise/BLA - Updated music library. new size: {0}", library.Count);
         }
+        #endregion
+
+        #region Library change handlers
 
         /// <summary>
         /// Handles the tracks added event when the user adds new files to the music library.
@@ -900,6 +929,7 @@ namespace Banshee.NoNoise
                     Hyena.Log.Debug ("NoNoise/BLA - tracks changed (unhandled): CF not null");
             }
         }
+        #endregion
     }
 }
 
