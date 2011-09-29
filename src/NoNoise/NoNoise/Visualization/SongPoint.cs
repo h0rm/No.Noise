@@ -292,14 +292,14 @@ namespace NoNoise.Visualization
         public List<int> GetAllIDs ()
         {
             List<int> ids = new List<int> ();
-            if (IsLeaf && !IsRemoved)
+            if (IsLeaf && IsVisible)
                 ids.Add (ID);
 
             if (LeftChild != null)
-                if (!LeftChild.IsRemoved)
+                if (LeftChild.IsVisible)
                     ids.AddRange (LeftChild.GetAllIDs ());
             if (RightChild != null)
-                if (!RightChild.IsRemoved)
+                if (RightChild.IsVisible)
                     ids.AddRange (RightChild.GetAllIDs ());
 
             return ids;

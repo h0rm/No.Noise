@@ -127,6 +127,8 @@ namespace Banshee.NoNoise
             playlist.PrimarySource.AddChildSource (playlist);
 
             playlist.AddSelectedTracks (source);
+
+            trackmodel.TrackModel.Selection.Clear ();
             playlist.NotifyUser ();
         }
 
