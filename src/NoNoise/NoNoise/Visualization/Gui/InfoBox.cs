@@ -121,12 +121,15 @@ namespace NoNoise.Visualization.Gui
                 // sort
                 foreach (String a in subtitles) {
 
-                    if (cs.Find (delegate (CountedSubtitles i) { return i.Name == a; }) == null) {
+                    if (cs.Find (delegate (CountedSubtitles i) {
+                                    return i.Name.ToLower () == a.ToLower (); }) == null) {
 
                         cs.Add (new CountedSubtitles
                           { Name = a,
                             Count = subtitles.FindAll (
-                                     delegate (String i) { return i == a; }).Count
+                                     delegate (String i) {
+                                        return i.ToLower () == a.ToLower ();
+                                     }).Count
                           });
                     }
                 }

@@ -78,8 +78,8 @@ namespace NoNoise.Visualization
                         continue;
 
 //                    Hyena.Log.Information (String.Format ("{0} - {1}",info[i].Title, info[i].Artist));
-                    songs.Add (info[i].Title);
-                    artists.Add (info[i].Artist);
+                    songs.Add (info[i].Title == "" ? "Unknown Title" : info[i].Title);
+                    artists.Add (info[i].Artist == "" ? "Unknown Artist" : info[i].Artist);
                 }
 
                 gui.UpdateInfoText (songs, artists);
