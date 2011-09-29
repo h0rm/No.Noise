@@ -89,7 +89,7 @@ namespace NoNoise.Visualization.Gui
 
             TextExtents te = cr.TextExtents (Text);
 
-            cr.MoveTo ((texture_width-te.Width)/2,y+2*r-texture_height/4);
+            cr.MoveTo ((texture_width-te.Width)/2,2*r-texture_height/4);
             cr.FontOptions.HintStyle = HintStyle.Full;
             cr.ShowText (Text);
 

@@ -132,9 +132,14 @@ namespace NoNoise.Visualization
 
             point_manager = new SongPointManager (0, 0, 30000, 30000);
 
-            foreach (DataEntry e in entries)
-                point_manager.Add (e.X*30000, e.Y*30000, e.ID);
+//            Hyena.Log.Information ("Song point manager created");
 
+            foreach (DataEntry e in entries) {
+//                Hyena.Log.Information (String.Format ("Add song {0} at ({1},{2})",e.ID, e.X, e.Y));
+                point_manager.Add (e.X*30000, e.Y*30000, e.ID);
+            }
+
+            Hyena.Log.Information ("Clustering started");
             point_manager.Cluster ();
 //            point_manager.SetDefaultLevel (500);
 

@@ -167,20 +167,20 @@ namespace NoNoise.Visualization
 
         public void RemoveSelection ()
         {
-            foreach (SongPoint p in tree_list[max_clustering_level].GetAllObjects())
+            foreach (SongPoint p in tree_list[0].GetAllObjects())
                 p.MarkRemovedifSelected ();
         }
 
         public void ClearSelection ()
         {
-            foreach (SongPoint p in tree_list[max_clustering_level].GetAllObjects())
-                p.ClearSelection ();
+            foreach (SongPoint p in tree_list[0].GetAllObjects())
+                p.IsSelected = false;
         }
 
         public void ShowRemoved ()
         {
-            foreach (SongPoint p in tree_list[max_clustering_level].GetAllObjects())
-                p.UnmarkRemoved ();
+            foreach (SongPoint p in tree_list[0].GetAllObjects())
+                p.IsRemoved = false;
         }
 
         public List<SongPoint> GetSelected ()
@@ -198,12 +198,14 @@ namespace NoNoise.Visualization
         public void MarkHidded (List<int> not_hidden)
         {
             Hyena.Log.Information ("Mark hidden");
-            foreach (SongPoint p in tree_list[max_clustering_level].GetAllObjects())
-                p.MarkHidden ();
+            foreach (SongPoint p in tree_list[0].GetAllObjects())
+//                p.MarkHidden ();
+                p.IsHidden = true;
 
             foreach (int i in not_hidden) {
                 if (dict.ContainsKey (i))
-                    dict[i].MarkShown ();
+//                    dict[i].MarkShown ();
+                    dict[i].IsHidden = false;
             }
         }
     }

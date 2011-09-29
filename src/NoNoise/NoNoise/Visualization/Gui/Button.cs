@@ -46,7 +46,7 @@ namespace NoNoise.Visualization.Gui
 
             texture_width = width;
             texture_height = height;
-            this.SetSize (width,height);
+//            texture.SetSize (width,height);
         }
 
         protected void Initialize ()
@@ -55,6 +55,7 @@ namespace NoNoise.Visualization.Gui
             GenerateTextures ();
 
             foreach (CairoTexture t in textures) {
+                t.SetSize (texture_width, texture_height);
                 t.Hide ();
                 Add (t);
             }
