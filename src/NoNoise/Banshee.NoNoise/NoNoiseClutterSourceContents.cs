@@ -117,8 +117,8 @@ namespace Banshee.NoNoise
 
                 } else {
 
-                    Hyena.Log.Information (String.Format ("Added {0}: {1} - {2}",track_info.TrackId,
-                                                      track_info.ArtistName, track_info.TrackTitle));
+//                    Hyena.Log.Information (String.Format ("Added {0}: {1} - {2}",track_info.TrackId,
+//                                                      track_info.ArtistName, track_info.TrackTitle));
                 }
             }
 

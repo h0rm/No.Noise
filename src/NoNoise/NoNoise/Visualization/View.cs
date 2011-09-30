@@ -85,7 +85,7 @@ namespace NoNoise.Visualization
                 List<String> songs = new List<String> ();
                 List<String> artists = new List<String> ();
 
-                Hyena.Log.Information ("Selected songs: " + args.SongIDs.Count);
+//                Hyena.Log.Information ("Selected songs: " + args.SongIDs.Count);
 
                 if(args.SongIDs.Count == 0) {
                     gui.ClearInfoSelection ();
@@ -94,11 +94,11 @@ namespace NoNoise.Visualization
                     gui.UpdateSelection (songs, artists);
                 }
 
-                Hyena.Log.Information ("Songs selected");
+//                Hyena.Log.Information ("Songs selected");
             };
 
             point_group.SelectionCleared += delegate {
-                Hyena.Log.Information ("Selection cleared");
+//                Hyena.Log.Information ("Selection cleared");
                 gui.ClearInfoSelection ();
             };
 
