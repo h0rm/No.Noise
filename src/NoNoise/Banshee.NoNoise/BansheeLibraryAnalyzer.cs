@@ -63,6 +63,8 @@ namespace Banshee.NoNoise
         private const int PCA_MAX_DUR = 5;
         private const int PCA_MIN = 6;
         private const int PCA_MIN_DUR = 7;
+        private const int PCA_MED = 8;
+        private const int PCA_MED_DUR = 9;
         private int PCA_MODE = PCA_MEAN_DUR;
 
         #region Members
@@ -666,6 +668,35 @@ namespace Banshee.NoNoise
                 }
                 break;
 
+            case PCA_MED:
+                foreach (int bid in mfccMap.Keys) {
+                    try {
+                        if (!ana.AddEntry (bid, ConvertMfccToMedian (mfccMap[bid])))
+                            throw new Exception("AddEntry failed!");
+                    } catch (Exception e) {
+                        Hyena.Log.Exception("NoNoise - PCA Problem", e);
+                    }
+                }
+                break;
+
+            case PCA_MED_DUR:
+                foreach (DatabaseTrackInfo dti in DatabaseTrackInfo.Provider.FetchAll ()) {
+                    try {
+                        int bid = dti.TrackId;
+
+                        if (!mfccMap.ContainsKey (bid)) {
+                            Hyena.Log.Debug ("NoNoise/BLA - skipping bid: " + bid);
+                            continue;
+                        }
+                        if (!ana.AddEntry (bid, ConvertMfccToMedian (mfccMap [bid]),
+                                           dti.Duration.TotalSeconds))
+                            throw new Exception("AddEntry failed!");
+                    } catch (Exception e) {
+                        Hyena.Log.Exception ("NoNoise - PCA Problem", e);
+                    }
+                }
+                break;
+
             default:
                 Hyena.Log.Debug ("NoNoise/BLA - default pca case, ignoring...");
                 break;
@@ -818,6 +849,21 @@ namespace Banshee.NoNoise
                     min = Math.Min (min, mfcc.d [i, j]);
                 }
                 data [i] = min;
+            }
+
+            return data;
+        }
+
+        private double[] ConvertMfccToMedian (Mirage.Matrix mfcc)
+        {
+            double[] data = new double[mfcc.rows];
+
+            for (int i = 0; i < mfcc.rows; i++) {
+                SortedList<double, double> r = new SortedList<double, double> (mfcc.columns);
+                for (int j = 0; j < mfcc.columns; j++) {
+                    r.Add (mfcc.d [i, j], mfcc.d [i, j]);
+                }
+                data [i] = r [r.Count / 2];
             }
 
             return data;
