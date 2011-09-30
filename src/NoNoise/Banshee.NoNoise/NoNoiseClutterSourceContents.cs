@@ -172,6 +172,7 @@ namespace Banshee.NoNoise
                 lst.Add (track_info.TrackId);
             }
 
+            trackmodel.TrackModel.Selection.Clear ();
             view.UpdateHiddenSongs (lst);
         }
 
