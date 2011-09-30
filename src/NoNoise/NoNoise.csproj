@@ -297,6 +297,7 @@
     <Compile Include="NoNoise\Visualization\Gui\StyleSheet.cs" />
     <Compile Include="NoNoise\Visualization\Gui\ToolbarToggleButton.cs" />
     <Compile Include="Banshee.NoNoise\NoNoiseSchemas.cs" />
+    <Compile Include="Banshee.NoNoise\NoNoiseHelpDialog.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ProjectExtensions>

@@ -69,6 +69,15 @@ namespace Banshee.NoNoise
             }
         }
 
+        private Gtk.Action help_action;
+        protected Gtk.Action HelpAction {
+            get {
+                if (help_action == null)
+                    help_action = (Gtk.Action) action_service.FindAction ("NoNoiseScan.NoNoiseHelpAction");
+                return help_action;
+            }
+        }
+
         private ToggleAction no_noise_action;
         protected ToggleAction NoNoiseAction {
             get {
@@ -190,9 +199,15 @@ namespace Banshee.NoNoise
                 ActionGroup scan_actions = new ActionGroup ("NoNoiseScan");
 
                 scan_actions.Add (new ActionEntry [] {
+                    new ActionEntry ("NoNoiseMenuAction", null, "NoNoise", null,
+                                     null, null),
                     new ActionEntry ("NoNoiseScanAction", null,
                     Catalog.GetString ("Start No.Noise scan"), null,
                     Catalog.GetString ("Start or pause the No.Noise scan"),
+                    null),
+                    new ActionEntry ("NoNoiseHelpAction", null,
+                    Catalog.GetString ("Help"), null,
+                    Catalog.GetString ("Show the help dialog for the NoNoise plug-in"),
                     null)
                 });
 
@@ -202,6 +217,7 @@ namespace Banshee.NoNoise
 
             NoNoiseAction.Activated += OnNoNoiseToggle;
             ScanAction.Activated += OnScanAction;
+            HelpAction.Activated += OnHelpAction;
             return true;
         }
 
@@ -225,6 +241,12 @@ namespace Banshee.NoNoise
             }
 
             scan_action_enabled = !scan_action_enabled;
+        }
+
+        private void OnHelpAction (object sender, EventArgs e)
+        {
+            Hyena.Log.Debug ("Help action called");
+            new NoNoiseHelpDialog ();
         }
 
         void OnNoNoiseToggle (object sender, EventArgs e)
