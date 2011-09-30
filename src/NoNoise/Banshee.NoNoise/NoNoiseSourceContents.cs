@@ -556,6 +556,7 @@ namespace Banshee.NoNoise
 
                 int id = DatabaseTrackInfo.GetTrackIdForUri(args.Uri);
                 if (id >= 0) {
+                    TrackInfo ti = ServiceManager.SourceManager.MusicLibrary.DatabaseTrackModel[id];
 //                        int index = (int)TrackCache.IndexOf ((long)id); // auch nicht accessible...?
                     Hyena.Log.Debug("NoNoise - BPM...Track index: " +
                                     ServiceManager.SourceManager.MusicLibrary.GetTrackIdForUri(args.Uri));
