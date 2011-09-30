@@ -859,11 +859,14 @@ namespace Banshee.NoNoise
             double[] data = new double[mfcc.rows];
 
             for (int i = 0; i < mfcc.rows; i++) {
-                SortedList<double, double> r = new SortedList<double, double> (mfcc.columns);
+                double[] r = new double[mfcc.columns];
+
                 for (int j = 0; j < mfcc.columns; j++) {
-                    r.Add (mfcc.d [i, j], mfcc.d [i, j]);
+                    r [j] = mfcc.d [i, j];
                 }
-                data [i] = r [r.Count / 2];
+
+                Array.Sort<double> (r);
+                data [i] = r [r.Length / 2];
             }
 
             return data;
