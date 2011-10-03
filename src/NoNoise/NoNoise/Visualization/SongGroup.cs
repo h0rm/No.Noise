@@ -35,6 +35,9 @@ using NoNoise.Data;
 
 namespace NoNoise.Visualization
 {
+    /// <summary>
+    /// Argument class which holds information (id) about songs.
+    /// </summary>
     public class SongInfoArgs
     {
         public SongInfoArgs (List<int> song_ids)
@@ -67,6 +70,7 @@ namespace NoNoise.Visualization
     {
 
         #region Member variables
+
         SongHighlightEvent song_enter;
         SongLeaveEvent song_leave;
 
@@ -79,8 +83,6 @@ namespace NoNoise.Visualization
         private double cluster_w, cluster_h;
 
         private const int num_of_actors = 3000;
-
-//        private List<Rectangle> debug_quad_rectangles;
 
         private Alpha animation_alpha;
         private BehaviourScale animation_behave;
@@ -100,6 +102,10 @@ namespace NoNoise.Visualization
         private Behaviour clustering_animation_behave;
         private Timeline clustering_animation_timeline;
         private uint clutter_animation_time = 3000;
+        private Behaviour clustering_reverse_behave;
+        private ClusteringAnimation clustering_animation = SongGroup.ClusteringAnimation.None;
+        private enum ClusteringAnimation {Forward, Backward, None};
+
 
         private BehaviourScale zoom_animation_behave;
         private int diff_zoom_clustering = 0;
@@ -116,21 +122,33 @@ namespace NoNoise.Visualization
         #endregion
 
         #region Getter + Setter
+        /// <summary>
+        /// Is fired when the mouse pointer enters a point.
+        /// </summary>
         public event SongHighlightEvent SongEntered {
             add { song_enter += value; }
             remove { song_enter -= value; }
         }
 
+        /// <summary>
+        /// Is fired when the mouse pointer leaves a point.
+        /// </summary>
         public event SongLeaveEvent SongLeft {
             add { song_leave += value; }
             remove { song_leave -= value; }
         }
 
+        /// <summary>
+        /// Is fired when a selection is completed.
+        /// </summary>
         public event SongSelectedEvent SongSelected {
             add { song_selected += value; }
             remove { song_selected -= value; }
         }
 
+        /// <summary>
+        /// Is fired when the selection is cleared.
+        /// </summary>
         public event SelectionClearedEvent SelectionCleared {
             add { selection_cleared += value; }
             remove { selection_cleared -= value; }
@@ -143,6 +161,12 @@ namespace NoNoise.Visualization
             Init();
         }
 
+        /// <summary>
+        /// Loads the list of <see cref="DataEntry"/> elements into the visualization.
+        /// </summary>
+        /// <param name="entries">
+        /// A <see cref="List<DataEntry>"/>
+        /// </param>
         public void LoadPcaData (List<DataEntry> entries)
         {
 
@@ -158,6 +182,15 @@ namespace NoNoise.Visualization
 
         }
 
+        /// <summary>
+        /// [Test] Parses a given text file with airport locations for testing purpose.
+        /// </summary>
+        /// <param name="filename">
+        /// A <see cref="System.String"/> which specifies the location of the file.
+        /// </param>
+        /// <param name="count">
+        /// A <see cref="System.Int32"/> which specifies the number of airport locations parsed.
+        /// </param>
         public void ParseTextFile (string filename, int count)
         {
             List<Point> points = new List<Point> ();
@@ -199,6 +232,10 @@ namespace NoNoise.Visualization
             points_visible = new List<SongPoint> (num_of_actors);
         }
 
+        #region Initialzation
+        /// <summary>
+        /// Initializes the <see cref="SongActorManager"/>.
+        /// </summary>
         private void InitSongActors ()
         {
 
@@ -211,6 +248,9 @@ namespace NoNoise.Visualization
 
         }
 
+        /// <summary>
+        /// Initializes the actor which is used for selection.
+        /// </summary>
         private void InitSelectionActor ()
         {
             selection = new SelectionActor (1000,1000, new Cairo.Color (1,0,0,0.9));
@@ -219,6 +259,9 @@ namespace NoNoise.Visualization
 
         }
 
+        /// <summary>
+        /// Initializes all animations.
+        /// </summary>
         private void InitAnimations ()
         {
 
@@ -229,13 +272,18 @@ namespace NoNoise.Visualization
             clustering_animation_timeline = new Timeline (clutter_animation_time);
             clustering_animation_alpha = new Alpha (clustering_animation_timeline, (ulong)AnimationMode.EaseInOutSine);
             clustering_animation_behave = new BehaviourOpacity (clustering_animation_alpha, 255, 0);
+//            clustering_animation_timeline.Completed += HandleClusteringTimelineCompleted;
             clustering_animation_timeline.Completed += HandleClusteringTimelineCompleted;
 
-            zoom_animation_behave = new BehaviourScale (animation_alpha, 1.0,1.0,1.0,1.0);
+            clustering_reverse_behave = new BehaviourOpacity (clustering_animation_alpha, 0, 255);
 
+            zoom_animation_behave = new BehaviourScale (animation_alpha, 1.0,1.0,1.0,1.0);
             zoom_animation_behave.Apply (this);
         }
 
+        /// <summary>
+        /// Initializes all Handlers.
+        /// </summary>
         private void InitHandlers ()
         {
             stage.ButtonPressEvent += HandleStageButtonPressEvent;
@@ -263,6 +311,35 @@ namespace NoNoise.Visualization
             }
         }
 
+        /// <summary>
+        /// Initializes the zoom and clustering levels.
+        /// </summary>
+        private void InitializeZoomLevel ()
+        {
+            int i = 0;
+
+            point_manager.GetWindowDimensions (0, 1500, out cluster_w, out cluster_h);
+            Hyena.Log.Debug ("Window dimensions " + cluster_w + "x" + cluster_h);
+            // as long as window size is too small zoom out
+            while (cluster_w < point_manager.Width) {
+                cluster_w *= zoom_level_mult;
+                i++;
+
+            }
+
+            point_manager.Level = i;
+            diff_zoom_clustering = i - point_manager.Level;
+
+            Hyena.Log.Debug ("Zoom initialized with \nscale="+
+                                   stage.Width / point_manager.Width + " level="+ point_manager.Level +
+                                   " diff=" + diff_zoom_clustering);
+
+
+
+            this.SetZoomLevel (stage.Width / point_manager.Width);
+            this.SetPosition (0, stage.Height / 2f - (float)point_manager.Height*(float)zoom_level/2f);
+
+        }
 
         /// <summary>
         /// Initializes the prototype texture, the animations, and the event handler.
@@ -278,7 +355,9 @@ namespace NoNoise.Visualization
             InitSelectionActor ();
             InitHandlers ();
         }
+        #endregion
 
+        #region User Interaction functions
         /// <summary>
         /// This function is used cluster or decluster the data. Every time the function is
         /// called one clustering step is perfomed.
@@ -300,12 +379,18 @@ namespace NoNoise.Visualization
             }
         }
 
+        /// <summary>
+        /// Enables or disables selection.
+        /// </summary>
         public void ToggleSelection ()
         {
             mouse_button_locked = true;
             selection_toggle = !selection_toggle;
         }
 
+        /// <summary>
+        /// Removes all currently selected points.
+        /// </summary>
         public void RemoveSelected ()
         {
             mouse_button_locked = true;
@@ -315,6 +400,9 @@ namespace NoNoise.Visualization
             UpdateView ();
         }
 
+        /// <summary>
+        /// All removed points are shown again.
+        /// </summary>
         public void ResetRemovedPoints ()
         {
             mouse_button_locked = true;
@@ -324,6 +412,12 @@ namespace NoNoise.Visualization
             UpdateView ();
         }
 
+        /// <summary>
+        /// Returns a list of song ids which correspond to the selected points.
+        /// </summary>
+        /// <returns>
+        /// A <see cref="List<System.Int32>"/>
+        /// </returns>
         public List<int> GetSelectedSongIDs ()
         {
             List<SongPoint> selected = point_manager.GetSelected ();
@@ -336,13 +430,21 @@ namespace NoNoise.Visualization
             return ret;
         }
 
+        /// <summary>
+        /// Hides or unhides the points according to the given list of shown songs.
+        /// </summary>
+        /// <param name="not_hidden">
+        /// A <see cref="List<System.Int32>"/> which specifies all songs (by id) which are not hidden.
+        /// </param>
         public void UpdateHiddenSongs (List<int> not_hidden)
         {
             point_manager.MarkHidded (not_hidden);
             UpdateShownSelection ();
             UpdateView ();
         }
+        #endregion
 
+        #region Zoom
         /// <summary>
         /// This function is used to zoom in or out.
         /// </summary>
@@ -356,6 +458,12 @@ namespace NoNoise.Visualization
 
         }
 
+        /// <summary>
+        /// Sets the zoom level to the given scale.
+        /// </summary>
+        /// <param name="scale">
+        /// A <see cref="System.Double"/>
+        /// </param>
         private void SetZoomLevel (double scale)
         {
             zoom_level = scale;
@@ -364,7 +472,21 @@ namespace NoNoise.Visualization
             foreach (SongActor s in actor_manager.Actors)
                 s.SetScale (1/zoom_level, 1/zoom_level);
         }
+        #endregion
 
+        #region Animations
+        /// <summary>
+        /// Starts the zoom animation in the given direction.
+        /// </summary>
+        /// <param name="inwards">
+        /// A <see cref="System.Boolean"/>
+        /// </param>
+        /// <param name="x">
+        /// A <see cref="System.Single"/> which specifies the x-coordinate of the center point.
+        /// </param>
+        /// <param name="y">
+        /// A <see cref="System.Single"/> which specifies the y-coordinate of the center point.
+        /// </param>
         private void ZoomOnPosition (bool inwards, float x, float y)
         {
             //Transformed position
@@ -421,8 +543,67 @@ namespace NoNoise.Visualization
             animation_timeline.Start();
         }
 
-
+        /// <summary>
+        /// Start the clustering animation in the given direction and zooms in or out, respectively.
+        /// </summary>
+        /// <param name="forward">
+        /// A <see cref="System.Boolean"/> which specifies the direction (true - towards higher clustering
+        /// level, false - towards lower clustering level).
+        /// </param>
         private void AnimateClustering (bool forward)
+        {
+            bool playing = clustering_animation_timeline.IsPlaying;
+            bool old_forward = clustering_animation == ClusteringAnimation.Forward ? true : false;
+
+            // Stop clustering animation and remove all actors from fade in / fade out animations
+            clustering_animation_timeline.Stop ();
+            clustering_animation_behave.RemoveAll ();
+            clustering_reverse_behave.RemoveAll ();
+
+            // Zoom in or out
+            ZoomOnCenter (!forward);
+
+            // If still playing complete animation
+            if (playing)
+                HandleClusteringTimelineCompleted (this, new EventArgs ());
+
+            // If not playing or direction stays the same rewind timeline
+            if (!playing || forward == old_forward) {
+//                Hyena.Log.Debug ("Animation rewind");
+                clustering_animation_timeline.Rewind ();
+            }
+
+            // If forward and no clustering level available increase diff, abort
+            if (forward && (point_manager.IsMaxLevel || diff_zoom_clustering != 0)) {
+                diff_zoom_clustering ++;
+//                Hyena.Log.Information ("Diff " + diff_zoom_clustering);
+                return;
+            }
+
+            // If not forward and no clustering level available decrease diff, abort
+            if (!forward && (point_manager.IsMinLevel || diff_zoom_clustering != 0)) {
+                diff_zoom_clustering --;
+//                Hyena.Log.Information ("Diff " + diff_zoom_clustering);
+                return;
+            }
+
+            // Start animation and store direction
+            clustering_animation_timeline.Start ();
+            clustering_animation = forward ? SongGroup.ClusteringAnimation.Forward :
+                                             SongGroup.ClusteringAnimation.Backward;
+
+            // Update view
+            UpdateView ();
+        }
+
+        /// <summary>
+        /// [Old] Start the old clustering animation in the given direction and zooms in
+        /// or out, respectively.
+        /// </summary>
+        /// <param name="forward">
+        /// A <see cref="System.Boolean"/>
+        /// </param>
+        private void AnimateClusteringOld (bool forward)
         {
             TimelineDirection dir = clustering_animation_timeline.Direction;
 
@@ -430,7 +611,7 @@ namespace NoNoise.Visualization
 
             //forward -> forward
             if (playing && dir == TimelineDirection.Forward && forward) {
-                HandleClusteringTimelineCompleted (this, new EventArgs ());
+                HandleClusteringTimelineCompletedOld (this, new EventArgs ());
                 clustering_animation_timeline.Stop ();
             }
 
@@ -455,7 +636,7 @@ namespace NoNoise.Visualization
                 return;
             }
 
-            // nach vorne aber kein clustering mehr
+            // nach hinten aber kein clustering mehr
             if (!forward && point_manager.IsMinLevel) {
                 diff_zoom_clustering --;
 //                Hyena.Log.Information ("Diff --" + diff_zoom_clustering);
@@ -495,7 +676,48 @@ namespace NoNoise.Visualization
 
         }
 
-        private void AddClusteringAnimation (SongPoint p)
+        /// <summary>
+        /// Add either the fade in or the fade out clustering animation to the actor
+        /// which is associated with the given point.
+        /// </summary>
+        /// <param name="p">
+        /// A <see cref="SongPoint"/>
+        /// </param>
+        /// <param name="fade_in">
+        /// A <see cref="System.Boolean"/>
+        /// </param>
+        private void AddClusteringAnimation (SongPoint p, bool fade_in)
+        {
+
+            switch (fade_in) {
+
+            // case old level -> fade out animation
+            case false:
+//                Hyena.Log.Debug ("Fade out");
+                if (clustering_animation_behave.IsApplied (p.Actor))
+                    return;
+                clustering_animation_behave.Apply (p.Actor);
+                break;
+
+            // case new level -> fade in animation
+            case true:
+//                Hyena.Log.Debug ("Fade in");
+                if (clustering_reverse_behave.IsApplied (p.Actor))
+                    return;
+                clustering_reverse_behave.Apply (p.Actor);
+                break;
+            }
+
+        }
+
+        /// <summary>
+        /// [Old] Adds the old clustering animation to the actor which is associated with
+        /// the given point.
+        /// </summary>
+        /// <param name="p">
+        /// A <see cref="SongPoint"/>
+        /// </param>
+        private void AddClusteringAnimationOld (SongPoint p)
         {
             if (p.Parent == null) {
                 return;
@@ -517,36 +739,103 @@ namespace NoNoise.Visualization
             clustering_animation_behave.Apply (p.Actor);
         }
 
+        /// <summary>
+        /// Removes the actor which is associated with the given point from all clustering
+        /// animations.
+        /// </summary>
+        /// <param name="p">
+        /// A <see cref="SongPoint"/>
+        /// </param>
         private void RemoveClusteringAnimation (SongPoint p)
         {
             if (clustering_animation_behave.IsApplied (p.Actor))
                 clustering_animation_behave.Remove (p.Actor);
+
+            if (clustering_reverse_behave.IsApplied (p.Actor))
+                clustering_reverse_behave.Remove (p.Actor);
         }
 
+        /// <summary>
+        /// Handle which is called after the clustering animation is completed.
+        /// </summary>
+        /// <param name="sender">
+        /// A <see cref="System.Object"/>
+        /// </param>
+        /// <param name="e">
+        /// A <see cref="EventArgs"/>
+        /// </param>
         private void HandleClusteringTimelineCompleted (object sender, EventArgs e)
+        {
+            // Clustering completed, set to new level
+            if (clustering_animation == ClusteringAnimation.Forward)
+                point_manager.IncreaseLevel ();
+            else
+                point_manager.DecreaseLevel ();
+
+            clustering_animation = ClusteringAnimation.None;
+            UpdateView ();
+        }
+
+        /// <summary>
+        /// [Old] Handle for the old clustering animation which is called after the
+        /// animation is completed.
+        /// </summary>
+        /// <param name="sender">
+        /// A <see cref="System.Object"/>
+        /// </param>
+        /// <param name="e">
+        /// A <see cref="EventArgs"/>
+        /// </param>
+        private void HandleClusteringTimelineCompletedOld (object sender, EventArgs e)
         {
             if (clustering_animation_timeline.Direction == TimelineDirection.Forward)
                 point_manager.IncreaseLevel ();
 
             UpdateView ();
         }
+        #endregion
 
+        #region Clipping
 
-        private void UpdateView ()
+        /// <summary>
+        /// Clears the list of visible points.
+        /// </summary>
+        private void ClearView ()
         {
             //remove all visible points
-            for (int i = 0; i < points_visible.Count; i++) {
-                actor_manager.Free (points_visible[i].Actor);
-                points_visible[i].Actor = null;
-
-                points_visible[i] = points_visible[points_visible.Count-1];
-                points_visible.RemoveAt (points_visible.Count-1);
-                i--;
+            foreach (SongPoint p in points_visible) {
+                actor_manager.Free (p.Actor);
+                p.Actor = null;
             }
 
+            points_visible.Clear ();
+        }
+
+        /// <summary>
+        /// Clears the list of visible points and updates the clipping window.
+        /// </summary>
+        private void UpdateView ()
+        {
+
+            ClearView ();
             UpdateClipping ();
         }
 
+        /// <summary>
+        /// This function calculates the coordinates in point space for the current visible window.
+        /// </summary>
+        /// <param name="x">
+        /// A <see cref="System.Double"/>
+        /// </param>
+        /// <param name="y">
+        /// A <see cref="System.Double"/>
+        /// </param>
+        /// <param name="width">
+        /// A <see cref="System.Double"/>
+        /// </param>
+        /// <param name="height">
+        /// A <see cref="System.Double"/>
+        /// </param>
         private void GetClippingWindow (out double x, out double y, out double width, out double height)
         {
             float tx, ty;
@@ -560,6 +849,10 @@ namespace NoNoise.Visualization
             height = (stage.Height+2*(float)SongActor.CircleSize)/sy;
         }
 
+        /// <summary>
+        /// This function is used to recalculate the clipping. That means, points which are newly visible are
+        /// shown and points which are not visible anymore are hidden.
+        /// </summary>
         public void UpdateClipping ()
         {
 //            Hyena.Log.Information ("Update Clipping");
@@ -571,7 +864,19 @@ namespace NoNoise.Visualization
             SongPoint p;
 
             points = point_manager.GetPointsInWindow (x, y, width, height);
+            int old_points_count = points.Count;
 
+
+            // if animation is running show points from this level and the next
+            if (clustering_animation != SongGroup.ClusteringAnimation.None) {
+
+                int offset = clustering_animation == SongGroup.ClusteringAnimation.Forward ?
+                    1 : -1;
+
+                points.AddRange (point_manager.GetPointsInWindow (x, y, width, height, offset));
+            }
+
+//            Hyena.Log.Debug (String.Format ("Point count old={0} new={1}", old_points_count, points.Count));
             // Check visible points
             for (int i = 0; i < points_visible.Count; i++)
             {
@@ -590,7 +895,11 @@ namespace NoNoise.Visualization
 
 
                 } else {
-                    AddClusteringAnimation (p);
+//                    if (clustering_animation_behave.IsApplied (p.Actor) ||
+//                        clustering_reverse_behave.IsApplied (p.Actor))
+//                        continue;
+
+//                    AddClusteringAnimationNew (p, false);
                 }
             }
 
@@ -611,19 +920,74 @@ namespace NoNoise.Visualization
                     continue;
 
                 p.Actor = actor_manager.AllocateAtPosition (p);
-
                 points_visible.Add (p);
 
-                AddClusteringAnimation (p);
+                AddClusteringAnimation (p, i >= old_points_count);
             }
+        }
+        #endregion
 
+        #region Selection
+        /// <summary>
+        /// Clears the selection.
+        /// </summary>
+        private void ClearSelection ()
+        {
+            point_manager.ClearSelection ();
+
+            UpdateView ();
+
+            points_selected = new List<SongPoint> ();
+
+            selection.Reset ();
+
+            FireSelectionCleared ();
         }
 
+        /// <summary>
+        /// Updates the selected points according to their visibility and fires the appropriate event.
+        /// </summary>
+        private void UpdateShownSelection ()
+        {
+            List<int> selected_ids = new List<int> ();
+
+            foreach (SongPoint p in point_manager.GetSelected ())
+                foreach (int id in p.GetAllIDs ()) {
+                        if (!selected_ids.Contains(id))
+                            selected_ids.Add (id);
+                }
+            FireSongSelected (new SongInfoArgs (selected_ids));
+        }
+
+        /// <summary>
+        /// Gets the selected points, updates the view and fires the appropriate event.
+        /// </summary>
+        private void UpdateSelection ()
+        {
+            points_selected = selection.GetPointsInside (points_visible);
+
+            List<int> selected_ids = new List<int> ();
+
+            for (int i = 0; i < points_selected.Count; i ++)
+            {
+                points_selected[i].MarkAsSelected ();
+                points_selected[i].Actor.SetPrototypeByColor (SongActor.Color.Red);
+
+                foreach (int id in points_selected[i].GetAllIDs ()) {
+                    if (!selected_ids.Contains(id))
+                        selected_ids.Add (id);
+                }
+            }
+
+            UpdateClipping ();
+            FireSongSelected (new SongInfoArgs (selected_ids));
+        }
+        #endregion Selection
 
          #region private Handler
 
         /// <summary>
-        /// Handle the zooming with the animation. This is used when for
+        /// [Old] Handle the zooming with the animation. This is used when for
         /// zooming with the scroll wheel.
         /// </summary>
         /// <param name="o">
@@ -655,7 +1019,7 @@ namespace NoNoise.Visualization
         }
 
         /// <summary>
-        /// Handle the mouse motion for displacing the actor.
+        /// Handle the mouse motion for displacement and selection.
         /// </summary>
         /// <param name="o">
         /// A <see cref="System.Object"/>
@@ -671,7 +1035,6 @@ namespace NoNoise.Visualization
 
             float x, y;
 
-//            args.Event.X
             EventHelper.GetCoords (args.Event, out x, out y);
 
             float newx = this.X + x - mouse_old_x;
@@ -693,79 +1056,15 @@ namespace NoNoise.Visualization
             mouse_old_y = y;
         }
 
-        private void ClearSelection ()
-        {
-            point_manager.ClearSelection ();
-
-            UpdateView ();
-
-            points_selected = new List<SongPoint> ();
-
-            selection.Reset ();
-
-            FireSelectionCleared ();
-        }
-
-        private void UpdateShownSelection ()
-        {
-            List<int> selected_ids = new List<int> ();
-
-            foreach (SongPoint p in point_manager.GetSelected ())
-                foreach (int id in p.GetAllIDs ()) {
-                        if (!selected_ids.Contains(id))
-                            selected_ids.Add (id);
-                }
-            FireSongSelected (new SongInfoArgs (selected_ids));
-        }
-
-        private void UpdateSelection ()
-        {
-            points_selected = selection.GetPointsInside (points_visible);
-
-            List<int> selected_ids = new List<int> ();
-
-            for (int i = 0; i < points_selected.Count; i ++)
-            {
-                points_selected[i].MarkAsSelected ();
-                points_selected[i].Actor.SetPrototypeByColor (SongActor.Color.Red);
-
-                foreach (int id in points_selected[i].GetAllIDs ()) {
-                    if (!selected_ids.Contains(id))
-                        selected_ids.Add (id);
-                }
-            }
-
-            UpdateClipping ();
-            FireSongSelected (new SongInfoArgs (selected_ids));
-        }
-
-        private void InitializeZoomLevel ()
-        {
-            int i = 0;
-
-            point_manager.GetWindowDimensions (0, 1500, out cluster_w, out cluster_h);
-            Hyena.Log.Debug ("Window dimensions " + cluster_w + "x" + cluster_h);
-            // as long as window size is too small zoom out
-            while (cluster_w < point_manager.Width) {
-                cluster_w *= zoom_level_mult;
-                i++;
-
-            }
-
-            point_manager.Level = i;
-            diff_zoom_clustering = i - point_manager.Level;
-
-            Hyena.Log.Debug ("Zoom initialized with \nscale="+
-                                   stage.Width / point_manager.Width + " level="+ point_manager.Level +
-                                   " diff=" + diff_zoom_clustering);
-
-
-
-            this.SetZoomLevel (stage.Width / point_manager.Width);
-            this.SetPosition (0, stage.Height / 2f - (float)point_manager.Height*(float)zoom_level/2f);
-
-        }
-
+        /// <summary>
+        /// Handles changes of the window size.
+        /// </summary>
+        /// <param name="o">
+        /// A <see cref="System.Object"/>
+        /// </param>
+        /// <param name="args">
+        /// A <see cref="AllocationChangedArgs"/>
+        /// </param>
         private void HandleWindowSizeChanged (object o, AllocationChangedArgs args)
         {
             if (stage.Width == 1)
@@ -782,7 +1081,7 @@ namespace NoNoise.Visualization
         }
 
         /// <summary>
-        /// Handles the button release event for displacing the actor.
+        /// Handles the button release event for displacement and selection.
         /// </summary>
         /// <param name="o">
         /// A <see cref="System.Object"/>
@@ -810,7 +1109,7 @@ namespace NoNoise.Visualization
         }
 
         /// <summary>
-        /// Handles the button press event for displacing the actor.
+        /// Handles all button press events for displacement and selection.
         /// </summary>
         /// <param name="o">
         /// A <see cref="System.Object"/>
@@ -848,24 +1147,42 @@ namespace NoNoise.Visualization
 
         }
 
+        /// <summary>
+        /// Fires <see cref="SongHighlightEvent"/>
+        /// </summary>
+        /// <param name="args">
+        /// A <see cref="SongInfoArgs"/>
+        /// </param>
         private void FireSongEnter (SongInfoArgs args)
         {
             if (song_enter != null)
                 song_enter (this, args);
         }
 
+        /// <summary>
+        /// Fires <see cref="SongLeveEvent"/>
+        /// </summary>
         private void FireSongLeave ()
         {
             if (song_leave != null)
                 song_leave (this);
         }
 
+        /// <summary>
+        /// Fires <see cref="SongSelectedEvent"/>
+        /// </summary>
+        /// <param name="args">
+        /// A <see cref="SongInfoArgs"/>
+        /// </param>
         private void FireSongSelected (SongInfoArgs args)
         {
             if (song_selected != null)
                 song_selected (this, args);
         }
 
+        /// <summary>
+        /// Fires <see cref="SelectionClearedEvent"/>
+        /// </summary>
         private void FireSelectionCleared ()
         {
             if (selection_cleared != null)

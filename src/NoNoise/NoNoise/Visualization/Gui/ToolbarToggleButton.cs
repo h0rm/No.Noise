@@ -29,6 +29,9 @@ using Clutter;
 
 namespace NoNoise.Visualization.Gui
 {
+    /// <summary>
+    /// Gui toolbar button element which can be toggled
+    /// </summary>
     public class ToolbarToggleButton : ToolbarButton
     {
         public enum State {On, Off};
@@ -57,18 +60,32 @@ namespace NoNoise.Visualization.Gui
             InitializeHandlers ();
         }
 
+        /// <summary>
+        /// Initializes the handlers
+        /// </summary>
         private void InitializeHandlers ()
         {
             ButtonPressEvent += HandleButtonPressEvent;
         }
 
-
+        /// <summary>
+        /// Handler which is called when the button is pressed (i.e. toggled).
+        /// </summary>
+        /// <param name="o">
+        /// A <see cref="System.Object"/>
+        /// </param>
+        /// <param name="args">
+        /// A <see cref="ButtonPressEventArgs"/>
+        /// </param>
         private void HandleButtonPressEvent (object o, ButtonPressEventArgs args)
         {
             state = state == State.On ? State.Off : State.On;
             OnStateChanged ();
         }
 
+        /// <summary>
+        /// Function which is called when the state is changed.
+        /// </summary>
         private void OnStateChanged ()
         {
             textures[0].Hide ();

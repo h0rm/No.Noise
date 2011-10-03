@@ -31,6 +31,9 @@ using System.Linq;
 
 namespace NoNoise.Visualization.Gui
 {
+    /// <summary>
+    /// Gui element used to display information about songs.
+    /// </summary>
     public class InfoBox : Clutter.Group
     {
         private List<String> info_strings;
@@ -73,6 +76,9 @@ namespace NoNoise.Visualization.Gui
 //            Update (new List<String>(new string[]{"Song 1", "Song 2", "blabal"}));
         }
 
+        /// <summary>
+        /// Clears the infobox.
+        /// </summary>
         public void Clear ()
         {
             texture.Clear ();
@@ -81,6 +87,12 @@ namespace NoNoise.Visualization.Gui
             ((IDisposable) cr).Dispose ();
         }
 
+        /// <summary>
+        /// Draws the background for the infobox into the texture.
+        /// </summary>
+        /// <param name="height">
+        /// A <see cref="System.Int32"/>
+        /// </param>
         private void GenerateBackground (int height)
         {
             double x = 5+0.5, y = 5+0.5;
@@ -122,15 +134,31 @@ namespace NoNoise.Visualization.Gui
             this.SetSize (Width, (float)h+10);
         }
 
+        /// <summary>
+        /// Helper class which encapsulates Subtitles and a count.
+        /// </summary>
         private class CountedSubtitles {
             public String Name { get; set; }
             public int Count { get; set; }
         }
 
+        /// <summary>
+        /// Redraws the infobox.
+        /// </summary>
         public void Update ()
         {
             Update (title, subtile);
         }
+
+        /// <summary>
+        /// Updates the text in the infobox.
+        /// </summary>
+        /// <param name="titles">
+        /// A <see cref="List<String>"/>
+        /// </param>
+        /// <param name="subtitles">
+        /// A <see cref="List<String>"/>
+        /// </param>
         public void Update (List<String> titles, List<String> subtitles)
         {
             this.title = titles;
@@ -193,6 +221,15 @@ namespace NoNoise.Visualization.Gui
             AddText (t, s);
         }
 
+        /// <summary>
+        /// Draws the text.
+        /// </summary>
+        /// <param name="titles">
+        /// A <see cref="List<String>"/>
+        /// </param>
+        /// <param name="subtitles">
+        /// A <see cref="List<String>"/>
+        /// </param>
         public void AddText (List<String> titles, List<String> subtitles)
         {
             if (titles.Count != subtitles.Count)
@@ -233,6 +270,15 @@ namespace NoNoise.Visualization.Gui
             ((IDisposable) cr).Dispose ();
         }
 
+        /// <summary>
+        /// Checks wether a string is to long.
+        /// </summary>
+        /// <param name="s">
+        /// A <see cref="String"/>
+        /// </param>
+        /// <returns>
+        /// A <see cref="String"/> which is shortened representation of the input string.
+        /// </returns>
         public String CheckString (String s)
         {
             if (s.Length > 28) {

@@ -29,6 +29,9 @@ using System.Collections.Generic;
 
 namespace NoNoise.Visualization
 {
+    /// <summary>
+    /// This class acts as an pool of actors which can be allocated when needed.
+    /// </summary>
     public class SongActorManager
     {
         private List<SongActor> song_actors;
@@ -41,6 +44,12 @@ namespace NoNoise.Visualization
             Init (count);
         }
 
+        /// <summary>
+        /// Initializes the manager with the given number of points (i.e. the actors are created).
+        /// </summary>
+        /// <param name="count">
+        /// A <see cref="System.Int32"/>
+        /// </param>
         public void Init (int count)
         {
             song_actors = new List<SongActor> (count);
@@ -50,6 +59,15 @@ namespace NoNoise.Visualization
                 free_actors.Push (InitSingle ("SongActor " + i));
         }
 
+        /// <summary>
+        /// Initializes a single actor
+        /// </summary>
+        /// <param name="name">
+        /// A <see cref="System.String"/>
+        /// </param>
+        /// <returns>
+        /// A <see cref="SongActor"/>
+        /// </returns>
         public SongActor InitSingle (string name)
         {
             SongActor clone = new SongActor ();
@@ -61,20 +79,21 @@ namespace NoNoise.Visualization
             clone.Name = name;
             clone.Owner = null;
             clone.Hide ();
-            //OLD event handler
-//            clone.EnterEvent += delegate {
-//                FireSongEnter (new SongHighlightArgs (x, y, clone.Name, cluster_list.Count));
-//            };
-//
-//            clone.EnterEvent += delegate {
-//                FireSongLeave (new SongHighlightArgs (x, y, clone.Name, cluster_list.Count));
-//            };
 
             song_actors.Add (clone);
 
             return clone;
         }
 
+        /// <summary>
+        /// Allocates an actor for the given point.
+        /// </summary>
+        /// <param name="p">
+        /// A <see cref="SongPoint"/>
+        /// </param>
+        /// <returns>
+        /// A <see cref="SongActor"/>
+        /// </returns>
         public SongActor AllocateAtPosition (SongPoint p)
         {
             if (free_actors.Count < 1)
@@ -105,6 +124,12 @@ namespace NoNoise.Visualization
             return actor;
         }
 
+        /// <summary>
+        /// Frees a given actor.
+        /// </summary>
+        /// <param name="actor">
+        /// A <see cref="SongActor"/>
+        /// </param>
         public void Free (SongActor actor)
         {
             actor.Hide ();
@@ -112,10 +137,16 @@ namespace NoNoise.Visualization
             free_actors.Push (actor);
         }
 
+        /// <summary>
+        /// Returns a list of all actors.
+        /// </summary>
         public List<SongActor> Actors {
             get {return song_actors;}
         }
 
+        /// <summary>
+        /// Returns true if at least on free actor exists.
+        /// </summary>
         public bool HasFree {
             get { return free_actors.Count > 0; }
         }

@@ -29,11 +29,17 @@ using Clutter;
 
 namespace NoNoise.Visualization.Gui
 {
+    /// <summary>
+    /// Abstract class which provides basic functionality for buttons
+    /// </summary>
     public abstract class Button : Clutter.Group
     {
         protected List<CairoTexture> textures;
         protected uint texture_width, texture_height;
 
+        /// <summary>
+        /// Style sheet used for drawing
+        /// </summary>
         public StyleSheet Style {
             get;
             protected set;
@@ -48,6 +54,9 @@ namespace NoNoise.Visualization.Gui
             texture_height = height;
         }
 
+        /// <summary>
+        /// Initializes all textures.
+        /// </summary>
         protected void Initialize ()
         {
             textures = new List<CairoTexture>();
@@ -63,7 +72,9 @@ namespace NoNoise.Visualization.Gui
                 textures[0].Show ();
         }
 
-
+        /// <summary>
+        /// Generates all textures
+        /// </summary>
         protected abstract void GenerateTextures ();
 
 

@@ -128,22 +128,24 @@ namespace NoNoise.Visualization.Gui
 
             this.Add (toolbar);
 
-            this.Reactive = true;
             infobox = new InfoBox (style, 200,400, false);
             infobox.AnchorPointFromGravity = Gravity.NorthEast;
             this.Add (infobox);
-            infobox.Reactive = true;
+//            infobox.Reactive = true;
 
             selection_info = new InfoBox (style, 200, 400, true);
             selection_info.AnchorPointFromGravity = Gravity.SouthEast;
             this.Add (selection_info);
-            selection_info.Reactive = true;
+//            selection_info.Reactive = true;
 //            selection_info.SetPosition (500,500);
 //            InitDebug ();
             this.Reactive = false;
             InitHandler ();
         }
 
+        /// <summary>
+        /// Initializes all handlers needed for gui interaction.
+        /// </summary>
         private void InitHandler ()
         {
             stage.AllocationChanged += HandleWindowSizeChanged;
@@ -197,12 +199,29 @@ namespace NoNoise.Visualization.Gui
 
         }
 
+        /// <summary>
+        /// Handler called when the allocation size of the infobox has changed.
+        /// </summary>
+        /// <param name="o">
+        /// A <see cref="System.Object"/>
+        /// </param>
+        /// <param name="args">
+        /// A <see cref="AllocationChangedArgs"/>
+        /// </param>
         void HandleInfoboxAllocationChanged (object o, AllocationChangedArgs args)
         {
             selection_info.SetPosition (selection_info.X, infobox.Y + infobox.Height + 10);
         }
 
-
+        /// <summary>
+        /// Handler called when the size of the stage has changed.
+        /// </summary>
+        /// <param name="o">
+        /// A <see cref="System.Object"/>
+        /// </param>
+        /// <param name="args">
+        /// A <see cref="AllocationChangedArgs"/>
+        /// </param>
         void HandleWindowSizeChanged (object o, AllocationChangedArgs args)
         {
             toolbar.SetPosition (0.5f+(float)Math.Round (stage.Width/2f-infobox.Width/2f+zoom_button_in.Width), toolbar.Y);
@@ -211,27 +230,56 @@ namespace NoNoise.Visualization.Gui
             Hyena.Log.Information ("Stage size x " + stage.X + "x" + stage.Height);
         }
 
+        /// <summary>
+        /// Updates the text in the infobox.
+        /// </summary>
+        /// <param name="titles">
+        /// A <see cref="List<String>"/> which specifies the song titles shown.
+        /// </param>
+        /// <param name="subtitles">
+        /// A <see cref="List<String>"/> which specifies the artists shown.
+        /// </param>
         public void UpdateInfoText (List<String> titles, List<String> subtitles)
         {
             infobox.Update (titles, subtitles);
         }
 
+        /// <summary>
+        /// Updates the text in the selection infobox.
+        /// </summary>
+        /// <param name="titles">
+        /// A <see cref="List<String>"/> which specifies the song titles shown.
+        /// </param>
+        /// <param name="subtitles">
+        /// A <see cref="List<String>"/> which specifies the artists shown.
+        /// </param>
         public void UpdateSelection (List<String> titles, List<String> subtitles)
         {
             selection_info.Update (titles, subtitles);
         }
 
+        /// <summary>
+        /// Clears the text in the infobox
+        /// </summary>
         public void ClearInfoText ()
         {
             infobox.Clear ();
         }
 
+        /// <summary>
+        /// Clears the text in the selection infobox
+        /// </summary>
         public void ClearInfoSelection ()
         {
             selection_info.Clear ();
         }
 
-
+        /// <summary>
+        /// [Debug] Draws a debug texture onto the given actor.
+        /// </summary>
+        /// <param name="actor">
+        /// A <see cref="CairoTexture"/>
+        /// </param>
         private void CreateDebugTexture (out CairoTexture actor)
         {
             actor = new CairoTexture (30,30);
@@ -256,7 +304,9 @@ namespace NoNoise.Visualization.Gui
             ((IDisposable) context).Dispose ();
         }
 
-
+        /// <summary>
+        /// Fired when an element in the gui is clicked
+        /// </summary>
         public event ButtonClickedEvent ButtonClicked {
             add { button_clicked += value; }
             remove { button_clicked -= value;}
@@ -266,8 +316,14 @@ namespace NoNoise.Visualization.Gui
 
         private ButtonClickedEvent button_clicked;
 
+        /// <summary>
+        /// Arguments for the <see cref="ButtonClickedEvent"/>
+        /// </summary>
         public struct ButtonClickedArgs
         {
+            /// <summary>
+            /// Specifies the button clicked.
+            /// </summary>
             public enum Button { ZoomIn, ZoomOut, Select, Reset, Playlist, Remove};
 
             public Button ButtonClicked {
@@ -283,6 +339,9 @@ namespace NoNoise.Visualization.Gui
 
         #region Debug
 
+        /// <summary>
+        /// Initializes two debug buttons.
+        /// </summary>
         private void InitDebug ()
         {
             Hyena.Log.Debug ("Debug GUI init");
@@ -300,6 +359,15 @@ namespace NoNoise.Visualization.Gui
             this.Add (debug_out);
         }
 
+        /// <summary>
+        /// Handler called when the second debug button is clicked.
+        /// </summary>
+        /// <param name="o">
+        /// A <see cref="System.Object"/>
+        /// </param>
+        /// <param name="args">
+        /// A <see cref="ButtonPressEventArgs"/>
+        /// </param>
         void HandleDebugTwoEvent (object o, ButtonPressEventArgs args)
         {
             uint button = EventHelper.GetButton (args.Event);
@@ -314,6 +382,15 @@ namespace NoNoise.Visualization.Gui
             }
         }
 
+        /// <summary>
+        /// Handler called when the first debug button is clicked.
+        /// </summary>
+        /// <param name="o">
+        /// A <see cref="System.Object"/>
+        /// </param>
+        /// <param name="args">
+        /// A <see cref="ButtonPressEventArgs"/>
+        /// </param>
         void HandleDebugOneEvent (object o, ButtonPressEventArgs args)
         {
             uint button = EventHelper.GetButton (args.Event);
@@ -332,6 +409,9 @@ namespace NoNoise.Visualization.Gui
 
         private DebugEvent debug_event;
 
+        /// <summary>
+        /// Arguments for the <see cref="DebugEvent"/>.
+        /// </summary>
         public class DebugEventArgs
         {
             private int val;
@@ -343,15 +423,24 @@ namespace NoNoise.Visualization.Gui
                 this.val = val;
             }
 
+            /// <summary>
+            /// Some int value.
+            /// </summary>
             public int Value {
                 get {return val;}
             }
 
+            /// <summary>
+            /// Some string info.
+            /// </summary>
             public string Info {
                 get {return info;}
             }
         }
-        //Event Handler which is called when the zoom level has changed
+
+        /// <summary>
+        /// Event handler which is called when a debug button is clicked.
+        /// </summary>
         public event DebugEvent DebugButtonPressedEvent {
             add { debug_event += value; }
             remove { debug_event -= value; }

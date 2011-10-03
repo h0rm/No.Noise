@@ -181,6 +181,7 @@ namespace NoNoise.Visualization
         public void TestGenerateData ()
         {
             //point_group.TestGenerateCircles(5000,5000,2000);
+            info = new Dictionary<int, NoNoise.Data.TrackData> (0);
             point_group.ParseTextFile ("../../airport_locations.tsv", 8000);
         }
 

@@ -28,29 +28,46 @@ using Cairo;
 
 namespace NoNoise.Visualization.Gui
 {
+    /// <summary>
+    /// Helper struct which represents a font
+    /// </summary>
     public struct Font
     {
-
+        /// <summary>
+        /// Font family
+        /// </summary>
         public String Family {
             get;
             set;
         }
 
+        /// <summary>
+        /// Font slant (for example italic)
+        /// </summary>
         public FontSlant Slant {
             get;
             set;
         }
 
+        /// <summary>
+        /// Font weight (for example bold)
+        /// </summary>
         public FontWeight Weight {
             get;
             set;
         }
 
+        /// <summary>
+        /// Font size
+        /// </summary>
         public double Size {
             get;
             set;
         }
 
+        /// <summary>
+        /// Font color
+        /// </summary>
         public Color Color {
             get;
             set;
@@ -65,48 +82,79 @@ namespace NoNoise.Visualization.Gui
             Color = color;
         }
     }
+
+    /// <summary>
+    /// Style sheet which is used to specify the appearance of all gui elements
+    /// </summary>
     public struct StyleSheet
     {
+        /// <summary>
+        /// Foreground color
+        /// </summary>
         public Color Foreground {
             get;
             set;
         }
 
+        /// <summary>
+        /// Background color
+        /// </summary>
         public Color Background {
             get;
             set;
         }
 
+        /// <summary>
+        /// Standard font
+        /// </summary>
         public Font Standard {
             get;
             set;
         }
 
+        /// <summary>
+        /// Font for highlighted text
+        /// </summary>
         public Font Highlighted {
             get;
             set;
         }
 
+        /// <summary>
+        /// Color of the selection infobox
+        /// </summary>
         public Color Selection {
             get;
             set;
         }
 
+        /// <summary>
+        /// Font for the subtitles in the infobox
+        /// </summary>
         public Font Subtitle {
             get;
             set;
         }
 
+        /// <summary>
+        /// Boarder color of all gui elements
+        /// </summary>
         public Color Border {
             get;
             set;
         }
 
+        /// <summary>
+        /// Boarder color of the selection infobox
+        /// </summary>
         public Color SelectionBoarder {
             get;
             set;
         }
 
+        /// <summary>
+        /// Boarder size of all gui elements
+        /// </summary>
         public double BorderSize {
             get;
             set;
