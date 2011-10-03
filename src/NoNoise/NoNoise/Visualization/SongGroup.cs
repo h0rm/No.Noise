@@ -100,6 +100,10 @@ namespace NoNoise.Visualization
         private Behaviour clustering_animation_behave;
         private Timeline clustering_animation_timeline;
         private uint clutter_animation_time = 3000;
+        private Behaviour clustering_reverse_behave;
+        private ClusteringAnimation clustering_animation = SongGroup.ClusteringAnimation.None;
+        private enum ClusteringAnimation {Forward, Backward, None};
+
 
         private BehaviourScale zoom_animation_behave;
         private int diff_zoom_clustering = 0;
@@ -229,10 +233,12 @@ namespace NoNoise.Visualization
             clustering_animation_timeline = new Timeline (clutter_animation_time);
             clustering_animation_alpha = new Alpha (clustering_animation_timeline, (ulong)AnimationMode.EaseInOutSine);
             clustering_animation_behave = new BehaviourOpacity (clustering_animation_alpha, 255, 0);
-            clustering_animation_timeline.Completed += HandleClusteringTimelineCompleted;
+//            clustering_animation_timeline.Completed += HandleClusteringTimelineCompleted;
+            clustering_animation_timeline.Completed += HandleClusteringTimelineCompletedNew;
+
+            clustering_reverse_behave = new BehaviourOpacity (clustering_animation_alpha, 0, 255);
 
             zoom_animation_behave = new BehaviourScale (animation_alpha, 1.0,1.0,1.0,1.0);
-
             zoom_animation_behave.Apply (this);
         }
 
@@ -292,11 +298,11 @@ namespace NoNoise.Visualization
             mouse_button_locked = true;
             if (inwards)
             {
-                AnimateClustering (false);
+                AnimateClusteringNew (false);
             }
             else
             {
-                AnimateClustering (true);
+                AnimateClusteringNew (true);
             }
         }
 
@@ -421,6 +427,51 @@ namespace NoNoise.Visualization
             animation_timeline.Start();
         }
 
+        private void AnimateClusteringNew (bool forward)
+        {
+            bool playing = clustering_animation_timeline.IsPlaying;
+            bool old_forward = clustering_animation == ClusteringAnimation.Forward ? true : false;
+
+            // Stop clustering animation and remove all actors from fade in / fade out animations
+            clustering_animation_timeline.Stop ();
+            clustering_animation_behave.RemoveAll ();
+            clustering_reverse_behave.RemoveAll ();
+
+            // Zoom in or out
+            ZoomOnCenter (!forward);
+
+            // If still playing complete animation
+            if (playing)
+                HandleClusteringTimelineCompletedNew (this, new EventArgs ());
+
+            // If not playing or direction stays the same rewind timeline
+            if (!playing || forward == old_forward) {
+//                Hyena.Log.Debug ("Animation rewind");
+                clustering_animation_timeline.Rewind ();
+            }
+
+            // If forward and no clustering level available increase diff, abort
+            if (forward && (point_manager.IsMaxLevel || diff_zoom_clustering != 0)) {
+                diff_zoom_clustering ++;
+//                Hyena.Log.Information ("Diff " + diff_zoom_clustering);
+                return;
+            }
+
+            // If not forward and no clustering level available decrease diff, abort
+            if (!forward && (point_manager.IsMinLevel || diff_zoom_clustering != 0)) {
+                diff_zoom_clustering --;
+//                Hyena.Log.Information ("Diff " + diff_zoom_clustering);
+                return;
+            }
+
+            // Start animation and store direction
+            clustering_animation_timeline.Start ();
+            clustering_animation = forward ? SongGroup.ClusteringAnimation.Forward :
+                                             SongGroup.ClusteringAnimation.Backward;
+
+            // Update view
+            UpdateView ();
+        }
 
         private void AnimateClustering (bool forward)
         {
@@ -455,7 +506,7 @@ namespace NoNoise.Visualization
                 return;
             }
 
-            // nach vorne aber kein clustering mehr
+            // nach hinten aber kein clustering mehr
             if (!forward && point_manager.IsMinLevel) {
                 diff_zoom_clustering --;
 //                Hyena.Log.Information ("Diff --" + diff_zoom_clustering);
@@ -495,6 +546,29 @@ namespace NoNoise.Visualization
 
         }
 
+        private void AddClusteringAnimationNew (SongPoint p, bool fade_in)
+        {
+
+            switch (fade_in) {
+
+            // case old level -> fade out animation
+            case false:
+//                Hyena.Log.Debug ("Fade out");
+                if (clustering_animation_behave.IsApplied (p.Actor))
+                    return;
+                clustering_animation_behave.Apply (p.Actor);
+                break;
+
+            // case new level -> fade in animation
+            case true:
+//                Hyena.Log.Debug ("Fade in");
+                if (clustering_reverse_behave.IsApplied (p.Actor))
+                    return;
+                clustering_reverse_behave.Apply (p.Actor);
+                break;
+            }
+
+        }
         private void AddClusteringAnimation (SongPoint p)
         {
             if (p.Parent == null) {
@@ -521,8 +595,22 @@ namespace NoNoise.Visualization
         {
             if (clustering_animation_behave.IsApplied (p.Actor))
                 clustering_animation_behave.Remove (p.Actor);
+
+            if (clustering_reverse_behave.IsApplied (p.Actor))
+                clustering_reverse_behave.Remove (p.Actor);
         }
 
+        private void HandleClusteringTimelineCompletedNew (object sender, EventArgs e)
+        {
+            // Clustering completed, set to new level
+            if (clustering_animation == ClusteringAnimation.Forward)
+                point_manager.IncreaseLevel ();
+            else
+                point_manager.DecreaseLevel ();
+
+            clustering_animation = ClusteringAnimation.None;
+            UpdateView ();
+        }
         private void HandleClusteringTimelineCompleted (object sender, EventArgs e)
         {
             if (clustering_animation_timeline.Direction == TimelineDirection.Forward)
@@ -571,7 +659,19 @@ namespace NoNoise.Visualization
             SongPoint p;
 
             points = point_manager.GetPointsInWindow (x, y, width, height);
+            int old_points_count = points.Count;
 
+
+            // if animation is running show points from this level and the next
+            if (clustering_animation != SongGroup.ClusteringAnimation.None) {
+
+                int offset = clustering_animation == SongGroup.ClusteringAnimation.Forward ?
+                    1 : -1;
+
+                points.AddRange (point_manager.GetPointsInWindow (x, y, width, height, offset));
+            }
+
+//            Hyena.Log.Debug (String.Format ("Point count old={0} new={1}", old_points_count, points.Count));
             // Check visible points
             for (int i = 0; i < points_visible.Count; i++)
             {
@@ -590,7 +690,11 @@ namespace NoNoise.Visualization
 
 
                 } else {
-                    AddClusteringAnimation (p);
+//                    if (clustering_animation_behave.IsApplied (p.Actor) ||
+//                        clustering_reverse_behave.IsApplied (p.Actor))
+//                        continue;
+
+//                    AddClusteringAnimationNew (p, false);
                 }
             }
 
@@ -614,7 +718,14 @@ namespace NoNoise.Visualization
 
                 points_visible.Add (p);
 
-                AddClusteringAnimation (p);
+                if (i >= old_points_count) {
+//                    p.Actor.SetPrototypeByColor (SongActor.Color.Green);
+                    AddClusteringAnimationNew (p, true);
+                } else {
+//                    p.Actor.SetPrototypeByColor (SongActor.Color.Red);
+                    AddClusteringAnimationNew (p, false);
+                }
+//                AddClusteringAnimationNew (p, i >= old_points_count);
             }
 
         }

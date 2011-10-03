@@ -128,16 +128,15 @@ namespace NoNoise.Visualization.Gui
 
             this.Add (toolbar);
 
-            this.Reactive = true;
             infobox = new InfoBox (style, 200,400, false);
             infobox.AnchorPointFromGravity = Gravity.NorthEast;
             this.Add (infobox);
-            infobox.Reactive = true;
+//            infobox.Reactive = true;
 
             selection_info = new InfoBox (style, 200, 400, true);
             selection_info.AnchorPointFromGravity = Gravity.SouthEast;
             this.Add (selection_info);
-            selection_info.Reactive = true;
+//            selection_info.Reactive = true;
 //            selection_info.SetPosition (500,500);
 //            InitDebug ();
             this.Reactive = false;
