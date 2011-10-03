@@ -73,6 +73,7 @@ namespace Banshee.NoNoise
         private NoNoiseClutterSourceContents sc;
         private NoNoiseDBHandler db;
         private PCAnalyzer ana;
+        private IPcaAdder pca_adder;
         private List<DataEntry> coords;
         private bool analyzing_lib;
         private bool lib_scanned;
@@ -127,6 +128,59 @@ namespace Banshee.NoNoise
 //            new Thread (new ThreadStart (ConvertMusicLibrary)).Start ();
 
             db = new NoNoiseDBHandler ();
+
+            switch (PCA_MODE) {
+            default:
+            case PCA_MEAN:
+                pca_adder = new PcaMeanAdder ();
+                Hyena.Log.Debug ("NoNoise/BLA - taking mean adder");
+                break;
+
+            case PCA_MEAN_DUR:
+                pca_adder = new PcaMeanDurationAdder ();
+                Hyena.Log.Debug ("NoNoise/BLA - taking mean duration adder");
+                break;
+
+            case PCA_SQR_MEAN:
+                pca_adder = new PcaSqrMeanAdder ();
+                Hyena.Log.Debug ("NoNoise/BLA - taking squared mean adder");
+                break;
+
+            case PCA_SQR_MEAN_DUR:
+                pca_adder = new PcaSqrMeanDurationAdder ();
+                Hyena.Log.Debug ("NoNoise/BLA - taking squared mean duration adder");
+                break;
+
+            case PCA_MAX:
+                pca_adder = new PcaMaxAdder ();
+                Hyena.Log.Debug ("NoNoise/BLA - taking max adder");
+                break;
+
+            case PCA_MAX_DUR:
+                pca_adder = new PcaMaxDurationAdder ();
+                Hyena.Log.Debug ("NoNoise/BLA - taking max duration adder");
+                break;
+
+            case PCA_MIN:
+                pca_adder = new PcaMinAdder ();
+                Hyena.Log.Debug ("NoNoise/BLA - taking min adder");
+                break;
+
+            case PCA_MIN_DUR:
+                pca_adder = new PcaMinDurationAdder ();
+                Hyena.Log.Debug ("NoNoise/BLA - taking min duration adder");
+                break;
+
+            case PCA_MED:
+                pca_adder = new PcaMedianAdder ();
+                Hyena.Log.Debug ("NoNoise/BLA - taking median adder");
+                break;
+
+            case PCA_MED_DUR:
+                pca_adder = new PcaMedianDurationAdder ();
+                Hyena.Log.Debug ("NoNoise/BLA - taking median duration adder");
+                break;
+            }
 
 //            Testing ();
             // BPM detector
@@ -425,222 +479,6 @@ namespace Banshee.NoNoise
             new Thread (new ThreadStart (PcaForMusicLibraryVectorEditionForceNew)).Start ();
         }
 
-        private void PcaTestings (PCAnalyzer ana)
-        {
-            Dictionary<int, Mirage.Vector> vectorMap = null;
-
-            switch (PCA_MODE) {
-            case PCA_MEAN:
-                lock (db_synch) {
-                    vectorMap = db.GetMirageMeanVectors ();
-                }
-                if (vectorMap == null)
-                    Hyena.Log.Error ("NoNoise/BLA - vectorMap is null!");
-
-                foreach (int bid in vectorMap.Keys) {
-                    try {
-                        if (!ana.AddEntry (bid, ConvertMirageVector (vectorMap [bid])))
-                            throw new Exception("AddEntry failed!");
-                    } catch (Exception e) {
-                        Hyena.Log.Exception("NoNoise - PCA Problem", e);
-                    }
-                }
-                break;
-
-            case PCA_MEAN_DUR:
-                lock (db_synch) {
-                    vectorMap = db.GetMirageMeanVectors ();
-                }
-                if (vectorMap == null)
-                    Hyena.Log.Error ("NoNoise/BLA - vectorMap is null!");
-
-                foreach (DatabaseTrackInfo dti in DatabaseTrackInfo.Provider.FetchAll ()) {
-                    try {
-                        int bid = dti.TrackId;
-
-                        if (!vectorMap.ContainsKey (bid)) {
-                            Hyena.Log.Debug ("NoNoise/BLA - skipping bid: " + bid);
-                            continue;
-                        }
-                        if (!ana.AddEntry (bid, ConvertMirageVector (vectorMap [bid]),
-                                           dti.Duration.TotalSeconds))
-                            throw new Exception("AddEntry failed!");
-                    } catch (Exception e) {
-                        Hyena.Log.Exception ("NoNoise - PCA Problem", e);
-                    }
-                }
-                break;
-
-            case PCA_SQR_MEAN:
-                lock (db_synch) {
-                    vectorMap = db.GetMirageSquaredMeanVectors ();
-                }
-                if (vectorMap == null)
-                    Hyena.Log.Error ("NoNoise/BLA - vectorMap is null!");
-
-                foreach (int bid in vectorMap.Keys) {
-                    try {
-                        if (!ana.AddEntry (bid, ConvertMirageVector (vectorMap [bid])))
-                            throw new Exception("AddEntry failed!");
-                    } catch (Exception e) {
-                        Hyena.Log.Exception("NoNoise - PCA Problem", e);
-                    }
-                }
-                break;
-
-            case PCA_SQR_MEAN_DUR:
-                lock (db_synch) {
-                    vectorMap = db.GetMirageSquaredMeanVectors ();
-                }
-                if (vectorMap == null)
-                    Hyena.Log.Error ("NoNoise/BLA - vectorMap is null!");
-
-                foreach (DatabaseTrackInfo dti in DatabaseTrackInfo.Provider.FetchAll ()) {
-                    try {
-                        int bid = dti.TrackId;
-
-                        if (!vectorMap.ContainsKey (bid)) {
-                            Hyena.Log.Debug ("NoNoise/BLA - skipping bid: " + bid);
-                            continue;
-                        }
-                        if (!ana.AddEntry (bid, ConvertMirageVector (vectorMap [bid]),
-                                           dti.Duration.TotalSeconds))
-                            throw new Exception("AddEntry failed!");
-                    } catch (Exception e) {
-                        Hyena.Log.Exception ("NoNoise - PCA Problem", e);
-                    }
-                }
-                break;
-
-            case PCA_MAX:
-                lock (db_synch) {
-                    vectorMap = db.GetMirageMaxVectors ();
-                }
-                if (vectorMap == null)
-                    Hyena.Log.Error ("NoNoise/BLA - vectorMap is null!");
-
-                foreach (int bid in vectorMap.Keys) {
-                    try {
-                        if (!ana.AddEntry (bid, ConvertMirageVector (vectorMap [bid])))
-                            throw new Exception("AddEntry failed!");
-                    } catch (Exception e) {
-                        Hyena.Log.Exception("NoNoise - PCA Problem", e);
-                    }
-                }
-                break;
-
-            case PCA_MAX_DUR:
-                lock (db_synch) {
-                    vectorMap = db.GetMirageMaxVectors ();
-                }
-                if (vectorMap == null)
-                    Hyena.Log.Error ("NoNoise/BLA - vectorMap is null!");
-
-                foreach (DatabaseTrackInfo dti in DatabaseTrackInfo.Provider.FetchAll ()) {
-                    try {
-                        int bid = dti.TrackId;
-
-                        if (!vectorMap.ContainsKey (bid)) {
-                            Hyena.Log.Debug ("NoNoise/BLA - skipping bid: " + bid);
-                            continue;
-                        }
-                        if (!ana.AddEntry (bid, ConvertMirageVector (vectorMap [bid]),
-                                           dti.Duration.TotalSeconds))
-                            throw new Exception("AddEntry failed!");
-                    } catch (Exception e) {
-                        Hyena.Log.Exception ("NoNoise - PCA Problem", e);
-                    }
-                }
-                break;
-
-            case PCA_MIN:
-                lock (db_synch) {
-                    vectorMap = db.GetMirageMinVectors ();
-                }
-                if (vectorMap == null)
-                    Hyena.Log.Error ("NoNoise/BLA - vectorMap is null!");
-
-                foreach (int bid in vectorMap.Keys) {
-                    try {
-                        if (!ana.AddEntry (bid, ConvertMirageVector (vectorMap [bid])))
-                            throw new Exception("AddEntry failed!");
-                    } catch (Exception e) {
-                        Hyena.Log.Exception("NoNoise - PCA Problem", e);
-                    }
-                }
-                break;
-
-            case PCA_MIN_DUR:
-                lock (db_synch) {
-                    vectorMap = db.GetMirageMinVectors ();
-                }
-                if (vectorMap == null)
-                    Hyena.Log.Error ("NoNoise/BLA - vectorMap is null!");
-
-                foreach (DatabaseTrackInfo dti in DatabaseTrackInfo.Provider.FetchAll ()) {
-                    try {
-                        int bid = dti.TrackId;
-
-                        if (!vectorMap.ContainsKey (bid)) {
-                            Hyena.Log.Debug ("NoNoise/BLA - skipping bid: " + bid);
-                            continue;
-                        }
-                        if (!ana.AddEntry (bid, ConvertMirageVector (vectorMap [bid]),
-                                           dti.Duration.TotalSeconds))
-                            throw new Exception("AddEntry failed!");
-                    } catch (Exception e) {
-                        Hyena.Log.Exception ("NoNoise - PCA Problem", e);
-                    }
-                }
-                break;
-
-            case PCA_MED:
-                lock (db_synch) {
-                    vectorMap = db.GetMirageMedianVectors ();
-                }
-                if (vectorMap == null)
-                    Hyena.Log.Error ("NoNoise/BLA - vectorMap is null!");
-
-                foreach (int bid in vectorMap.Keys) {
-                    try {
-                        if (!ana.AddEntry (bid, ConvertMirageVector (vectorMap [bid])))
-                            throw new Exception("AddEntry failed!");
-                    } catch (Exception e) {
-                        Hyena.Log.Exception("NoNoise - PCA Problem", e);
-                    }
-                }
-                break;
-
-            case PCA_MED_DUR:
-                lock (db_synch) {
-                    vectorMap = db.GetMirageMedianVectors ();
-                }
-                if (vectorMap == null)
-                    Hyena.Log.Error ("NoNoise/BLA - vectorMap is null!");
-
-                foreach (DatabaseTrackInfo dti in DatabaseTrackInfo.Provider.FetchAll ()) {
-                    try {
-                        int bid = dti.TrackId;
-
-                        if (!vectorMap.ContainsKey (bid)) {
-                            Hyena.Log.Debug ("NoNoise/BLA - skipping bid: " + bid);
-                            continue;
-                        }
-                        if (!ana.AddEntry (bid, ConvertMirageVector (vectorMap [bid]),
-                                           dti.Duration.TotalSeconds))
-                            throw new Exception("AddEntry failed!");
-                    } catch (Exception e) {
-                        Hyena.Log.Exception ("NoNoise - PCA Problem", e);
-                    }
-                }
-                break;
-
-            default:
-                Hyena.Log.Debug ("NoNoise/BLA - default pca case, ignoring...");
-                break;
-            }
-        }
-
         /// <summary>
         /// Checks for each track in the music library if there is already
         /// MIR data in the database. If not, computes the MFCC matrix and
@@ -667,43 +505,8 @@ namespace Banshee.NoNoise
             Hyena.Log.Debug ("NoNoise/BLA - PcaFor... called");
 
             ana = new PCAnalyzer ();
-//            Dictionary<int, Mirage.Vector> vectorMap = null;
-//            lock (db_synch) {
-//                vectorMap = db.GetMirageVectors ();
-//            }
-//            if (vectorMap == null)
-//                Hyena.Log.Error ("NoNoise/BLA - vectorMap is null!");
 
-//            foreach (DatabaseTrackInfo dti in DatabaseTrackInfo.Provider.FetchAll ()) {
-////            lock (lib_synch) {
-////                foreach (int bid in library.Keys) {
-//                try {
-//                    TrackInfo ti = dti as TrackInfo;
-////                        TrackInfo ti = library [bid];
-//                    int bid = dti.TrackId;
-//
-//                    if (!vectorMap.ContainsKey (bid)) {
-//                        Hyena.Log.Debug ("NoNoise/BLA - skipping bid: " + bid);
-//                        continue;
-//                    }
-//
-////                    Hyena.Log.Debug ("bid: " + bid + ", uri: " + ti.Uri);
-//
-////                    if (!ana.AddEntry (bid, ConvertMfccMean (vectorMap [bid])))
-////                        throw new Exception ("AddEntry failed!");
-//                    if (!ana.AddEntry (bid, ConvertMirageVector (vectorMap [bid]),
-//                                       ti.Duration.TotalSeconds))
-//                        throw new Exception("AddEntry failed!");
-////                        if (!ana.AddEntry (bid, null, ti.Bpm, ti.Duration.TotalSeconds))
-////                            throw new Exception("AddEntry failed!");
-//                } catch (Exception e) {
-//                    Hyena.Log.Exception ("NoNoise - PCA Problem", e);
-////                        return;
-//                }
-////                }
-//            }
-
-            PcaTestings (ana);
+            pca_adder.AddVectorsFromDB (ana);
 
             try {
                 ana.PerformPCA ();
@@ -1141,6 +944,222 @@ namespace Banshee.NoNoise
             });
         }
 
+        private void PcaTestings (PCAnalyzer ana)
+        {
+            Dictionary<int, Mirage.Vector> vectorMap = null;
+
+            switch (PCA_MODE) {
+            case PCA_MEAN:
+                lock (db_synch) {
+                    vectorMap = db.GetMirageMeanVectors ();
+                }
+                if (vectorMap == null)
+                    Hyena.Log.Error ("NoNoise/BLA - vectorMap is null!");
+
+                foreach (int bid in vectorMap.Keys) {
+                    try {
+                        if (!ana.AddEntry (bid, ConvertMirageVector (vectorMap [bid])))
+                            throw new Exception("AddEntry failed!");
+                    } catch (Exception e) {
+                        Hyena.Log.Exception("NoNoise - PCA Problem", e);
+                    }
+                }
+                break;
+
+            case PCA_MEAN_DUR:
+                lock (db_synch) {
+                    vectorMap = db.GetMirageMeanVectors ();
+                }
+                if (vectorMap == null)
+                    Hyena.Log.Error ("NoNoise/BLA - vectorMap is null!");
+
+                foreach (DatabaseTrackInfo dti in DatabaseTrackInfo.Provider.FetchAll ()) {
+                    try {
+                        int bid = dti.TrackId;
+
+                        if (!vectorMap.ContainsKey (bid)) {
+                            Hyena.Log.Debug ("NoNoise/BLA - skipping bid: " + bid);
+                            continue;
+                        }
+                        if (!ana.AddEntry (bid, ConvertMirageVector (vectorMap [bid]),
+                                           dti.Duration.TotalSeconds))
+                            throw new Exception("AddEntry failed!");
+                    } catch (Exception e) {
+                        Hyena.Log.Exception ("NoNoise - PCA Problem", e);
+                    }
+                }
+                break;
+
+            case PCA_SQR_MEAN:
+                lock (db_synch) {
+                    vectorMap = db.GetMirageSquaredMeanVectors ();
+                }
+                if (vectorMap == null)
+                    Hyena.Log.Error ("NoNoise/BLA - vectorMap is null!");
+
+                foreach (int bid in vectorMap.Keys) {
+                    try {
+                        if (!ana.AddEntry (bid, ConvertMirageVector (vectorMap [bid])))
+                            throw new Exception("AddEntry failed!");
+                    } catch (Exception e) {
+                        Hyena.Log.Exception("NoNoise - PCA Problem", e);
+                    }
+                }
+                break;
+
+            case PCA_SQR_MEAN_DUR:
+                lock (db_synch) {
+                    vectorMap = db.GetMirageSquaredMeanVectors ();
+                }
+                if (vectorMap == null)
+                    Hyena.Log.Error ("NoNoise/BLA - vectorMap is null!");
+
+                foreach (DatabaseTrackInfo dti in DatabaseTrackInfo.Provider.FetchAll ()) {
+                    try {
+                        int bid = dti.TrackId;
+
+                        if (!vectorMap.ContainsKey (bid)) {
+                            Hyena.Log.Debug ("NoNoise/BLA - skipping bid: " + bid);
+                            continue;
+                        }
+                        if (!ana.AddEntry (bid, ConvertMirageVector (vectorMap [bid]),
+                                           dti.Duration.TotalSeconds))
+                            throw new Exception("AddEntry failed!");
+                    } catch (Exception e) {
+                        Hyena.Log.Exception ("NoNoise - PCA Problem", e);
+                    }
+                }
+                break;
+
+            case PCA_MAX:
+                lock (db_synch) {
+                    vectorMap = db.GetMirageMaxVectors ();
+                }
+                if (vectorMap == null)
+                    Hyena.Log.Error ("NoNoise/BLA - vectorMap is null!");
+
+                foreach (int bid in vectorMap.Keys) {
+                    try {
+                        if (!ana.AddEntry (bid, ConvertMirageVector (vectorMap [bid])))
+                            throw new Exception("AddEntry failed!");
+                    } catch (Exception e) {
+                        Hyena.Log.Exception("NoNoise - PCA Problem", e);
+                    }
+                }
+                break;
+
+            case PCA_MAX_DUR:
+                lock (db_synch) {
+                    vectorMap = db.GetMirageMaxVectors ();
+                }
+                if (vectorMap == null)
+                    Hyena.Log.Error ("NoNoise/BLA - vectorMap is null!");
+
+                foreach (DatabaseTrackInfo dti in DatabaseTrackInfo.Provider.FetchAll ()) {
+                    try {
+                        int bid = dti.TrackId;
+
+                        if (!vectorMap.ContainsKey (bid)) {
+                            Hyena.Log.Debug ("NoNoise/BLA - skipping bid: " + bid);
+                            continue;
+                        }
+                        if (!ana.AddEntry (bid, ConvertMirageVector (vectorMap [bid]),
+                                           dti.Duration.TotalSeconds))
+                            throw new Exception("AddEntry failed!");
+                    } catch (Exception e) {
+                        Hyena.Log.Exception ("NoNoise - PCA Problem", e);
+                    }
+                }
+                break;
+
+            case PCA_MIN:
+                lock (db_synch) {
+                    vectorMap = db.GetMirageMinVectors ();
+                }
+                if (vectorMap == null)
+                    Hyena.Log.Error ("NoNoise/BLA - vectorMap is null!");
+
+                foreach (int bid in vectorMap.Keys) {
+                    try {
+                        if (!ana.AddEntry (bid, ConvertMirageVector (vectorMap [bid])))
+                            throw new Exception("AddEntry failed!");
+                    } catch (Exception e) {
+                        Hyena.Log.Exception("NoNoise - PCA Problem", e);
+                    }
+                }
+                break;
+
+            case PCA_MIN_DUR:
+                lock (db_synch) {
+                    vectorMap = db.GetMirageMinVectors ();
+                }
+                if (vectorMap == null)
+                    Hyena.Log.Error ("NoNoise/BLA - vectorMap is null!");
+
+                foreach (DatabaseTrackInfo dti in DatabaseTrackInfo.Provider.FetchAll ()) {
+                    try {
+                        int bid = dti.TrackId;
+
+                        if (!vectorMap.ContainsKey (bid)) {
+                            Hyena.Log.Debug ("NoNoise/BLA - skipping bid: " + bid);
+                            continue;
+                        }
+                        if (!ana.AddEntry (bid, ConvertMirageVector (vectorMap [bid]),
+                                           dti.Duration.TotalSeconds))
+                            throw new Exception("AddEntry failed!");
+                    } catch (Exception e) {
+                        Hyena.Log.Exception ("NoNoise - PCA Problem", e);
+                    }
+                }
+                break;
+
+            case PCA_MED:
+                lock (db_synch) {
+                    vectorMap = db.GetMirageMedianVectors ();
+                }
+                if (vectorMap == null)
+                    Hyena.Log.Error ("NoNoise/BLA - vectorMap is null!");
+
+                foreach (int bid in vectorMap.Keys) {
+                    try {
+                        if (!ana.AddEntry (bid, ConvertMirageVector (vectorMap [bid])))
+                            throw new Exception("AddEntry failed!");
+                    } catch (Exception e) {
+                        Hyena.Log.Exception("NoNoise - PCA Problem", e);
+                    }
+                }
+                break;
+
+            case PCA_MED_DUR:
+                lock (db_synch) {
+                    vectorMap = db.GetMirageMedianVectors ();
+                }
+                if (vectorMap == null)
+                    Hyena.Log.Error ("NoNoise/BLA - vectorMap is null!");
+
+                foreach (DatabaseTrackInfo dti in DatabaseTrackInfo.Provider.FetchAll ()) {
+                    try {
+                        int bid = dti.TrackId;
+
+                        if (!vectorMap.ContainsKey (bid)) {
+                            Hyena.Log.Debug ("NoNoise/BLA - skipping bid: " + bid);
+                            continue;
+                        }
+                        if (!ana.AddEntry (bid, ConvertMirageVector (vectorMap [bid]),
+                                           dti.Duration.TotalSeconds))
+                            throw new Exception("AddEntry failed!");
+                    } catch (Exception e) {
+                        Hyena.Log.Exception ("NoNoise - PCA Problem", e);
+                    }
+                }
+                break;
+
+            default:
+                Hyena.Log.Debug ("NoNoise/BLA - default pca case, ignoring...");
+                break;
+            }
+        }
+
         /// <summary>
         /// Compares the dictionary with the trackinfos to the music library
         /// and updates it (removes deleted tracks and adds new ones).
@@ -1229,6 +1248,265 @@ namespace Banshee.NoNoise
         }
         */
         #endregion
+
+        private interface IPcaAdder {
+            void AddVectorsFromDB (PCAnalyzer ana);
+        }
+
+        private class PcaMeanAdder : IPcaAdder {
+            public void AddVectorsFromDB (PCAnalyzer ana)
+            {
+                Dictionary<int, Mirage.Vector> vectorMap = null;
+                lock (BansheeLibraryAnalyzer.Singleton.db_synch) {
+                    vectorMap = BansheeLibraryAnalyzer.Singleton.db.GetMirageMeanVectors ();
+                }
+                if (vectorMap == null)
+                    Hyena.Log.Error ("NoNoise/BLA - vectorMap is null!");
+
+                foreach (int bid in vectorMap.Keys) {
+                    try {
+                        if (!ana.AddEntry (bid, BansheeLibraryAnalyzer.Singleton.
+                                           ConvertMirageVector (vectorMap [bid])))
+                            throw new Exception("AddEntry failed!");
+                    } catch (Exception e) {
+                        Hyena.Log.Exception("NoNoise - PCA Problem", e);
+                    }
+                }
+            }
+        }
+
+        private class PcaMeanDurationAdder : IPcaAdder {
+            public void AddVectorsFromDB (PCAnalyzer ana)
+            {
+                Dictionary<int, Mirage.Vector> vectorMap = null;
+                lock (BansheeLibraryAnalyzer.Singleton.db_synch) {
+                    vectorMap = BansheeLibraryAnalyzer.Singleton.db.GetMirageMeanVectors ();
+                }
+                if (vectorMap == null)
+                    Hyena.Log.Error ("NoNoise/BLA - vectorMap is null!");
+
+                foreach (DatabaseTrackInfo dti in DatabaseTrackInfo.Provider.FetchAll ()) {
+                    try {
+                        int bid = dti.TrackId;
+
+                        if (!vectorMap.ContainsKey (bid)) {
+                            Hyena.Log.Debug ("NoNoise/BLA - skipping bid: " + bid);
+                            continue;
+                        }
+                        if (!ana.AddEntry (bid, BansheeLibraryAnalyzer.Singleton.
+                                           ConvertMirageVector (vectorMap [bid]),
+                                           dti.Duration.TotalSeconds))
+                            throw new Exception("AddEntry failed!");
+                    } catch (Exception e) {
+                        Hyena.Log.Exception ("NoNoise - PCA Problem", e);
+                    }
+                }
+            }
+        }
+
+        private class PcaSqrMeanAdder : IPcaAdder {
+            public void AddVectorsFromDB (PCAnalyzer ana)
+            {
+                Dictionary<int, Mirage.Vector> vectorMap = null;
+                lock (BansheeLibraryAnalyzer.Singleton.db_synch) {
+                    vectorMap = BansheeLibraryAnalyzer.Singleton.db.GetMirageSquaredMeanVectors ();
+                }
+                if (vectorMap == null)
+                    Hyena.Log.Error ("NoNoise/BLA - vectorMap is null!");
+
+                foreach (int bid in vectorMap.Keys) {
+                    try {
+                        if (!ana.AddEntry (bid, BansheeLibraryAnalyzer.Singleton.
+                                           ConvertMirageVector (vectorMap [bid])))
+                            throw new Exception("AddEntry failed!");
+                    } catch (Exception e) {
+                        Hyena.Log.Exception("NoNoise - PCA Problem", e);
+                    }
+                }
+            }
+        }
+
+        private class PcaSqrMeanDurationAdder : IPcaAdder {
+            public void AddVectorsFromDB (PCAnalyzer ana)
+            {
+                Dictionary<int, Mirage.Vector> vectorMap = null;
+                lock (BansheeLibraryAnalyzer.Singleton.db_synch) {
+                    vectorMap = BansheeLibraryAnalyzer.Singleton.db.GetMirageSquaredMeanVectors ();
+                }
+                if (vectorMap == null)
+                    Hyena.Log.Error ("NoNoise/BLA - vectorMap is null!");
+
+                foreach (DatabaseTrackInfo dti in DatabaseTrackInfo.Provider.FetchAll ()) {
+                    try {
+                        int bid = dti.TrackId;
+
+                        if (!vectorMap.ContainsKey (bid)) {
+                            Hyena.Log.Debug ("NoNoise/BLA - skipping bid: " + bid);
+                            continue;
+                        }
+                        if (!ana.AddEntry (bid, BansheeLibraryAnalyzer.Singleton.
+                                           ConvertMirageVector (vectorMap [bid]),
+                                           dti.Duration.TotalSeconds))
+                            throw new Exception("AddEntry failed!");
+                    } catch (Exception e) {
+                        Hyena.Log.Exception ("NoNoise - PCA Problem", e);
+                    }
+                }
+            }
+        }
+
+        private class PcaMaxAdder : IPcaAdder {
+            public void AddVectorsFromDB (PCAnalyzer ana)
+            {
+                Dictionary<int, Mirage.Vector> vectorMap = null;
+                lock (BansheeLibraryAnalyzer.Singleton.db_synch) {
+                    vectorMap = BansheeLibraryAnalyzer.Singleton.db.GetMirageMaxVectors ();
+                }
+                if (vectorMap == null)
+                    Hyena.Log.Error ("NoNoise/BLA - vectorMap is null!");
+
+                foreach (int bid in vectorMap.Keys) {
+                    try {
+                        if (!ana.AddEntry (bid, BansheeLibraryAnalyzer.Singleton.
+                                           ConvertMirageVector (vectorMap [bid])))
+                            throw new Exception("AddEntry failed!");
+                    } catch (Exception e) {
+                        Hyena.Log.Exception("NoNoise - PCA Problem", e);
+                    }
+                }
+            }
+        }
+
+        private class PcaMaxDurationAdder : IPcaAdder {
+            public void AddVectorsFromDB (PCAnalyzer ana)
+            {
+                Dictionary<int, Mirage.Vector> vectorMap = null;
+                lock (BansheeLibraryAnalyzer.Singleton.db_synch) {
+                    vectorMap = BansheeLibraryAnalyzer.Singleton.db.GetMirageMaxVectors ();
+                }
+                if (vectorMap == null)
+                    Hyena.Log.Error ("NoNoise/BLA - vectorMap is null!");
+
+                foreach (DatabaseTrackInfo dti in DatabaseTrackInfo.Provider.FetchAll ()) {
+                    try {
+                        int bid = dti.TrackId;
+
+                        if (!vectorMap.ContainsKey (bid)) {
+                            Hyena.Log.Debug ("NoNoise/BLA - skipping bid: " + bid);
+                            continue;
+                        }
+                        if (!ana.AddEntry (bid, BansheeLibraryAnalyzer.Singleton.
+                                           ConvertMirageVector (vectorMap [bid]),
+                                           dti.Duration.TotalSeconds))
+                            throw new Exception("AddEntry failed!");
+                    } catch (Exception e) {
+                        Hyena.Log.Exception ("NoNoise - PCA Problem", e);
+                    }
+                }
+            }
+        }
+
+        private class PcaMinAdder : IPcaAdder {
+            public void AddVectorsFromDB (PCAnalyzer ana)
+            {
+                Dictionary<int, Mirage.Vector> vectorMap = null;
+                lock (BansheeLibraryAnalyzer.Singleton.db_synch) {
+                    vectorMap = BansheeLibraryAnalyzer.Singleton.db.GetMirageMinVectors ();
+                }
+                if (vectorMap == null)
+                    Hyena.Log.Error ("NoNoise/BLA - vectorMap is null!");
+
+                foreach (int bid in vectorMap.Keys) {
+                    try {
+                        if (!ana.AddEntry (bid, BansheeLibraryAnalyzer.Singleton.
+                                           ConvertMirageVector (vectorMap [bid])))
+                            throw new Exception("AddEntry failed!");
+                    } catch (Exception e) {
+                        Hyena.Log.Exception("NoNoise - PCA Problem", e);
+                    }
+                }
+            }
+        }
+
+        private class PcaMinDurationAdder : IPcaAdder {
+            public void AddVectorsFromDB (PCAnalyzer ana)
+            {
+                Dictionary<int, Mirage.Vector> vectorMap = null;
+                lock (BansheeLibraryAnalyzer.Singleton.db_synch) {
+                    vectorMap = BansheeLibraryAnalyzer.Singleton.db.GetMirageMinVectors ();
+                }
+                if (vectorMap == null)
+                    Hyena.Log.Error ("NoNoise/BLA - vectorMap is null!");
+
+                foreach (DatabaseTrackInfo dti in DatabaseTrackInfo.Provider.FetchAll ()) {
+                    try {
+                        int bid = dti.TrackId;
+
+                        if (!vectorMap.ContainsKey (bid)) {
+                            Hyena.Log.Debug ("NoNoise/BLA - skipping bid: " + bid);
+                            continue;
+                        }
+                        if (!ana.AddEntry (bid, BansheeLibraryAnalyzer.Singleton.
+                                           ConvertMirageVector (vectorMap [bid]),
+                                           dti.Duration.TotalSeconds))
+                            throw new Exception("AddEntry failed!");
+                    } catch (Exception e) {
+                        Hyena.Log.Exception ("NoNoise - PCA Problem", e);
+                    }
+                }
+            }
+        }
+
+        private class PcaMedianAdder : IPcaAdder {
+            public void AddVectorsFromDB (PCAnalyzer ana)
+            {
+                Dictionary<int, Mirage.Vector> vectorMap = null;
+                lock (BansheeLibraryAnalyzer.Singleton.db_synch) {
+                    vectorMap = BansheeLibraryAnalyzer.Singleton.db.GetMirageMedianVectors ();
+                }
+                if (vectorMap == null)
+                    Hyena.Log.Error ("NoNoise/BLA - vectorMap is null!");
+
+                foreach (int bid in vectorMap.Keys) {
+                    try {
+                        if (!ana.AddEntry (bid, BansheeLibraryAnalyzer.Singleton.
+                                           ConvertMirageVector (vectorMap [bid])))
+                            throw new Exception("AddEntry failed!");
+                    } catch (Exception e) {
+                        Hyena.Log.Exception("NoNoise - PCA Problem", e);
+                    }
+                }
+            }
+        }
+
+        private class PcaMedianDurationAdder : IPcaAdder {
+            public void AddVectorsFromDB (PCAnalyzer ana)
+            {
+                Dictionary<int, Mirage.Vector> vectorMap = null;
+                lock (BansheeLibraryAnalyzer.Singleton.db_synch) {
+                    vectorMap = BansheeLibraryAnalyzer.Singleton.db.GetMirageMedianVectors ();
+                }
+                if (vectorMap == null)
+                    Hyena.Log.Error ("NoNoise/BLA - vectorMap is null!");
+
+                foreach (DatabaseTrackInfo dti in DatabaseTrackInfo.Provider.FetchAll ()) {
+                    try {
+                        int bid = dti.TrackId;
+
+                        if (!vectorMap.ContainsKey (bid)) {
+                            Hyena.Log.Debug ("NoNoise/BLA - skipping bid: " + bid);
+                            continue;
+                        }
+                        if (!ana.AddEntry (bid, BansheeLibraryAnalyzer.Singleton.
+                                           ConvertMirageVector (vectorMap [bid]),
+                                           dti.Duration.TotalSeconds))
+                            throw new Exception("AddEntry failed!");
+                    } catch (Exception e) {
+                        Hyena.Log.Exception ("NoNoise - PCA Problem", e);
+                    }
+                }
+            }
+        }
     }
 }
 
