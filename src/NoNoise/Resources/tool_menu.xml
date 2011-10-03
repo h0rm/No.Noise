@@ -1,9 +1,10 @@
 <ui>
     <menubar name="MainMenu">
         <menu name="ToolsMenu" action="ToolsMenuAction">
-<!--            <menu name="NoNoise" action="NoNoiseScanMenuAction">-->
+            <menu name="NoNoise" action="NoNoiseMenuAction">
                 <menuitem name="NoNoiseScanItem" action="NoNoiseScanAction" />
-<!--            </menu>-->
+                <menuitem name="NoNoiseHelpItem" action="NoNoiseHelpAction" />
+            </menu>
         </menu>
     </menubar>
 </ui>

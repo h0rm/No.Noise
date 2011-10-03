@@ -4,6 +4,8 @@ SOURCES =  \
 	Banshee.NoNoise/BansheeLibraryAnalyzer.cs \
 	Banshee.NoNoise/Bpm/BpmDetectJob.cs \
 	Banshee.NoNoise/NoNoiseClutterSourceContents.cs \
+	Banshee.NoNoise/NoNoiseHelpDialog.cs \
+	Banshee.NoNoise/NoNoiseSchemas.cs \
 	Banshee.NoNoise/NoNoiseService.cs \
 	Banshee.NoNoise/NoNoiseSource.cs \
 	Banshee.NoNoise/NoNoiseSourceContents.cs \

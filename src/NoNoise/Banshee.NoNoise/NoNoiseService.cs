@@ -69,6 +69,15 @@ namespace Banshee.NoNoise
             }
         }
 
+        private Gtk.Action help_action;
+        protected Gtk.Action HelpAction {
+            get {
+                if (help_action == null)
+                    help_action = (Gtk.Action) action_service.FindAction ("NoNoiseScan.NoNoiseHelpAction");
+                return help_action;
+            }
+        }
+
         private ToggleAction no_noise_action;
         protected ToggleAction NoNoiseAction {
             get {
@@ -129,7 +138,8 @@ namespace Banshee.NoNoise
                 preferences = preference_service.Add (new Page ("nonoise", Catalog.GetString ("No.Noise"), 20));
         
                 debug = preferences.Add (new Section ("debug", Catalog.GetString ("Debug"), 1));
-                debug.Add (new SchemaPreference<bool> (Schemas.Startup, Schemas.Startup.ShortDescription, Schemas.Startup.LongDescription));
+                debug.Add (new SchemaPreference<bool> (NoNoiseSchemas.Startup, NoNoiseSchemas.Startup.ShortDescription,
+                                                       NoNoiseSchemas.Startup.LongDescription));
                 pref_installed = true;
             }
         }
@@ -177,7 +187,7 @@ namespace Banshee.NoNoise
                     new ToggleActionEntry ("NoNoiseVisibleAction", null,
                     Catalog.GetString ("No.Noise Visualization"), null,
                     Catalog.GetString ("Enable or disable the No.Noise visualization"),
-                    null, true)
+                    null, NoNoiseSchemas.ShowNoNoise.Get ())
                 });
 
                 action_service.AddActionGroup (no_noise_actions);
@@ -189,9 +199,15 @@ namespace Banshee.NoNoise
                 ActionGroup scan_actions = new ActionGroup ("NoNoiseScan");
 
                 scan_actions.Add (new ActionEntry [] {
+                    new ActionEntry ("NoNoiseMenuAction", null, "NoNoise", null,
+                                     null, null),
                     new ActionEntry ("NoNoiseScanAction", null,
                     Catalog.GetString ("Start No.Noise scan"), null,
                     Catalog.GetString ("Start or pause the No.Noise scan"),
+                    null),
+                    new ActionEntry ("NoNoiseHelpAction", null,
+                    Catalog.GetString ("Help"), null,
+                    Catalog.GetString ("Show the help dialog for the NoNoise plug-in"),
                     null)
                 });
 
@@ -201,6 +217,7 @@ namespace Banshee.NoNoise
 
             NoNoiseAction.Activated += OnNoNoiseToggle;
             ScanAction.Activated += OnScanAction;
+            HelpAction.Activated += OnHelpAction;
             return true;
         }
 
@@ -226,14 +243,22 @@ namespace Banshee.NoNoise
             scan_action_enabled = !scan_action_enabled;
         }
 
+        private void OnHelpAction (object sender, EventArgs e)
+        {
+            Hyena.Log.Debug ("Help action called");
+            new NoNoiseHelpDialog ();
+        }
+
         void OnNoNoiseToggle (object sender, EventArgs e)
         {
             if (NoNoiseAction.Active) {
+                NoNoiseSchemas.ShowNoNoise.Set (true);
                 Clutter.Threads.Enter ();
                 music_library.Properties.Set<ISourceContents> ("Nereid.SourceContents", no_noise_contents);
                 Clutter.Threads.Leave ();
                 Hyena.Log.Information ("No.Noise enabled");
             } else {
+                NoNoiseSchemas.ShowNoNoise.Set (false);
                 Clutter.Threads.Enter ();
                 music_library.Properties.Remove("Nereid.SourceContents");
                 Clutter.Threads.Leave ();
@@ -266,9 +291,11 @@ namespace Banshee.NoNoise
 
             no_noise_contents.SetSource(music_library);
 
-            Clutter.Threads.Enter ();
-            music_library.Properties.Set<ISourceContents> ("Nereid.SourceContents", no_noise_contents);
-            Clutter.Threads.Leave ();
+            if (NoNoiseSchemas.ShowNoNoise.Get ()) {
+                Clutter.Threads.Enter ();
+                music_library.Properties.Set<ISourceContents> ("Nereid.SourceContents", no_noise_contents);
+                Clutter.Threads.Leave ();
+            }
 
             source_manager.SourceAdded -= OnSourceAdded;
 
@@ -322,14 +349,14 @@ namespace Banshee.NoNoise
             source_manager.SourceAdded -= OnSourceAdded;
         }
 
-        public static class Schemas {
-            internal static readonly SchemaEntry<bool> Startup = new SchemaEntry<bool>(
-                "nonoise", "startup",
-                false,
-                Catalog.GetString ("Enable No.Noise on startup"),
-                Catalog.GetString ("Enable or disable the No.Noise visualization on startup")
-            );
-        }
+//        public static class Schemas {
+//            internal static readonly SchemaEntry<bool> Startup = new SchemaEntry<bool>(
+//                "nonoise", "startup",
+//                false,
+//                Catalog.GetString ("Enable No.Noise on startup"),
+//                Catalog.GetString ("Enable or disable the No.Noise visualization on startup")
+//            );
+//        }
 
 
     }

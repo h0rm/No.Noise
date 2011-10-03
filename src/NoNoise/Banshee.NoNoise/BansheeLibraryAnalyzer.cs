@@ -55,6 +55,18 @@ namespace Banshee.NoNoise
         private readonly bool STORE_ENTIRE_MATRIX = false;
         private readonly bool DB_CHEATER_MODE = false;
 
+        private const int PCA_MEAN = 0;
+        private const int PCA_MEAN_DUR = 1;
+        private const int PCA_SQR_MEAN = 2;
+        private const int PCA_SQR_MEAN_DUR = 3;
+        private const int PCA_MAX = 4;
+        private const int PCA_MAX_DUR = 5;
+        private const int PCA_MIN = 6;
+        private const int PCA_MIN_DUR = 7;
+        private const int PCA_MED = 8;
+        private const int PCA_MED_DUR = 9;
+        private int PCA_MODE = PCA_MEAN_DUR;
+
         #region Members
         private Banshee.Library.MusicLibrarySource ml;
 //        private SortedDictionary<int, TrackInfo> library;
@@ -346,7 +358,8 @@ namespace Banshee.NoNoise
             if (mfccMap == null)
                 Hyena.Log.Error ("NoNoise/BLA - mfccMap is null!");
 
-            for (int i = 0; i < ml.TrackModel.Count; i++) {
+//            for (int i = 0; i < ml.TrackModel.Count; i++) {
+            foreach (DatabaseTrackInfo dti in DatabaseTrackInfo.Provider.FetchAll ()) {
                 if (stop_scan) {
                     lock (scan_synch) {
                         analyzing_lib = false;
@@ -355,9 +368,11 @@ namespace Banshee.NoNoise
                 }
 
                 try {
-                    TrackInfo ti = ml.TrackModel [i];
-                    string absPath = ti.Uri.AbsolutePath;
-                    int bid = ml.GetTrackIdForUri (ti.Uri);
+//                    TrackInfo ti = ml.TrackModel [i];
+//                    string absPath = ti.Uri.AbsolutePath;
+//                    int bid = ml.GetTrackIdForUri (ti.Uri);
+                    string absPath = dti.Uri.AbsolutePath;
+                    int bid = dti.TrackId;
 
                     if (!mfccMap.ContainsKey (bid)) {
                         mfcc = Mirage.Analyzer.AnalyzeMFCC (absPath);
@@ -370,8 +385,9 @@ namespace Banshee.NoNoise
                     }
 
                     if ((DateTime.Now - dt).TotalSeconds > 20.0) {
-                        Hyena.Log.InformationFormat ("NoNoise/Scan - {0}% finished.",
-                                                     (int)((double)db_cnt / (double)ml_cnt * 100.0));
+                        int perc = (int)((double)db_cnt / (double)ml_cnt * 100.0);
+                        if (perc <= 100)
+                            Hyena.Log.InformationFormat ("NoNoise/Scan - {0}% finished.", perc);
                         dt = DateTime.Now;
                     }
                 } catch (Exception e) {
@@ -404,39 +420,39 @@ namespace Banshee.NoNoise
 
 //            for (int i = 0; i < ml.TrackModel.Count; i++) {
 //            lock (lib_synch) {
-                foreach (DatabaseTrackInfo dti in DatabaseTrackInfo.Provider.FetchAll ()) {
-                    if (stop_scan) {
-                        lock (scan_synch) {
-                            analyzing_lib = false;
-                        }
-                        return;
+            foreach (DatabaseTrackInfo dti in DatabaseTrackInfo.Provider.FetchAll ()) {
+                if (stop_scan) {
+                    lock (scan_synch) {
+                        analyzing_lib = false;
                     }
-    
-                    try {
+                    return;
+                }
+
+                try {
 //                        TrackInfo ti = dti as TrackInfo;
 //                        TrackInfo ti = library [bid];
-                        string absPath = dti.Uri.AbsolutePath;
-                        int bid = dti.TrackId;
-    
-                        if (!vectorMap.ContainsKey (bid)) {
-                            mfcc = Mirage.Analyzer.AnalyzeMFCC (absPath);
-    
-                            lock (db_synch) {
-                                if (!db.InsertVector (mfcc.Mean (), bid))
-                                    Hyena.Log.Error ("NoNoise - Matrix insert failed");
-                            }
-                            db_cnt++;
+                    string absPath = dti.Uri.AbsolutePath;
+                    int bid = dti.TrackId;
+
+                    if (!vectorMap.ContainsKey (bid)) {
+                        mfcc = Mirage.Analyzer.AnalyzeMFCC (absPath);
+
+                        lock (db_synch) {
+                            if (!db.InsertVector (mfcc.Mean (), bid))
+                                Hyena.Log.Error ("NoNoise - Matrix insert failed");
                         }
-    
-                        if ((DateTime.Now - dt).TotalSeconds > 20.0) {
-                            Hyena.Log.InformationFormat ("NoNoise/Scan - {0}% finished.",
-                                                         (int)((double)db_cnt / (double)ml_cnt * 100.0));
-                            dt = DateTime.Now;
-                        }
-                    } catch (Exception e) {
-                        Hyena.Log.Exception ("NoNoise - MFCC/DB Problem", e);
+                        db_cnt++;
                     }
+
+                    if ((DateTime.Now - dt).TotalSeconds > 20.0) {
+                        Hyena.Log.InformationFormat ("NoNoise/Scan - {0}% finished.",
+                                                     (int)((double)db_cnt / (double)ml_cnt * 100.0));
+                        dt = DateTime.Now;
+                    }
+                } catch (Exception e) {
+                    Hyena.Log.Exception ("NoNoise - MFCC/DB Problem", e);
                 }
+            }
 //            }
 
             finished.WakeupMain ();
@@ -479,10 +495,10 @@ namespace Banshee.NoNoise
         /// </summary>
         private void PcaForMusicLibrary ()
         {
-            if (data_up_to_date) {
-                Hyena.Log.Information ("NoNoise - Data already up2date - aborting pca.");
-                return;
-            }
+//            if (data_up_to_date) {    // TODO give it back!
+//                Hyena.Log.Information ("NoNoise - Data already up2date - aborting pca.");
+//                return;
+//            }
 
             if (analyzing_lib) {
                 Hyena.Log.Information ("NoNoise - Music library is currently beeing scanned - aborting pca.");
@@ -494,6 +510,8 @@ namespace Banshee.NoNoise
                 return;     // TODO something clever!
             }
 
+            Hyena.Log.Debug ("NoNoise/BLA - PcaFor... called");
+
             ana = new PCAnalyzer();
             Dictionary<int, Mirage.Matrix> mfccMap = null;
             lock (db_synch) {
@@ -502,18 +520,20 @@ namespace Banshee.NoNoise
             if (mfccMap == null)
                 Hyena.Log.Error ("NoNoise/BLA - mfccMap is null!");
 
-            foreach (int bid in mfccMap.Keys) {
-                try {
-                    if (!ana.AddEntry (bid, ConvertMfccMean (mfccMap[bid].Mean ())))
-                        throw new Exception("AddEntry failed!");
-//                        if (!ana.AddEntry (bid, ConvertMfccMean(mfcc.Mean()), ti.Duration.TotalSeconds))
-//                            throw new Exception("AddEntry failed!");
-//                        if (!ana.AddEntry (bid, null, ti.Bpm, ti.Duration.TotalSeconds))
-//                            throw new Exception("AddEntry failed!");
-                } catch (Exception e) {
-                    Hyena.Log.Exception("NoNoise - PCA Problem", e);
-                }
-            }
+//            foreach (int bid in mfccMap.Keys) {
+//                try {
+//                    if (!ana.AddEntry (bid, ConvertMfccMean (mfccMap[bid].Mean ())))
+//                        throw new Exception("AddEntry failed!");
+////                        if (!ana.AddEntry (bid, ConvertMfccMean(mfcc.Mean()), ti.Duration.TotalSeconds))
+////                            throw new Exception("AddEntry failed!");
+////                        if (!ana.AddEntry (bid, null, ti.Bpm, ti.Duration.TotalSeconds))
+////                            throw new Exception("AddEntry failed!");
+//                } catch (Exception e) {
+//                    Hyena.Log.Exception("NoNoise - PCA Problem", e);
+//                }
+//            }
+
+            PcaTestings (ana, mfccMap);
 
             try {
                 ana.PerformPCA ();
@@ -529,14 +549,158 @@ namespace Banshee.NoNoise
             }
         }
 
-        private void PcaForMusicLibraryVectorEdition ()
+        private void PcaTestings (PCAnalyzer ana, Dictionary<int, Mirage.Matrix> mfccMap)
         {
-            PcaForMusicLibraryVectorEdition (false);
-        }
+            switch (PCA_MODE) {
+            case PCA_MEAN:
+                foreach (int bid in mfccMap.Keys) {
+                    try {
+                        if (!ana.AddEntry (bid, ConvertMfccMean (mfccMap[bid].Mean ())))
+                            throw new Exception("AddEntry failed!");
+                    } catch (Exception e) {
+                        Hyena.Log.Exception("NoNoise - PCA Problem", e);
+                    }
+                }
+                break;
 
-        private void PcaForMusicLibraryVectorEditionForceNew ()
-        {
-            PcaForMusicLibraryVectorEdition (true);
+            case PCA_MEAN_DUR:
+                foreach (DatabaseTrackInfo dti in DatabaseTrackInfo.Provider.FetchAll ()) {
+                    try {
+                        int bid = dti.TrackId;
+
+                        if (!mfccMap.ContainsKey (bid)) {
+                            Hyena.Log.Debug ("NoNoise/BLA - skipping bid: " + bid);
+                            continue;
+                        }
+                        if (!ana.AddEntry (bid, ConvertMfccMean (mfccMap [bid].Mean ()),
+                                           dti.Duration.TotalSeconds))
+                            throw new Exception("AddEntry failed!");
+                    } catch (Exception e) {
+                        Hyena.Log.Exception ("NoNoise - PCA Problem", e);
+                    }
+                }
+                break;
+
+            case PCA_SQR_MEAN:
+                foreach (int bid in mfccMap.Keys) {
+                    try {
+                        if (!ana.AddEntry (bid, ConvertMfccToSqrMean (mfccMap[bid])))
+                            throw new Exception("AddEntry failed!");
+                    } catch (Exception e) {
+                        Hyena.Log.Exception("NoNoise - PCA Problem", e);
+                    }
+                }
+                break;
+
+            case PCA_SQR_MEAN_DUR:
+                foreach (DatabaseTrackInfo dti in DatabaseTrackInfo.Provider.FetchAll ()) {
+                    try {
+                        int bid = dti.TrackId;
+
+                        if (!mfccMap.ContainsKey (bid)) {
+                            Hyena.Log.Debug ("NoNoise/BLA - skipping bid: " + bid);
+                            continue;
+                        }
+                        if (!ana.AddEntry (bid, ConvertMfccToSqrMean (mfccMap [bid]),
+                                           dti.Duration.TotalSeconds))
+                            throw new Exception("AddEntry failed!");
+                    } catch (Exception e) {
+                        Hyena.Log.Exception ("NoNoise - PCA Problem", e);
+                    }
+                }
+                break;
+
+            case PCA_MAX:
+                foreach (int bid in mfccMap.Keys) {
+                    try {
+                        if (!ana.AddEntry (bid, ConvertMfccToMax (mfccMap[bid])))
+                            throw new Exception("AddEntry failed!");
+                    } catch (Exception e) {
+                        Hyena.Log.Exception("NoNoise - PCA Problem", e);
+                    }
+                }
+                break;
+
+            case PCA_MAX_DUR:
+                foreach (DatabaseTrackInfo dti in DatabaseTrackInfo.Provider.FetchAll ()) {
+                    try {
+                        int bid = dti.TrackId;
+
+                        if (!mfccMap.ContainsKey (bid)) {
+                            Hyena.Log.Debug ("NoNoise/BLA - skipping bid: " + bid);
+                            continue;
+                        }
+                        if (!ana.AddEntry (bid, ConvertMfccToMax (mfccMap [bid]),
+                                           dti.Duration.TotalSeconds))
+                            throw new Exception("AddEntry failed!");
+                    } catch (Exception e) {
+                        Hyena.Log.Exception ("NoNoise - PCA Problem", e);
+                    }
+                }
+                break;
+
+            case PCA_MIN:
+                foreach (int bid in mfccMap.Keys) {
+                    try {
+                        if (!ana.AddEntry (bid, ConvertMfccToMin (mfccMap[bid])))
+                            throw new Exception("AddEntry failed!");
+                    } catch (Exception e) {
+                        Hyena.Log.Exception("NoNoise - PCA Problem", e);
+                    }
+                }
+                break;
+
+            case PCA_MIN_DUR:
+                foreach (DatabaseTrackInfo dti in DatabaseTrackInfo.Provider.FetchAll ()) {
+                    try {
+                        int bid = dti.TrackId;
+
+                        if (!mfccMap.ContainsKey (bid)) {
+                            Hyena.Log.Debug ("NoNoise/BLA - skipping bid: " + bid);
+                            continue;
+                        }
+                        if (!ana.AddEntry (bid, ConvertMfccToMin (mfccMap [bid]),
+                                           dti.Duration.TotalSeconds))
+                            throw new Exception("AddEntry failed!");
+                    } catch (Exception e) {
+                        Hyena.Log.Exception ("NoNoise - PCA Problem", e);
+                    }
+                }
+                break;
+
+            case PCA_MED:
+                foreach (int bid in mfccMap.Keys) {
+                    try {
+                        if (!ana.AddEntry (bid, ConvertMfccToMedian (mfccMap[bid])))
+                            throw new Exception("AddEntry failed!");
+                    } catch (Exception e) {
+                        Hyena.Log.Exception("NoNoise - PCA Problem", e);
+                    }
+                }
+                break;
+
+            case PCA_MED_DUR:
+                foreach (DatabaseTrackInfo dti in DatabaseTrackInfo.Provider.FetchAll ()) {
+                    try {
+                        int bid = dti.TrackId;
+
+                        if (!mfccMap.ContainsKey (bid)) {
+                            Hyena.Log.Debug ("NoNoise/BLA - skipping bid: " + bid);
+                            continue;
+                        }
+                        if (!ana.AddEntry (bid, ConvertMfccToMedian (mfccMap [bid]),
+                                           dti.Duration.TotalSeconds))
+                            throw new Exception("AddEntry failed!");
+                    } catch (Exception e) {
+                        Hyena.Log.Exception ("NoNoise - PCA Problem", e);
+                    }
+                }
+                break;
+
+            default:
+                Hyena.Log.Debug ("NoNoise/BLA - default pca case, ignoring...");
+                break;
+            }
         }
 
         /// <summary>
@@ -575,29 +739,29 @@ namespace Banshee.NoNoise
             foreach (DatabaseTrackInfo dti in DatabaseTrackInfo.Provider.FetchAll ()) {
 //            lock (lib_synch) {
 //                foreach (int bid in library.Keys) {
-                    try {
-                        TrackInfo ti = dti as TrackInfo;
+                try {
+                    TrackInfo ti = dti as TrackInfo;
 //                        TrackInfo ti = library [bid];
-                        int bid = dti.TrackId;
-    
-                        if (!vectorMap.ContainsKey (bid)) {
-                            Hyena.Log.Debug ("NoNoise/BLA - skipping bid: " + bid);
-                            continue;
-                        }
-    
-    //                    Hyena.Log.Debug ("bid: " + bid + ", uri: " + ti.Uri);
-    
-    //                    if (!ana.AddEntry (bid, ConvertMfccMean (vectorMap [bid])))
-    //                        throw new Exception ("AddEntry failed!");
-                        if (!ana.AddEntry (bid, ConvertMfccMean (vectorMap [bid]),
-                                           ti.Duration.TotalSeconds))
-                            throw new Exception("AddEntry failed!");
-    //                        if (!ana.AddEntry (bid, null, ti.Bpm, ti.Duration.TotalSeconds))
-    //                            throw new Exception("AddEntry failed!");
-                    } catch (Exception e) {
-                        Hyena.Log.Exception ("NoNoise - PCA Problem", e);
-//                        return;
+                    int bid = dti.TrackId;
+
+                    if (!vectorMap.ContainsKey (bid)) {
+                        Hyena.Log.Debug ("NoNoise/BLA - skipping bid: " + bid);
+                        continue;
                     }
+
+//                    Hyena.Log.Debug ("bid: " + bid + ", uri: " + ti.Uri);
+
+//                    if (!ana.AddEntry (bid, ConvertMfccMean (vectorMap [bid])))
+//                        throw new Exception ("AddEntry failed!");
+                    if (!ana.AddEntry (bid, ConvertMfccMean (vectorMap [bid]),
+                                       ti.Duration.TotalSeconds))
+                        throw new Exception("AddEntry failed!");
+//                        if (!ana.AddEntry (bid, null, ti.Bpm, ti.Duration.TotalSeconds))
+//                            throw new Exception("AddEntry failed!");
+                } catch (Exception e) {
+                    Hyena.Log.Exception ("NoNoise - PCA Problem", e);
+//                        return;
+                }
 //                }
             }
 
@@ -615,6 +779,16 @@ namespace Banshee.NoNoise
             }
         }
 
+        private void PcaForMusicLibraryVectorEdition ()
+        {
+            PcaForMusicLibraryVectorEdition (false);
+        }
+
+        private void PcaForMusicLibraryVectorEditionForceNew ()
+        {
+            PcaForMusicLibraryVectorEdition (true);
+        }
+
         /// <summary>
         /// Converts a Mirage.Vector to an array of doubles.
         /// </summary>
@@ -630,6 +804,69 @@ namespace Banshee.NoNoise
 
             for (int i = 0; i < mean.d.Length; i++) {
                 data[i] = mean.d[i, 0];
+            }
+
+            return data;
+        }
+
+        private double[] ConvertMfccToSqrMean (Mirage.Matrix mfcc)
+        {
+            double[] data = new double[mfcc.rows];
+
+            for (int i = 0; i < mfcc.rows; i++) {
+                data [i] = 0;
+                for (int j = 0; j < mfcc.columns; j++) {
+                    data [i] += Math.Pow (mfcc.d [i, j], 2);
+                }
+                data [i] = Math.Sqrt (data [i]);
+            }
+
+            return data;
+        }
+
+        private double[] ConvertMfccToMax (Mirage.Matrix mfcc)
+        {
+            double[] data = new double[mfcc.rows];
+
+            for (int i = 0; i < mfcc.rows; i++) {
+                double max = double.NegativeInfinity;
+                for (int j = 0; j < mfcc.columns; j++) {
+                    max = Math.Max (max, mfcc.d [i, j]);
+                }
+                data [i] = max;
+            }
+
+            return data;
+        }
+
+        private double[] ConvertMfccToMin (Mirage.Matrix mfcc)
+        {
+            double[] data = new double[mfcc.rows];
+
+            for (int i = 0; i < mfcc.rows; i++) {
+                double min = double.PositiveInfinity;
+                for (int j = 0; j < mfcc.columns; j++) {
+                    min = Math.Min (min, mfcc.d [i, j]);
+                }
+                data [i] = min;
+            }
+
+            return data;
+        }
+
+        private double[] ConvertMfccToMedian (Mirage.Matrix mfcc)
+        {
+            double[] data = new double[mfcc.rows];
+
+            for (int i = 0; i < mfcc.rows; i++) {
+                double[] r = new double[mfcc.columns];
+
+                for (int j = 0; j < mfcc.columns; j++) {
+                    r [j] = mfcc.d [i, j];
+                }
+
+                Array.Sort<double> (r);
+                data [i] = r [r.Length / 2];
             }
 
             return data;
