@@ -42,7 +42,8 @@ namespace NoNoise.Data
         private readonly string CONNECTION_STRING = "URI=file:nonoise.db,version=3";
 
         private readonly string CREATE_TABLE_MIRDATA =
-            "CREATE TABLE IF NOT EXISTS MIRData (banshee_id INTEGER NOT NULL, data CLOB NOT NULL, id INTEGER PRIMARY KEY)";
+            "CREATE TABLE IF NOT EXISTS MIRData (banshee_id INTEGER NOT NULL, mean CLOB NOT NULL, sqrmean CLOB NOT NULL, " +
+            "median CLOB NOT NULL, min CLOB NOT NULL, max CLOB NOT NULL, id INTEGER PRIMARY KEY)";
         private readonly string CREATE_TABLE_PCADATA =
             "CREATE TABLE IF NOT EXISTS PCAData (banshee_id INTEGER NOT NULL, id INTEGER PRIMARY KEY, pca_x DOUBLE NOT NULL, " +
             "pca_y DOUBLE NOT NULL)";
@@ -325,6 +326,33 @@ namespace NoNoise.Data
             return true;
         }
 
+        public bool InsertVectors (Mirage.Vector mean, Mirage.Vector sqrmean, Mirage.Vector median,
+                                   Mirage.Vector min, Mirage.Vector max, int bid)
+        {
+            IDbCommand dbcmd = null;
+            try {
+                dbcon.Open ();
+                dbcmd = dbcon.CreateCommand ();
+
+                dbcmd.CommandText = string.Format ("INSERT INTO MIRData (banshee_id, mean, sqrmean, median, min, max) " +
+                    "VALUES ('{0}', '{1}', '{2}', '{3}', '{4}', '{5}')", bid, DataParser.MirageVectorToString (mean),
+                    DataParser.MirageVectorToString (sqrmean), DataParser.MirageVectorToString (median),
+                    DataParser.MirageVectorToString (min), DataParser.MirageVectorToString (max));
+                dbcmd.ExecuteNonQuery ();
+            } catch (Exception e) {
+                Log.Exception ("NoNoise/DB - Mirage.Vectors insert failed", e);
+                return false;
+            } finally {
+                if (dbcmd != null)
+                    dbcmd.Dispose ();
+                dbcmd = null;
+                if (dbcon != null)
+                    dbcon.Close ();
+            }
+
+            return true;
+        }
+
         /// <summary>
         /// Parses Mirage.Matrix's from the database and returns them.
         /// </summary>
@@ -375,7 +403,7 @@ namespace NoNoise.Data
         /// A <see cref="Dictionary<System.Int32, Mirage.Vector>"/> containing
         /// all vectors in the database mapped to their corresponding banshee_id.
         /// </returns>
-        public Dictionary<int, Mirage.Vector> GetMirageVectors ()
+        public Dictionary<int, Mirage.Vector> GetMirageMeanVectors ()
         {
             Dictionary<int, Mirage.Vector> ret = new Dictionary<int, Mirage.Vector> ();
 
@@ -384,7 +412,147 @@ namespace NoNoise.Data
                 dbcon.Open ();
                 dbcmd = dbcon.CreateCommand ();
 
-                dbcmd.CommandText = "SELECT data, id, banshee_id FROM MIRData";
+                dbcmd.CommandText = "SELECT mean, id, banshee_id FROM MIRData";
+                System.Data.IDataReader reader = dbcmd.ExecuteReader ();
+                while (reader.Read ()) {
+                    Mirage.Vector vec = DataParser.ParseMirageVector (reader.GetString (0));
+                    int bid = reader.GetInt32 (2);
+                    if (vec != null)
+                        ret.Add (bid, vec);
+                    else {
+                        Log.Warning ("NoNoise/DBNull - Vector with id " + reader.GetInt32 (1) + " is null!");
+                        Log.Debug (reader.GetString (0));
+                    }
+                }
+
+                return ret;
+            } catch (Exception e) {
+                Log.Exception ("NoNoise/DB - Mirage.Vector read failed", e);
+                return null;
+            } finally {
+                if (dbcmd != null)
+                    dbcmd.Dispose ();
+                dbcmd = null;
+                if (dbcon != null)
+                    dbcon.Close ();
+            }
+        }
+
+        public Dictionary<int, Mirage.Vector> GetMirageSquaredMeanVectors ()
+        {
+            Dictionary<int, Mirage.Vector> ret = new Dictionary<int, Mirage.Vector> ();
+
+            IDbCommand dbcmd = null;
+            try {
+                dbcon.Open ();
+                dbcmd = dbcon.CreateCommand ();
+
+                dbcmd.CommandText = "SELECT sqrmean, id, banshee_id FROM MIRData";
+                System.Data.IDataReader reader = dbcmd.ExecuteReader ();
+                while (reader.Read ()) {
+                    Mirage.Vector vec = DataParser.ParseMirageVector (reader.GetString (0));
+                    int bid = reader.GetInt32 (2);
+                    if (vec != null)
+                        ret.Add (bid, vec);
+                    else {
+                        Log.Warning ("NoNoise/DBNull - Vector with id " + reader.GetInt32 (1) + " is null!");
+                        Log.Debug (reader.GetString (0));
+                    }
+                }
+
+                return ret;
+            } catch (Exception e) {
+                Log.Exception ("NoNoise/DB - Mirage.Vector read failed", e);
+                return null;
+            } finally {
+                if (dbcmd != null)
+                    dbcmd.Dispose ();
+                dbcmd = null;
+                if (dbcon != null)
+                    dbcon.Close ();
+            }
+        }
+
+        public Dictionary<int, Mirage.Vector> GetMirageMedianVectors ()
+        {
+            Dictionary<int, Mirage.Vector> ret = new Dictionary<int, Mirage.Vector> ();
+
+            IDbCommand dbcmd = null;
+            try {
+                dbcon.Open ();
+                dbcmd = dbcon.CreateCommand ();
+
+                dbcmd.CommandText = "SELECT median, id, banshee_id FROM MIRData";
+                System.Data.IDataReader reader = dbcmd.ExecuteReader ();
+                while (reader.Read ()) {
+                    Mirage.Vector vec = DataParser.ParseMirageVector (reader.GetString (0));
+                    int bid = reader.GetInt32 (2);
+                    if (vec != null)
+                        ret.Add (bid, vec);
+                    else {
+                        Log.Warning ("NoNoise/DBNull - Vector with id " + reader.GetInt32 (1) + " is null!");
+                        Log.Debug (reader.GetString (0));
+                    }
+                }
+
+                return ret;
+            } catch (Exception e) {
+                Log.Exception ("NoNoise/DB - Mirage.Vector read failed", e);
+                return null;
+            } finally {
+                if (dbcmd != null)
+                    dbcmd.Dispose ();
+                dbcmd = null;
+                if (dbcon != null)
+                    dbcon.Close ();
+            }
+        }
+
+        public Dictionary<int, Mirage.Vector> GetMirageMinVectors ()
+        {
+            Dictionary<int, Mirage.Vector> ret = new Dictionary<int, Mirage.Vector> ();
+
+            IDbCommand dbcmd = null;
+            try {
+                dbcon.Open ();
+                dbcmd = dbcon.CreateCommand ();
+
+                dbcmd.CommandText = "SELECT min, id, banshee_id FROM MIRData";
+                System.Data.IDataReader reader = dbcmd.ExecuteReader ();
+                while (reader.Read ()) {
+                    Mirage.Vector vec = DataParser.ParseMirageVector (reader.GetString (0));
+                    int bid = reader.GetInt32 (2);
+                    if (vec != null)
+                        ret.Add (bid, vec);
+                    else {
+                        Log.Warning ("NoNoise/DBNull - Vector with id " + reader.GetInt32 (1) + " is null!");
+                        Log.Debug (reader.GetString (0));
+                    }
+                }
+
+                return ret;
+            } catch (Exception e) {
+                Log.Exception ("NoNoise/DB - Mirage.Vector read failed", e);
+                return null;
+            } finally {
+                if (dbcmd != null)
+                    dbcmd.Dispose ();
+                dbcmd = null;
+                if (dbcon != null)
+                    dbcon.Close ();
+            }
+        }
+
+        public Dictionary<int, Mirage.Vector> GetMirageMaxVectors ()
+        {
+            Dictionary<int, Mirage.Vector> ret = new Dictionary<int, Mirage.Vector> ();
+
+            IDbCommand dbcmd = null;
+            try {
+                dbcon.Open ();
+                dbcmd = dbcon.CreateCommand ();
+
+                dbcmd.CommandText = "SELECT max, id, banshee_id FROM MIRData";
                 System.Data.IDataReader reader = dbcmd.ExecuteReader ();
                 while (reader.Read ()) {
                     Mirage.Vector vec = DataParser.ParseMirageVector (reader.GetString (0));
@@ -424,6 +592,34 @@ namespace NoNoise.Data
             Log.Debug ("MatrixRows: " + (rows = matrix.Split ('\n')).Length);
             foreach (string r in rows) {
                 Log.Debug ("MatrixCols: " + r.Split (',').Length);
+            }
+        }
+
+        public List<int> GetMirDataKeyList ()
+        {
+            List<int> ret = new List<int> ();
+
+            IDbCommand dbcmd = null;
+            try {
+                dbcon.Open ();
+                dbcmd = dbcon.CreateCommand ();
+
+                dbcmd.CommandText = "SELECT banshee_id FROM MIRData";
+                System.Data.IDataReader reader = dbcmd.ExecuteReader ();
+                while (reader.Read ()) {
+                    ret.Add (reader.GetInt32 (0));
+                }
+
+                return ret;
+            } catch (Exception e) {
+                Log.Exception ("NoNoise/DB - MIRData key list read failed", e);
+                return null;
+            } finally {
+                if (dbcmd != null)
+                    dbcmd.Dispose ();
+                dbcmd = null;
+                if (dbcon != null)
+                    dbcon.Close ();
             }
         }
 
@@ -831,6 +1027,34 @@ namespace NoNoise.Data
                 return ret;
             } catch (Exception e) {
                 Log.Exception ("NoNoise/DB - Track data read failed", e);
+                return null;
+            } finally {
+                if (dbcmd != null)
+                    dbcmd.Dispose ();
+                dbcmd = null;
+                if (dbcon != null)
+                    dbcon.Close ();
+            }
+        }
+
+        public List<int> GetTrackDataKeyList ()
+        {
+            List<int> ret = new List<int> ();
+
+            IDbCommand dbcmd = null;
+            try {
+                dbcon.Open ();
+                dbcmd = dbcon.CreateCommand ();
+
+                dbcmd.CommandText = "SELECT banshee_id FROM TrackData";
+                System.Data.IDataReader reader = dbcmd.ExecuteReader ();
+                while (reader.Read ()) {
+                    ret.Add (reader.GetInt32 (0));
+                }
+
+                return ret;
+            } catch (Exception e) {
+                Log.Exception ("NoNoise/DB - TrackData key list read failed", e);
                 return null;
             } finally {
                 if (dbcmd != null)
