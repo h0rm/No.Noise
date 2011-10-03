@@ -39,7 +39,7 @@ using NoNoise.Data;
 using NoNoise.PCA;
 
 // TODO something like compute_pca button
-// TODO track_updated listener + db updates
+// TODO track_updated listener
 
 namespace Banshee.NoNoise
 {
@@ -111,6 +111,15 @@ namespace Banshee.NoNoise
             get { return analyzing_lib; }
         }
 
+        /// <summary>
+        /// Gets the TrackInfo from the banshee database with the given banshee_id.
+        /// </summary>
+        /// <param name="bid">
+        /// The banshee_id
+        /// </param>
+        /// <returns>
+        /// The <see cref="TrackInfo"/> corresponding to the given banshee_id
+        /// </returns>
         public TrackInfo GetTrackInfoFor (int bid)
         {
             return DatabaseTrackInfo.Provider.FetchSingle (bid) as TrackInfo;
@@ -504,21 +513,21 @@ namespace Banshee.NoNoise
 
             Hyena.Log.Debug ("NoNoise/BLA - PcaFor... called");
 
-            ana = new PCAnalyzer ();
-
-            pca_adder.AddVectorsFromDB (ana);
-
             try {
+                ana = new PCAnalyzer ();
+                pca_adder.AddVectorsFromDB (ana);
                 ana.PerformPCA ();
 
                 lock (db_synch) {
                     db.ClearPcaData ();
                     if (!db.InsertPcaCoordinates (ana.Coordinates))
-                        Hyena.Log.Error ("NoNoise - PCA coord insert failed");
+                        Hyena.Log.Error ("NoNoise/BLA - PCA coord insert failed");
                     coords = db.GetPcaCoordinates ();
                 }
+            } catch (DatabaseException e) {
+                Hyena.Log.Exception ("NoNoise/BLA - Database Problem", e);
             } catch (Exception e) {
-                Hyena.Log.Exception ("PCA Problem", e);
+                Hyena.Log.Exception ("NoNoise/BLA - PCA Problem", e);
             }
         }
 
@@ -1250,6 +1259,13 @@ namespace Banshee.NoNoise
         #endregion
 
         private interface IPcaAdder {
+            /// <summary>
+            /// Adds feature vectors from the database to the PCAnalyzer,
+            /// depending on the implementing class.
+            /// </summary>
+            /// <param name="ana">
+            /// The <see cref="PCAnalyzer"/>
+            /// </param>
             void AddVectorsFromDB (PCAnalyzer ana);
         }
 
@@ -1261,7 +1277,7 @@ namespace Banshee.NoNoise
                     vectorMap = BansheeLibraryAnalyzer.Singleton.db.GetMirageMeanVectors ();
                 }
                 if (vectorMap == null)
-                    Hyena.Log.Error ("NoNoise/BLA - vectorMap is null!");
+                    throw new DatabaseException ("vectorMap is null!");
 
                 foreach (int bid in vectorMap.Keys) {
                     try {
@@ -1283,7 +1299,7 @@ namespace Banshee.NoNoise
                     vectorMap = BansheeLibraryAnalyzer.Singleton.db.GetMirageMeanVectors ();
                 }
                 if (vectorMap == null)
-                    Hyena.Log.Error ("NoNoise/BLA - vectorMap is null!");
+                    throw new DatabaseException ("vectorMap is null!");
 
                 foreach (DatabaseTrackInfo dti in DatabaseTrackInfo.Provider.FetchAll ()) {
                     try {
@@ -1312,7 +1328,7 @@ namespace Banshee.NoNoise
                     vectorMap = BansheeLibraryAnalyzer.Singleton.db.GetMirageSquaredMeanVectors ();
                 }
                 if (vectorMap == null)
-                    Hyena.Log.Error ("NoNoise/BLA - vectorMap is null!");
+                    throw new DatabaseException ("vectorMap is null!");
 
                 foreach (int bid in vectorMap.Keys) {
                     try {
@@ -1334,7 +1350,7 @@ namespace Banshee.NoNoise
                     vectorMap = BansheeLibraryAnalyzer.Singleton.db.GetMirageSquaredMeanVectors ();
                 }
                 if (vectorMap == null)
-                    Hyena.Log.Error ("NoNoise/BLA - vectorMap is null!");
+                    throw new DatabaseException ("vectorMap is null!");
 
                 foreach (DatabaseTrackInfo dti in DatabaseTrackInfo.Provider.FetchAll ()) {
                     try {
@@ -1363,7 +1379,7 @@ namespace Banshee.NoNoise
                     vectorMap = BansheeLibraryAnalyzer.Singleton.db.GetMirageMaxVectors ();
                 }
                 if (vectorMap == null)
-                    Hyena.Log.Error ("NoNoise/BLA - vectorMap is null!");
+                    throw new DatabaseException ("vectorMap is null!");
 
                 foreach (int bid in vectorMap.Keys) {
                     try {
@@ -1385,7 +1401,7 @@ namespace Banshee.NoNoise
                     vectorMap = BansheeLibraryAnalyzer.Singleton.db.GetMirageMaxVectors ();
                 }
                 if (vectorMap == null)
-                    Hyena.Log.Error ("NoNoise/BLA - vectorMap is null!");
+                    throw new DatabaseException ("vectorMap is null!");
 
                 foreach (DatabaseTrackInfo dti in DatabaseTrackInfo.Provider.FetchAll ()) {
                     try {
@@ -1414,7 +1430,7 @@ namespace Banshee.NoNoise
                     vectorMap = BansheeLibraryAnalyzer.Singleton.db.GetMirageMinVectors ();
                 }
                 if (vectorMap == null)
-                    Hyena.Log.Error ("NoNoise/BLA - vectorMap is null!");
+                    throw new DatabaseException ("vectorMap is null!");
 
                 foreach (int bid in vectorMap.Keys) {
                     try {
@@ -1436,7 +1452,7 @@ namespace Banshee.NoNoise
                     vectorMap = BansheeLibraryAnalyzer.Singleton.db.GetMirageMinVectors ();
                 }
                 if (vectorMap == null)
-                    Hyena.Log.Error ("NoNoise/BLA - vectorMap is null!");
+                    throw new DatabaseException ("vectorMap is null!");
 
                 foreach (DatabaseTrackInfo dti in DatabaseTrackInfo.Provider.FetchAll ()) {
                     try {
@@ -1465,7 +1481,7 @@ namespace Banshee.NoNoise
                     vectorMap = BansheeLibraryAnalyzer.Singleton.db.GetMirageMedianVectors ();
                 }
                 if (vectorMap == null)
-                    Hyena.Log.Error ("NoNoise/BLA - vectorMap is null!");
+                    throw new DatabaseException ("vectorMap is null!");
 
                 foreach (int bid in vectorMap.Keys) {
                     try {
@@ -1487,7 +1503,7 @@ namespace Banshee.NoNoise
                     vectorMap = BansheeLibraryAnalyzer.Singleton.db.GetMirageMedianVectors ();
                 }
                 if (vectorMap == null)
-                    Hyena.Log.Error ("NoNoise/BLA - vectorMap is null!");
+                    throw new DatabaseException ("vectorMap is null!");
 
                 foreach (DatabaseTrackInfo dti in DatabaseTrackInfo.Provider.FetchAll ()) {
                     try {

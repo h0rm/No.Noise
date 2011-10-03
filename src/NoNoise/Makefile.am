@@ -180,6 +180,7 @@ SOURCES =  \
 	Mirage/Scms.cs \
 	Mirage/ScmsConfiguration.cs \
 	Mirage/Vector.cs \
+	NoNoise/Data/DatabaseException.cs \
 	NoNoise/Data/DataHandler.cs \
 	NoNoise/Data/DataParser.cs \
 	NoNoise/Data/NoNoiseDBHandler.cs \
