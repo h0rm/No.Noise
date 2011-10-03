@@ -29,6 +29,9 @@ using Clutter;
 
 namespace NoNoise.Visualization.Gui
 {
+    /// <summary>
+    /// Gui toolbar button element
+    /// </summary>
     public class ToolbarButton : Button
     {
         public enum Border { None = 0, Left = 1, Right = 2}
@@ -51,6 +54,12 @@ namespace NoNoise.Visualization.Gui
             base.Initialize ();
         }
 
+        /// <summary>
+        /// Draws the button into the texture
+        /// </summary>
+        /// <param name="actor">
+        /// A <see cref="CairoTexture"/>
+        /// </param>
         protected void Draw (CairoTexture actor)
         {
             double x = 0.5, y = 0.5;
@@ -97,6 +106,9 @@ namespace NoNoise.Visualization.Gui
             ((IDisposable) cr).Dispose ();
         }
 
+        /// <summary>
+        /// Generates the textures of the button.
+        /// </summary>
         protected override void GenerateTextures ()
         {
             CairoTexture actor1 = new CairoTexture (texture_width, texture_height);

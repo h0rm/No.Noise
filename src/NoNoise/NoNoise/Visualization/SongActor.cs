@@ -94,6 +94,24 @@ namespace NoNoise.Visualization
             }
         }
 
+        /// <summary>
+        /// Updates the prototype with the given color.
+        /// </summary>
+        /// <param name="actor">
+        /// A <see cref="CairoTexture"/>
+        /// </param>
+        /// <param name="r">
+        /// A <see cref="System.Double"/>
+        /// </param>
+        /// <param name="g">
+        /// A <see cref="System.Double"/>
+        /// </param>
+        /// <param name="b">
+        /// A <see cref="System.Double"/>
+        /// </param>
+        /// <param name="a">
+        /// A <see cref="System.Double"/>
+        /// </param>
         static private void UpdatePrototype (CairoTexture actor, double r, double g, double b, double a)
         {
             if ( a == 0)
@@ -149,6 +167,9 @@ namespace NoNoise.Visualization
         #endregion
         private CairoTexture prototype;
 
+        /// <summary>
+        /// <see cref="CairoTexture"/> which is rendered.
+        /// </summary>
         private CairoTexture Prototype
         {
             set
@@ -160,6 +181,12 @@ namespace NoNoise.Visualization
             get { return prototype; }
         }
 
+        /// <summary>
+        /// Sets the color of the actor (i.e. sets the prototype).
+        /// </summary>
+        /// <param name="color">
+        /// A <see cref="Color"/>
+        /// </param>
         public void SetPrototypeByColor (Color color)
         {
             if (color == current_color)
@@ -171,6 +198,9 @@ namespace NoNoise.Visualization
             current_color = color;
         }
 
+        /// <summary>
+        /// <see cref="SongPoint"/> linked to this actor.
+        /// </summary>
         public SongPoint Owner {
             get;
             set;

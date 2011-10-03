@@ -28,6 +28,9 @@ using Clutter;
 
 namespace NoNoise.Visualization.Gui
 {
+    /// <summary>
+    /// Gui element for the zoom in / out buttons
+    /// </summary>
     public class ZoomButton : Button
     {
         private bool inward;
@@ -38,6 +41,9 @@ namespace NoNoise.Visualization.Gui
             base.Initialize ();
         }
 
+        /// <summary>
+        /// Generates the undlying texture
+        /// </summary>
         protected override void GenerateTextures ()
         {
             double x = 5+0.5, y = 5+0.5;

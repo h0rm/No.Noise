@@ -7,6 +7,9 @@ using Hyena;
 
 namespace NoNoise.Visualization.Util
 {
+    /// <summary>
+    /// [Old] Helper class for clutter c-function calls.
+    /// </summary>
 	public static class ClutterHelper
 	{
         private static int state;

@@ -38,7 +38,26 @@ namespace NoNoise.Visualization
         private double y;
         private SelectionMode selection;
 
-        public enum SelectionMode {None = 0, Partial = 2, Full = 3};
+        /// <summary>
+        /// Selection mode of a point
+        /// </summary>
+        public enum SelectionMode
+        {
+            /// <summary>
+            /// Not selected.
+            /// </summary>
+            None = 0,
+
+            /// <summary>
+            /// Partially selected (i.e. some leaf points in the hierarchy below is selected).
+            /// </summary>
+            Partial = 2,
+
+            /// <summary>
+            /// Fully selected (i.e. all leaf points in the hierarchy below are selected).
+            /// </summary>
+            Full = 3
+        };
 
         public SongPoint (double x, double y, int id)
         {
@@ -54,6 +73,9 @@ namespace NoNoise.Visualization
             IsHidden = false;
         }
 
+        /// <summary>
+        /// Gets and sets the selection mode of this point.
+        /// </summary>
         public SelectionMode Selection {
             get {
                 if (IsLeaf)
@@ -75,20 +97,35 @@ namespace NoNoise.Visualization
                 selection = value;
             }
         }
+
+        /// <summary>
+        /// Returns true if this point is a leaf node (i.e. no children).
+        /// </summary>
         public bool IsLeaf {
             get {
                 return LeftChild == null && RightChild == null;
             }
         }
+
+        /// <summary>
+        /// Returns true if this point is hidden (due to a search filter).
+        /// </summary>
         public bool IsHidden {
             get;
             set;
         }
+
+        /// <summary>
+        /// Returns true if this point has been removed.
+        /// </summary>
         public bool IsRemoved {
             get;
             set;
         }
 
+        /// <summary>
+        /// Returns true if this point is visible (i.e. some point in the hierarchy is visible).
+        /// </summary>
         public bool IsVisible {
             get {
                 //Leaf, i know if im visible
@@ -104,13 +141,16 @@ namespace NoNoise.Visualization
             }
         }
 
+        /// <summary>
+        /// Returns true if this point is fully selected.
+        /// </summary>
         public bool IsSelected {
             get { return Selection == SongPoint.SelectionMode.Full; }
             set { Selection = value ? SelectionMode.Full : SelectionMode.None; }
         }
         
         /// <summary>
-        /// The X position in the 2D space
+        /// The X position in the 2D space.
         /// </summary>
         public double X {
             get {
@@ -124,7 +164,7 @@ namespace NoNoise.Visualization
         }
 
         /// <summary>
-        /// The Y position in the 2D space
+        /// The Y position in the 2D space.
         /// </summary>
         public double Y {
             get {
@@ -137,11 +177,17 @@ namespace NoNoise.Visualization
             private set { y = value; }
         }
 
+        /// <summary>
+        /// Returns the parent point in the hierarchy.
+        /// </summary>
         public SongPoint Parent {
             get;
             private set;
         }
 
+        /// <summary>
+        /// Returns the left child if visible, otherwise the right child.
+        /// </summary>
         public SongPoint MainChild {
             get {
                 if (LeftChild.IsVisible)
@@ -150,19 +196,30 @@ namespace NoNoise.Visualization
                 return RightChild;
             }
         }
+
+        /// <summary>
+        /// Returns the left child. Can not be null.
+        /// </summary>
         public SongPoint LeftChild {
             get;
             private set;
         }
 
+        /// <summary>
+        /// Returns the right child. Can be null.
+        /// </summary>
         public SongPoint RightChild {
             get;
             private set;
         }
 
+        /// <summary>
+        /// Returns a <see cref="Point"/> with the xy coordinates of this point.
+        /// </summary>
         public Point XY {
             get { return new Point (X, Y); }
         }
+
         /// <summary>
         /// Linked Cluster actor which is used for rendering.
         /// </summary>
@@ -179,13 +236,18 @@ namespace NoNoise.Visualization
             private set;
         }
 
+        /// <summary>
+        /// Marks this point removed if it has been selected.
+        /// </summary>
         public void MarkRemovedifSelected ()
         {
             if (IsSelected && IsVisible && IsLeaf)
                 IsRemoved = true;
         }
 
-
+        /// <summary>
+        /// Marks this point and all points in this subtree selected.
+        /// </summary>
         public void MarkAsSelected ()
         {
             if (!IsVisible)
@@ -202,17 +264,12 @@ namespace NoNoise.Visualization
 
         }
 
-//        public void ClearSelection ()
-//        {
-//            IsSelected = false;
-//
-////            if (LeftChild != null)
-////                LeftChild.ClearSelection ();
-////
-////            if (RightChild != null)
-////                RightChild.ClearSelection ();
-//        }
-
+        /// <summary>
+        /// Collects all ids recursively and returns them as a list.
+        /// </summary>
+        /// <returns>
+        /// A <see cref="List<System.Int32>"/>
+        /// </returns>
         public List<int> GetAllIDs ()
         {
             List<int> ids = new List<int> ();
@@ -228,7 +285,16 @@ namespace NoNoise.Visualization
 
             return ids;
         }
-        
+
+        /// <summary>
+        /// Returns a merged point which is parent to this point and the other point.
+        /// </summary>
+        /// <param name="other">
+        /// A <see cref="SongPoint"/>
+        /// </param>
+        /// <returns>
+        /// A <see cref="SongPoint"/>
+        /// </returns>
         public SongPoint GetMerged (SongPoint other)
         {
             Point merged = this.XY;

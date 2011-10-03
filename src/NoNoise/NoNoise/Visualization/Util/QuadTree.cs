@@ -15,8 +15,20 @@ namespace NoNoise.Visualization.Util
 	public interface IStorable<T>
     {
         //XY Coordinates are used to store objects
+        /// <summary>
+        /// Point coordinates of the stored object
+        /// </summary>
         Point XY { get; }
 
+        /// <summary>
+        /// Returns a merged parent object.
+        /// </summary>
+        /// <param name="a">
+        /// A <see cref="T"/>
+        /// </param>
+        /// <returns>
+        /// A <see cref="T"/>
+        /// </returns>
         T GetMerged (T a);
        // bool NeedsUpdate { get; }
     }
@@ -89,10 +101,23 @@ namespace NoNoise.Visualization.Util
             get { return dictionary.Count; }
         }
 
+        /// <summary>
+        /// Returns all items stored in the quadtree.
+        /// </summary>
+        /// <returns>
+        /// A <see cref="List<T>"/>
+        /// </returns>
         public List<T> GetAllObjects ()
         {
             return new List<T> (dictionary.Keys);
         }
+
+        /// <summary>
+        /// Adds an item to the quadtree.
+        /// </summary>
+        /// <param name="item">
+        /// A <see cref="T"/>
+        /// </param>
         public void Add (T item)
         {
             QuadTreeObject<T> wrappedItem = new QuadTreeObject<T> (item);
@@ -102,6 +127,15 @@ namespace NoNoise.Visualization.Util
             quadTreeRoot.Insert (wrappedItem);
         }
 
+        /// <summary>
+        /// Removes an item from the quadtree.
+        /// </summary>
+        /// <param name="item">
+        /// A <see cref="T"/>
+        /// </param>
+        /// <returns>
+        /// A <see cref="System.Boolean"/>
+        /// </returns>
         public bool Remove (T item)
         {
             if (dictionary.ContainsKey(item))
@@ -114,12 +148,21 @@ namespace NoNoise.Visualization.Util
             }
         }
 
+        /// <summary>
+        /// Clears the quadtree
+        /// </summary>
         public void Clear ()
         {
             dictionary.Clear ();
             quadTreeRoot.Clear();
         }
 
+        /// <summary>
+        /// Returns a clone of this quadtree.
+        /// </summary>
+        /// <returns>
+        /// A <see cref="System.Object"/>
+        /// </returns>
         public object Clone ()
         {
             return new QuadTree<T> (this);
@@ -153,16 +196,46 @@ namespace NoNoise.Visualization.Util
             return quadTreeRoot.GetObjects (rect);
         }
 
+        /// <summary>
+        /// Returns the item which is nearest to the given item.
+        /// </summary>
+        /// <param name="item">
+        /// A <see cref="T"/>
+        /// </param>
+        /// <param name="start_radius">
+        /// A <see cref="System.Double"/> which specifies the maximum search radius.
+        /// </param>
+        /// <returns>
+        /// A <see cref="T"/>
+        /// </returns>
         public T GetNearest (T item, double start_radius)
         {
             return quadTreeRoot.GetNearestObjectInTree (new QCircle (item.XY, start_radius), item);
         }
 
+        /// <summary>
+        /// Calculates the optimal window dimensions for a given number of points.
+        /// </summary>
+        /// <param name="num_of_points">
+        /// A <see cref="System.Int32"/> which specifies the maximum number of points in the window.
+        /// </param>
+        /// <param name="width">
+        /// A <see cref="System.Double"/>
+        /// </param>
+        /// <param name="height">
+        /// A <see cref="System.Double"/>
+        /// </param>
         public void GetWindowDimesions (int num_of_points, out double width, out double height)
         {
             quadTreeRoot.GetWindow (num_of_points, out width, out height);
         }
 
+        /// <summary>
+        /// Returns a new tree which is a clustered version of this tree.
+        /// </summary>
+        /// <returns>
+        /// A <see cref="QuadTree<T>"/>
+        /// </returns>
         public QuadTree<T> GetClusteredTree ()
         {
 //            Hyena.Log.Debug ("Cluster Tree");
@@ -258,41 +331,65 @@ namespace NoNoise.Visualization.Util
         //rectangle which represents the node geometrically
         private QRectangle boundary_rectangle;
 
+        /// <summary>
+        /// Depth level of this subtree
+        /// </summary>
         public int Level {
             get { return level; }
         }
 
+        /// <summary>
+        /// Rectangle representing the boundaries of this subtree
+        /// </summary>
         public QRectangle Rectangle {
             get { return boundary_rectangle; }
         }
 
+        /// <summary>
+        /// Topleft subtree.
+        /// </summary>
         public QuadTreeNode<T> TopLeft {
             get { return top_left; }
         }
 
+        /// <summary>
+        /// Topright subtree.
+        /// </summary>
         public QuadTreeNode<T> TopRight {
             get { return top_right; }
         }
 
+        /// <summary>
+        /// Bottomright subtree.
+        /// </summary>
         public QuadTreeNode<T> BottomRight {
             get { return bottom_right; }
         }
 
+        /// <summary>
+        /// Bottomleft subtree.
+        /// </summary>
         public QuadTreeNode<T> BottomLeft {
             get { return bottom_left; }
         }
 
+        /// <summary>
+        /// List of all stored objects in this node.
+        /// </summary>
         public List<QuadTreeObject<T>> Objects {
             get { return objects; }
         }
 
-        public QuadTreeNode (QRectangle rect) {
-            this.boundary_rectangle = rect;
-        }
-
+        /// <summary>
+        /// Returns true if this node has no children and no stored objects.
+        /// </summary>
         public bool IsEmptyLeaf
         {
             get { return objects.Count == 0 && TopLeft == null; }
+        }
+
+        public QuadTreeNode (QRectangle rect) {
+            this.boundary_rectangle = rect;
         }
 
         public QuadTreeNode (double x, double y, double width, double height)
@@ -375,8 +472,6 @@ namespace NoNoise.Visualization.Util
             bottom_right = new QuadTreeNode<T> (this,
                                new QRectangle (new Point (x_half,y), new Point (x_right, y_half)));
 
-           //TODO : sicherstellen dass keine löcher entstehen - sollt passen siehe rectangle
-
             //Assign objects to nodes
             for (int i=0; i < objects.Count; i++)
             {
@@ -420,6 +515,9 @@ namespace NoNoise.Visualization.Util
             return dest;
         }
 
+        /// <summary>
+        /// Clean subtree upwards (i.e. check if empty).
+        /// </summary>
         private void CleanUpwards ()
         {
             //if children, check if empty and clean
@@ -440,6 +538,9 @@ namespace NoNoise.Visualization.Util
                 parent.CleanUpwards ();
         }
 
+        /// <summary>
+        /// Clears this node.
+        /// </summary>
         public void Clear ()
         {
             //Clear children
@@ -462,6 +563,12 @@ namespace NoNoise.Visualization.Util
             bottom_right = null;
         }
 
+        /// <summary>
+        /// Deletes an object in this subtree and cleans up afterwards.
+        /// </summary>
+        /// <param name="item">
+        /// A <see cref="QuadTreeObject<T>"/>
+        /// </param>
         internal void Delete (QuadTreeObject<T> item)
         {
             if (item.Owner != null){
@@ -512,6 +619,12 @@ namespace NoNoise.Visualization.Util
 
         }
 
+        /// <summary>
+        /// Returns a list of all objects in this subtree.
+        /// </summary>
+        /// <returns>
+        /// A <see cref="List<T>"/>
+        /// </returns>
         public List<T> GetAllObjects ()
         {
             List<T> result = new List<T> ();
@@ -650,6 +763,18 @@ namespace NoNoise.Visualization.Util
             }
         }
 
+        /// <summary>
+        /// Returns optimal window dimensions for the given number of points.
+        /// </summary>
+        /// <param name="num_of_points"> which specifies the maximum number of visible points.
+        /// A <see cref="System.Int32"/>
+        /// </param>
+        /// <param name="width">
+        /// A <see cref="System.Double"/>
+        /// </param>
+        /// <param name="height">
+        /// A <see cref="System.Double"/>
+        /// </param>
         public void GetWindow (int num_of_points, out double width, out double height)
         {
             if (GetAllObjects().Count < num_of_points) {
@@ -676,6 +801,19 @@ namespace NoNoise.Visualization.Util
                 height = current_h < height ? current_h : height;
             }
         }
+
+        /// <summary>
+        /// Returns the nearest object to the given object in this subtree.
+        /// </summary>
+        /// <param name="circle">
+        /// A <see cref="QCircle"/> which specifies the maximum search radius.
+        /// </param>
+        /// <param name="except">
+        /// A <see cref="T"/> which specifies the given object.
+        /// </param>
+        /// <returns>
+        /// A <see cref="T"/>
+        /// </returns>
         public T GetNearestObjectInTree (QCircle circle, T except)
         {
             Stack<QuadTreeNode<T>> stack = new Stack<QuadTreeNode<T>> ();
@@ -715,6 +853,7 @@ namespace NoNoise.Visualization.Util
             }
             return result;
         }
+
         /// <summary>
         /// Get nearest object to point in this node (no children)
         /// </summary>
@@ -781,28 +920,43 @@ namespace NoNoise.Visualization.Util
             get { return top_right.Y - bottom_left.Y; }
         }
 
+        /// <summary>
+        /// Coordinates of the top-right corner.
+        /// </summary>
         public Point TopRight {
             get { return top_right; }
         }
 
+        /// <summary>
+        /// Coordinates of the bottom-left corner.
+        /// </summary>
         public Point BottomLeft {
             get { return bottom_left; }
         }
 
+        /// <summary>
+        /// Center point.
+        /// </summary>
         public Point Center {
             get { return new Point (X + Width/2, Y + Height /2); }
         }
 
+        /// <summary>
+        /// X-coorinate of the bottom-left corner.
+        /// </summary>
         public double X {
             get { return bottom_left.X; }
         }
 
+        /// <summary>
+        /// Y-coordinate of the bottom-left corner.
+        /// </summary>
         public double Y {
             get { return bottom_left.Y; }
         }
 
         /// <summary>
-        /// Checks if a point is inside the rectangle
+        /// Checks if a point is inside the rectangle.
         /// </summary>
         /// <param name="p">
         /// A <see cref="Point"/>
@@ -817,7 +971,7 @@ namespace NoNoise.Visualization.Util
         }
 
         /// <summary>
-        /// Checks if another rectangle is contained in this rectangle
+        /// Checks if another rectangle is contained in this rectangle.
         /// </summary>
         /// <param name="rect">
         /// A <see cref="QRectangle"/>
@@ -833,7 +987,7 @@ namespace NoNoise.Visualization.Util
         }
 
         /// <summary>
-        /// Checks if a circle is contained in this rectangle
+        /// Checks if a circle is contained in this rectangle.
         /// </summary>
         /// <param name="circle">
         /// A <see cref="QCircle"/>
@@ -848,7 +1002,7 @@ namespace NoNoise.Visualization.Util
         }
 
         /// <summary>
-        /// Checks if another rectangle intersects with this rectangle
+        /// Checks if another rectangle intersects with this rectangle.
         /// </summary>
         /// <param name="rect">
         /// A <see cref="QRectangle"/>
@@ -864,7 +1018,7 @@ namespace NoNoise.Visualization.Util
         }
 
         /// <summary>
-        /// Checks if a given circle intersects with this rectangle
+        /// Checks if a given circle intersects with this rectangle.
         /// </summary>
         /// <param name="circle">
         /// A <see cref="QCircle"/>
@@ -913,6 +1067,9 @@ namespace NoNoise.Visualization.Util
         }
     }
 
+    /// <summary>
+    /// Helper class which is used as a geometric representation of a circular search area.
+    /// </summary>
     public class QCircle
     {
         public QCircle (Point center, double radius)
@@ -926,6 +1083,9 @@ namespace NoNoise.Visualization.Util
         {
         }
 
+        /// <summary>
+        /// Center point.
+        /// </summary>
         public Point Center {
             get;
             private set;
@@ -936,19 +1096,43 @@ namespace NoNoise.Visualization.Util
             set;
         }
 
+        /// <summary>
+        /// X-coordinate of the center point.
+        /// </summary>
         public double X {
             get { return Center.X; }
         }
 
+        /// <summary>
+        /// Y-coordinate of the center point.
+        /// </summary>
         public double Y {
             get { return Center.Y; }
         }
 
+        /// <summary>
+        /// Returns true if the given point is inside the search area.
+        /// </summary>
+        /// <param name="p">
+        /// A <see cref="Point"/>
+        /// </param>
+        /// <returns>
+        /// A <see cref="System.Boolean"/>
+        /// </returns>
         public bool Contains (Point p)
         {
             return Center.DistanceTo (p) <= Radius;
         }
 
+        /// <summary>
+        /// Returns true if the given rectangle is contained in the search area. 
+        /// </summary>
+        /// <param name="rect">
+        /// A <see cref="QRectangle"/>
+        /// </param>
+        /// <returns>
+        /// A <see cref="System.Boolean"/>
+        /// </returns>
         public bool Contains (QRectangle rect)
         {
             return Center.DistanceTo (rect.BottomLeft) <= Radius &&
