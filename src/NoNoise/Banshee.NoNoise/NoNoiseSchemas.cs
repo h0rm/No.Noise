@@ -38,7 +38,7 @@ namespace Banshee.NoNoise
         internal static readonly SchemaEntry<bool> Startup = new SchemaEntry<bool>(
             "nonoise", "startup",
             false,
-            "Enable No.Noise on startup",
+            "Enable No.Noise on startup (unused)",
             "Enable or disable the No.Noise visualization on startup"
         );
 
@@ -47,6 +47,48 @@ namespace Banshee.NoNoise
             false,
             "NoNoise Visualization",
             "Enable or disable the NoNoise Visualization"
+        );
+
+        internal static readonly SchemaEntry<bool> PcaUseMean = new SchemaEntry<bool>(
+            "nonoise", "pca_mean",
+            true,
+            "MFCC Mean",
+            "Use the mean vector of the MFCC matrix for the PCA"
+        );
+
+        internal static readonly SchemaEntry<bool> PcaUseSquaredMean = new SchemaEntry<bool>(
+            "nonoise", "pca_squared_mean",
+            false,
+            "MFCC Squared Mean",
+            "Use the squared mean vector of the MFCC matrix for the PCA"
+        );
+
+        internal static readonly SchemaEntry<bool> PcaUseMedian = new SchemaEntry<bool>(
+            "nonoise", "pca_median",
+            false,
+            "MFCC Median",
+            "Use the median vector of the MFCC matrix for the PCA"
+        );
+
+        internal static readonly SchemaEntry<bool> PcaUseMinimum = new SchemaEntry<bool>(
+            "nonoise", "pca_minimum",
+            false,
+            "MFCC Minimum",
+            "Use the minimum vector of the MFCC matrix for the PCA"
+        );
+
+        internal static readonly SchemaEntry<bool> PcaUseMaximum = new SchemaEntry<bool>(
+            "nonoise", "pca_maximum",
+            false,
+            "MFCC Maximum",
+            "Use the maximum vector of the MFCC matrix for the PCA"
+        );
+
+        internal static readonly SchemaEntry<bool> PcaUseDuration = new SchemaEntry<bool>(
+            "nonoise", "pca_duration",
+            true,
+            "Song Duration",
+            "Use the song duration for the PCA"
         );
     }
 }

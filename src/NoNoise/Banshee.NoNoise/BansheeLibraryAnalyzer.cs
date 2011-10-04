@@ -55,24 +55,24 @@ namespace Banshee.NoNoise
 //        private readonly bool STORE_ENTIRE_MATRIX = false;
         private readonly bool DB_CHEATER_MODE = false;
 
-        private const int PCA_MEAN = 0;
-        private const int PCA_MEAN_DUR = 1;
-        private const int PCA_SQR_MEAN = 2;
-        private const int PCA_SQR_MEAN_DUR = 3;
-        private const int PCA_MAX = 4;
-        private const int PCA_MAX_DUR = 5;
-        private const int PCA_MIN = 6;
-        private const int PCA_MIN_DUR = 7;
-        private const int PCA_MED = 8;
-        private const int PCA_MED_DUR = 9;
-        private int PCA_MODE = PCA_MEAN_DUR;
+        public const int PCA_MEAN = 0;
+        public const int PCA_MEAN_DUR = 1;
+        public const int PCA_SQR_MEAN = 2;
+        public const int PCA_SQR_MEAN_DUR = 3;
+        public const int PCA_MAX = 4;
+        public const int PCA_MAX_DUR = 5;
+        public const int PCA_MIN = 6;
+        public const int PCA_MIN_DUR = 7;
+        public const int PCA_MED = 8;
+        public const int PCA_MED_DUR = 9;
+        private int pca_mode = PCA_MEAN_DUR;
 
         #region Members
         private Banshee.Library.MusicLibrarySource ml;
 //        private SortedDictionary<int, TrackInfo> library;
         private NoNoiseClutterSourceContents sc;
         private NoNoiseDBHandler db;
-        private PCAnalyzer ana;
+//        private PCAnalyzer ana;
         private IPcaAdder pca_adder;
         private List<DataEntry> coords;
         private bool analyzing_lib;
@@ -83,6 +83,7 @@ namespace Banshee.NoNoise
         private Gtk.ThreadNotify finished;
         private Thread thr;
         private object scan_synch;
+        private object pca_synch;
 //        private object lib_synch;   // WARN make sure it is never locked on lib_synch inside of another lock
         private object db_synch;
 
@@ -111,6 +112,24 @@ namespace Banshee.NoNoise
             get { return analyzing_lib; }
         }
 
+        public bool IsLibraryScanned {
+            get { return lib_scanned; }
+        }
+
+        /// <summary>
+        /// Attribute defining the features for the PCA computation.
+        /// Valid values are any PCA_* constants.
+        /// </summary>
+        public int PcaMode {
+            get { return pca_mode; }
+            set {
+                lock (pca_synch) {
+                    pca_mode = value;
+                }
+                SwitchPcaMode ();
+            }
+        }
+
         /// <summary>
         /// Gets the TrackInfo from the banshee database with the given banshee_id.
         /// </summary>
@@ -130,6 +149,7 @@ namespace Banshee.NoNoise
             ml = ServiceManager.SourceManager.MusicLibrary;
 
             scan_synch = new object ();
+            pca_synch = new object ();
 //            lib_synch = new object ();
             db_synch = new object ();
 
@@ -137,59 +157,6 @@ namespace Banshee.NoNoise
 //            new Thread (new ThreadStart (ConvertMusicLibrary)).Start ();
 
             db = new NoNoiseDBHandler ();
-
-            switch (PCA_MODE) {
-            default:
-            case PCA_MEAN:
-                pca_adder = new PcaMeanAdder ();
-                Hyena.Log.Debug ("NoNoise/BLA - taking mean adder");
-                break;
-
-            case PCA_MEAN_DUR:
-                pca_adder = new PcaMeanDurationAdder ();
-                Hyena.Log.Debug ("NoNoise/BLA - taking mean duration adder");
-                break;
-
-            case PCA_SQR_MEAN:
-                pca_adder = new PcaSqrMeanAdder ();
-                Hyena.Log.Debug ("NoNoise/BLA - taking squared mean adder");
-                break;
-
-            case PCA_SQR_MEAN_DUR:
-                pca_adder = new PcaSqrMeanDurationAdder ();
-                Hyena.Log.Debug ("NoNoise/BLA - taking squared mean duration adder");
-                break;
-
-            case PCA_MAX:
-                pca_adder = new PcaMaxAdder ();
-                Hyena.Log.Debug ("NoNoise/BLA - taking max adder");
-                break;
-
-            case PCA_MAX_DUR:
-                pca_adder = new PcaMaxDurationAdder ();
-                Hyena.Log.Debug ("NoNoise/BLA - taking max duration adder");
-                break;
-
-            case PCA_MIN:
-                pca_adder = new PcaMinAdder ();
-                Hyena.Log.Debug ("NoNoise/BLA - taking min adder");
-                break;
-
-            case PCA_MIN_DUR:
-                pca_adder = new PcaMinDurationAdder ();
-                Hyena.Log.Debug ("NoNoise/BLA - taking min duration adder");
-                break;
-
-            case PCA_MED:
-                pca_adder = new PcaMedianAdder ();
-                Hyena.Log.Debug ("NoNoise/BLA - taking median adder");
-                break;
-
-            case PCA_MED_DUR:
-                pca_adder = new PcaMedianDurationAdder ();
-                Hyena.Log.Debug ("NoNoise/BLA - taking median duration adder");
-                break;
-            }
 
 //            Testing ();
             // BPM detector
@@ -225,10 +192,6 @@ namespace Banshee.NoNoise
             GetPcaData ();
 
 //            Hyena.Log.Debug ("NoNoise/BLA - blabla: " + coords [0].Value.Artist + " - " + coords [0].Value.Title);
-
-            Hyena.Log.Debug ("NoNoise/BLA - starting pca/write track data threads");
-            new Thread (new ThreadStart (PcaForMusicLibraryVectorEdition)).Start ();
-            new Thread (new ThreadStart (WriteTrackInfosToDB)).Start ();
         }
 
         /// <summary>
@@ -254,6 +217,11 @@ namespace Banshee.NoNoise
 
             bla = new BansheeLibraryAnalyzer ();
             bla.sc = sc;
+
+            Hyena.Log.Debug ("NoNoise/BLA - starting pca/write track data threads");
+            bla.SwitchPcaMode ();
+//            new Thread (new ThreadStart (PcaForMusicLibraryVectorEdition)).Start ();
+            new Thread (new ThreadStart (bla.WriteTrackInfosToDB)).Start ();
 
             return bla;
         }
@@ -294,6 +262,65 @@ namespace Banshee.NoNoise
 //
 //            Hyena.Log.Debug ("NoNoise/BLA - library conversion finished");
 //        }
+
+        private void SwitchPcaMode ()
+        {
+            lock (pca_synch) {
+                switch (pca_mode) {
+                default:
+                case PCA_MEAN:
+                    pca_adder = new PcaMeanAdder ();
+                    Hyena.Log.Debug ("NoNoise/BLA - taking mean adder");
+                    break;
+    
+                case PCA_MEAN_DUR:
+                    pca_adder = new PcaMeanDurationAdder ();
+                    Hyena.Log.Debug ("NoNoise/BLA - taking mean duration adder");
+                    break;
+    
+                case PCA_SQR_MEAN:
+                    pca_adder = new PcaSqrMeanAdder ();
+                    Hyena.Log.Debug ("NoNoise/BLA - taking squared mean adder");
+                    break;
+    
+                case PCA_SQR_MEAN_DUR:
+                    pca_adder = new PcaSqrMeanDurationAdder ();
+                    Hyena.Log.Debug ("NoNoise/BLA - taking squared mean duration adder");
+                    break;
+    
+                case PCA_MAX:
+                    pca_adder = new PcaMaxAdder ();
+                    Hyena.Log.Debug ("NoNoise/BLA - taking max adder");
+                    break;
+    
+                case PCA_MAX_DUR:
+                    pca_adder = new PcaMaxDurationAdder ();
+                    Hyena.Log.Debug ("NoNoise/BLA - taking max duration adder");
+                    break;
+    
+                case PCA_MIN:
+                    pca_adder = new PcaMinAdder ();
+                    Hyena.Log.Debug ("NoNoise/BLA - taking min adder");
+                    break;
+    
+                case PCA_MIN_DUR:
+                    pca_adder = new PcaMinDurationAdder ();
+                    Hyena.Log.Debug ("NoNoise/BLA - taking min duration adder");
+                    break;
+    
+                case PCA_MED:
+                    pca_adder = new PcaMedianAdder ();
+                    Hyena.Log.Debug ("NoNoise/BLA - taking median adder");
+                    break;
+    
+                case PCA_MED_DUR:
+                    pca_adder = new PcaMedianDurationAdder ();
+                    Hyena.Log.Debug ("NoNoise/BLA - taking median duration adder");
+                    break;
+                }
+            }
+            new Thread (new ThreadStart (PcaForMusicLibraryVectorEditionForceNew)).Start ();
+        }
 
         /// <summary>
         /// Sets the PcaCoordinates field with the coordinates from the database.
@@ -514,8 +541,10 @@ namespace Banshee.NoNoise
             Hyena.Log.Debug ("NoNoise/BLA - PcaFor... called");
 
             try {
-                ana = new PCAnalyzer ();
-                pca_adder.AddVectorsFromDB (ana);
+                PCAnalyzer ana = new PCAnalyzer ();
+                lock (pca_synch) {
+                    pca_adder.AddVectorsFromDB (ana);
+                }
                 ana.PerformPCA ();
 
                 lock (db_synch) {
@@ -872,7 +901,7 @@ namespace Banshee.NoNoise
 
             Hyena.Log.Debug ("NoNoise/BLA - PcaFor... called");
 
-            ana = new PCAnalyzer();
+            PCAnalyzer ana = new PCAnalyzer();
             Dictionary<int, Mirage.Matrix> mfccMap = null;
             lock (db_synch) {
                 mfccMap = db.GetMirageMatrices ();
@@ -957,7 +986,7 @@ namespace Banshee.NoNoise
         {
             Dictionary<int, Mirage.Vector> vectorMap = null;
 
-            switch (PCA_MODE) {
+            switch (pca_mode) {
             case PCA_MEAN:
                 lock (db_synch) {
                     vectorMap = db.GetMirageMeanVectors ();
@@ -1301,17 +1330,13 @@ namespace Banshee.NoNoise
                 if (vectorMap == null)
                     throw new DatabaseException ("vectorMap is null!");
 
-                foreach (DatabaseTrackInfo dti in DatabaseTrackInfo.Provider.FetchAll ()) {
+                foreach (int bid in vectorMap.Keys) {
                     try {
-                        int bid = dti.TrackId;
+                        TrackInfo ti = DatabaseTrackInfo.Provider.FetchSingle (bid) as TrackInfo;
 
-                        if (!vectorMap.ContainsKey (bid)) {
-                            Hyena.Log.Debug ("NoNoise/BLA - skipping bid: " + bid);
-                            continue;
-                        }
                         if (!ana.AddEntry (bid, BansheeLibraryAnalyzer.Singleton.
                                            ConvertMirageVector (vectorMap [bid]),
-                                           dti.Duration.TotalSeconds))
+                                           ti.Duration.TotalSeconds))
                             throw new Exception("AddEntry failed!");
                     } catch (Exception e) {
                         Hyena.Log.Exception ("NoNoise - PCA Problem", e);
@@ -1352,17 +1377,13 @@ namespace Banshee.NoNoise
                 if (vectorMap == null)
                     throw new DatabaseException ("vectorMap is null!");
 
-                foreach (DatabaseTrackInfo dti in DatabaseTrackInfo.Provider.FetchAll ()) {
+                foreach (int bid in vectorMap.Keys) {
                     try {
-                        int bid = dti.TrackId;
+                        TrackInfo ti = DatabaseTrackInfo.Provider.FetchSingle (bid) as TrackInfo;
 
-                        if (!vectorMap.ContainsKey (bid)) {
-                            Hyena.Log.Debug ("NoNoise/BLA - skipping bid: " + bid);
-                            continue;
-                        }
                         if (!ana.AddEntry (bid, BansheeLibraryAnalyzer.Singleton.
                                            ConvertMirageVector (vectorMap [bid]),
-                                           dti.Duration.TotalSeconds))
+                                           ti.Duration.TotalSeconds))
                             throw new Exception("AddEntry failed!");
                     } catch (Exception e) {
                         Hyena.Log.Exception ("NoNoise - PCA Problem", e);
@@ -1403,17 +1424,13 @@ namespace Banshee.NoNoise
                 if (vectorMap == null)
                     throw new DatabaseException ("vectorMap is null!");
 
-                foreach (DatabaseTrackInfo dti in DatabaseTrackInfo.Provider.FetchAll ()) {
+                foreach (int bid in vectorMap.Keys) {
                     try {
-                        int bid = dti.TrackId;
+                        TrackInfo ti = DatabaseTrackInfo.Provider.FetchSingle (bid) as TrackInfo;
 
-                        if (!vectorMap.ContainsKey (bid)) {
-                            Hyena.Log.Debug ("NoNoise/BLA - skipping bid: " + bid);
-                            continue;
-                        }
                         if (!ana.AddEntry (bid, BansheeLibraryAnalyzer.Singleton.
                                            ConvertMirageVector (vectorMap [bid]),
-                                           dti.Duration.TotalSeconds))
+                                           ti.Duration.TotalSeconds))
                             throw new Exception("AddEntry failed!");
                     } catch (Exception e) {
                         Hyena.Log.Exception ("NoNoise - PCA Problem", e);
@@ -1454,17 +1471,13 @@ namespace Banshee.NoNoise
                 if (vectorMap == null)
                     throw new DatabaseException ("vectorMap is null!");
 
-                foreach (DatabaseTrackInfo dti in DatabaseTrackInfo.Provider.FetchAll ()) {
+                foreach (int bid in vectorMap.Keys) {
                     try {
-                        int bid = dti.TrackId;
+                        TrackInfo ti = DatabaseTrackInfo.Provider.FetchSingle (bid) as TrackInfo;
 
-                        if (!vectorMap.ContainsKey (bid)) {
-                            Hyena.Log.Debug ("NoNoise/BLA - skipping bid: " + bid);
-                            continue;
-                        }
                         if (!ana.AddEntry (bid, BansheeLibraryAnalyzer.Singleton.
                                            ConvertMirageVector (vectorMap [bid]),
-                                           dti.Duration.TotalSeconds))
+                                           ti.Duration.TotalSeconds))
                             throw new Exception("AddEntry failed!");
                     } catch (Exception e) {
                         Hyena.Log.Exception ("NoNoise - PCA Problem", e);
@@ -1505,17 +1518,13 @@ namespace Banshee.NoNoise
                 if (vectorMap == null)
                     throw new DatabaseException ("vectorMap is null!");
 
-                foreach (DatabaseTrackInfo dti in DatabaseTrackInfo.Provider.FetchAll ()) {
+                foreach (int bid in vectorMap.Keys) {
                     try {
-                        int bid = dti.TrackId;
+                        TrackInfo ti = DatabaseTrackInfo.Provider.FetchSingle (bid) as TrackInfo;
 
-                        if (!vectorMap.ContainsKey (bid)) {
-                            Hyena.Log.Debug ("NoNoise/BLA - skipping bid: " + bid);
-                            continue;
-                        }
                         if (!ana.AddEntry (bid, BansheeLibraryAnalyzer.Singleton.
                                            ConvertMirageVector (vectorMap [bid]),
-                                           dti.Duration.TotalSeconds))
+                                           ti.Duration.TotalSeconds))
                             throw new Exception("AddEntry failed!");
                     } catch (Exception e) {
                         Hyena.Log.Exception ("NoNoise - PCA Problem", e);

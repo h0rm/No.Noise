@@ -114,7 +114,7 @@ namespace Banshee.NoNoise
             source_manager = ServiceManager.SourceManager;
             music_library = source_manager.MusicLibrary;
 
-            Hyena.Log.Information ("Service Foo Initialized: "
+            Hyena.Log.Information ("Service NoNoise Initialized: "
                                    + "\naction_service " + (action_service == null ? "Null" : "OK")
                                    + "\nsource_manager " + (source_manager == null ? "Null" : "OK")
                                    + "\nmusic_library " + (music_library == null ? "Null" : "OK")
@@ -131,6 +131,7 @@ namespace Banshee.NoNoise
 
         private Page preferences;
         private Section debug;
+        private Section pca;
 
         void InstallPreferences ()
         {
@@ -140,6 +141,19 @@ namespace Banshee.NoNoise
                 debug = preferences.Add (new Section ("debug", Catalog.GetString ("Debug"), 1));
                 debug.Add (new SchemaPreference<bool> (NoNoiseSchemas.Startup, NoNoiseSchemas.Startup.ShortDescription,
                                                        NoNoiseSchemas.Startup.LongDescription));
+                pca = preferences.Add (new Section ("pca", "PCA", 2));
+                pca.Add (new SchemaPreference<bool> (NoNoiseSchemas.PcaUseMean, NoNoiseSchemas.PcaUseMean.ShortDescription,
+                                                     NoNoiseSchemas.PcaUseMean.LongDescription, PcaUseMeanHandler));
+                pca.Add (new SchemaPreference<bool> (NoNoiseSchemas.PcaUseSquaredMean, NoNoiseSchemas.PcaUseSquaredMean.ShortDescription,
+                                                     NoNoiseSchemas.PcaUseSquaredMean.LongDescription, PcaUseSquaredMeanHandler));
+                pca.Add (new SchemaPreference<bool> (NoNoiseSchemas.PcaUseMedian, NoNoiseSchemas.PcaUseMedian.ShortDescription,
+                                                     NoNoiseSchemas.PcaUseMedian.LongDescription, PcaUseMedianHandler));
+                pca.Add (new SchemaPreference<bool> (NoNoiseSchemas.PcaUseMinimum, NoNoiseSchemas.PcaUseMinimum.ShortDescription,
+                                                     NoNoiseSchemas.PcaUseMinimum.LongDescription, PcaUseMinimumHandler));
+                pca.Add (new SchemaPreference<bool> (NoNoiseSchemas.PcaUseMaximum, NoNoiseSchemas.PcaUseMaximum.ShortDescription,
+                                                     NoNoiseSchemas.PcaUseMaximum.LongDescription, PcaUseMaximumHandler));
+                pca.Add (new SchemaPreference<bool> (NoNoiseSchemas.PcaUseDuration, NoNoiseSchemas.PcaUseDuration.ShortDescription,
+                                                     NoNoiseSchemas.PcaUseDuration.LongDescription, PcaUseDurationHandler));
                 pref_installed = true;
             }
         }
@@ -218,6 +232,7 @@ namespace Banshee.NoNoise
             NoNoiseAction.Activated += OnNoNoiseToggle;
             ScanAction.Activated += OnScanAction;
             HelpAction.Activated += OnHelpAction;
+
             return true;
         }
 
@@ -283,6 +298,13 @@ namespace Banshee.NoNoise
                 return false;
 
             no_noise_contents = GetSourceContents ();
+            ScanAction.Sensitive = !BansheeLibraryAnalyzer.Singleton.IsLibraryScanned;
+            PcaUseMeanHandler ();
+            PcaUseSquaredMeanHandler ();
+            PcaUseMedianHandler ();
+            PcaUseMinimumHandler ();
+            PcaUseMaximumHandler ();
+            PcaUseDurationHandler ();
 
             source_contents_set_up = true;
 
@@ -347,6 +369,117 @@ namespace Banshee.NoNoise
 
             NoNoiseAction.Activated -= OnNoNoiseToggle;
             source_manager.SourceAdded -= OnSourceAdded;
+        }
+
+        private void PcaUseMeanHandler ()
+        {
+            Hyena.Log.Debug ("NoNoise/Serv - update handler called - mean");
+            if (NoNoiseSchemas.PcaUseMean.Get ()) {
+                if (NoNoiseSchemas.PcaUseDuration.Get ())
+                    BansheeLibraryAnalyzer.Singleton.PcaMode = BansheeLibraryAnalyzer.PCA_MEAN_DUR;
+                else
+                    BansheeLibraryAnalyzer.Singleton.PcaMode = BansheeLibraryAnalyzer.PCA_MEAN;
+            }
+        }
+
+        private void PcaUseSquaredMeanHandler ()
+        {
+            Hyena.Log.Debug ("NoNoise/Serv - update handler called - sqr mean");
+            if (NoNoiseSchemas.PcaUseSquaredMean.Get ()) {
+                if (NoNoiseSchemas.PcaUseDuration.Get ())
+                    BansheeLibraryAnalyzer.Singleton.PcaMode = BansheeLibraryAnalyzer.PCA_SQR_MEAN_DUR;
+                else
+                    BansheeLibraryAnalyzer.Singleton.PcaMode = BansheeLibraryAnalyzer.PCA_SQR_MEAN;
+            }
+        }
+
+        private void PcaUseMedianHandler ()
+        {
+            Hyena.Log.Debug ("NoNoise/Serv - update handler called - med");
+            if (NoNoiseSchemas.PcaUseMedian.Get ()) {
+                if (NoNoiseSchemas.PcaUseDuration.Get ())
+                    BansheeLibraryAnalyzer.Singleton.PcaMode = BansheeLibraryAnalyzer.PCA_MED_DUR;
+                else
+                    BansheeLibraryAnalyzer.Singleton.PcaMode = BansheeLibraryAnalyzer.PCA_MED;
+            }
+        }
+
+        private void PcaUseMinimumHandler ()
+        {
+            Hyena.Log.Debug ("NoNoise/Serv - update handler called - min");
+            if (NoNoiseSchemas.PcaUseMinimum.Get ()) {
+                if (NoNoiseSchemas.PcaUseDuration.Get ())
+                    BansheeLibraryAnalyzer.Singleton.PcaMode = BansheeLibraryAnalyzer.PCA_MIN_DUR;
+                else
+                    BansheeLibraryAnalyzer.Singleton.PcaMode = BansheeLibraryAnalyzer.PCA_MIN;
+            }
+        }
+
+        private void PcaUseMaximumHandler ()
+        {
+            Hyena.Log.Debug ("NoNoise/Serv - update handler called - max");
+            if (NoNoiseSchemas.PcaUseMaximum.Get ()) {
+                if (NoNoiseSchemas.PcaUseDuration.Get ())
+                    BansheeLibraryAnalyzer.Singleton.PcaMode = BansheeLibraryAnalyzer.PCA_MAX_DUR;
+                else
+                    BansheeLibraryAnalyzer.Singleton.PcaMode = BansheeLibraryAnalyzer.PCA_MAX;
+            }
+        }
+
+        private void PcaUseDurationHandler ()
+        {
+            Hyena.Log.Debug ("NoNoise/Serv - update handler called - dur");
+            if (NoNoiseSchemas.PcaUseDuration.Get ()) {
+                switch (BansheeLibraryAnalyzer.Singleton.PcaMode) {
+                case BansheeLibraryAnalyzer.PCA_MAX:
+                    BansheeLibraryAnalyzer.Singleton.PcaMode = BansheeLibraryAnalyzer.PCA_MAX_DUR;
+                    break;
+
+                case BansheeLibraryAnalyzer.PCA_MEAN:
+                    BansheeLibraryAnalyzer.Singleton.PcaMode = BansheeLibraryAnalyzer.PCA_MEAN_DUR;
+                    break;
+
+                case BansheeLibraryAnalyzer.PCA_MED:
+                    BansheeLibraryAnalyzer.Singleton.PcaMode = BansheeLibraryAnalyzer.PCA_MED_DUR;
+                    break;
+
+                case BansheeLibraryAnalyzer.PCA_MIN:
+                    BansheeLibraryAnalyzer.Singleton.PcaMode = BansheeLibraryAnalyzer.PCA_MIN_DUR;
+                    break;
+
+                case BansheeLibraryAnalyzer.PCA_SQR_MEAN:
+                    BansheeLibraryAnalyzer.Singleton.PcaMode = BansheeLibraryAnalyzer.PCA_SQR_MEAN_DUR;
+                    break;
+
+                default:
+                    break;
+                }
+            } else {
+                switch (BansheeLibraryAnalyzer.Singleton.PcaMode) {
+                case BansheeLibraryAnalyzer.PCA_MAX_DUR:
+                    BansheeLibraryAnalyzer.Singleton.PcaMode = BansheeLibraryAnalyzer.PCA_MAX;
+                    break;
+
+                case BansheeLibraryAnalyzer.PCA_MEAN_DUR:
+                    BansheeLibraryAnalyzer.Singleton.PcaMode = BansheeLibraryAnalyzer.PCA_MEAN;
+                    break;
+
+                case BansheeLibraryAnalyzer.PCA_MED_DUR:
+                    BansheeLibraryAnalyzer.Singleton.PcaMode = BansheeLibraryAnalyzer.PCA_MED;
+                    break;
+
+                case BansheeLibraryAnalyzer.PCA_MIN_DUR:
+                    BansheeLibraryAnalyzer.Singleton.PcaMode = BansheeLibraryAnalyzer.PCA_MIN;
+                    break;
+
+                case BansheeLibraryAnalyzer.PCA_SQR_MEAN_DUR:
+                    BansheeLibraryAnalyzer.Singleton.PcaMode = BansheeLibraryAnalyzer.PCA_SQR_MEAN;
+                    break;
+
+                default:
+                    break;
+                }
+            }
         }
 
 //        public static class Schemas {
