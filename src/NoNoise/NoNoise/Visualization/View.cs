@@ -61,23 +61,12 @@ namespace NoNoise.Visualization
         {
             gui.ButtonClicked += HandleGuiButtonClicked;
 
-            Stage.AllocationChanged += delegate {
-                Stage.SetClip (0,0,Stage.Width, Stage.Height);
-                point_group.QueueRelayout ();
-            };
-
             point_group.SongEntered += delegate (object source, SongInfoArgs args) {
                 List<String> songs = new List<String> ();
                 List<String> artists = new List<String> ();
 
-
                 GetSongLists (args, ref songs, ref artists);
                 gui.UpdateInfoText (songs, artists);
-            };
-
-            point_group.SongLeft += delegate {
-
-//                gui.ClearInfoText ();
             };
 
             point_group.SongSelected += delegate(object source, SongInfoArgs args) {
@@ -85,24 +74,23 @@ namespace NoNoise.Visualization
                 List<String> songs = new List<String> ();
                 List<String> artists = new List<String> ();
 
-//                Hyena.Log.Information ("Selected songs: " + args.SongIDs.Count);
-
                 if(args.SongIDs.Count == 0) {
                     gui.ClearInfoSelection ();
                 } else {
                     GetSongLists (args, ref songs, ref artists);
                     gui.UpdateSelection (songs, artists);
                 }
-
-//                Hyena.Log.Information ("Songs selected");
             };
 
             point_group.SelectionCleared += delegate {
-//                Hyena.Log.Information ("Selection cleared");
                 gui.ClearInfoSelection ();
             };
 
             gui.DebugButtonPressedEvent += HandleGuiDebugButtonPressedEvent;
+
+            this.ExposeEvent += delegate {
+                point_group.InitOnShow ();
+            };
         }
 
         private void GetSongLists (SongInfoArgs args, ref List<String> titles, ref List<String> artists)
@@ -155,6 +143,7 @@ namespace NoNoise.Visualization
         public void FinishedInit ()
         {
             point_group.UpdateClipping ();
+//            point_group
         }
         void HandleGuiDebugButtonPressedEvent  (object source, MainGui.DebugEventArgs args)
         {
