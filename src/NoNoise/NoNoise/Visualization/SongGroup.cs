@@ -169,6 +169,10 @@ namespace NoNoise.Visualization
         /// </param>
         public void LoadPcaData (List<DataEntry> entries)
         {
+            bool initialized = point_manager != null;
+
+            if (initialized)
+                ClearView ();
 
             point_manager = new SongPointManager (0, 0, 30000, 30000);
 
@@ -180,6 +184,8 @@ namespace NoNoise.Visualization
 
             points_visible = new List<SongPoint> (num_of_actors);
 
+            if (initialized)
+                InitializeZoomLevel ();
         }
 
         /// <summary>
@@ -290,7 +296,9 @@ namespace NoNoise.Visualization
             stage.ButtonReleaseEvent += HandleStageButtonReleaseEvent;
             stage.MotionEvent += HandleMotionEvent;
             stage.AllocationChanged += HandleWindowSizeChanged;
-
+            stage.Activate += delegate {
+                Hyena.Log.Debug ("Stage activated");
+            };
             int count = 0;
             foreach (SongActor a in actor_manager.Actors) {
                 a.EnterEvent += delegate(object o, EnterEventArgs args) {
@@ -317,29 +325,32 @@ namespace NoNoise.Visualization
         private void InitializeZoomLevel ()
         {
             int i = 0;
-
+            zoom_level = 1;
             point_manager.GetWindowDimensions (0, 1500, out cluster_w, out cluster_h);
-            Hyena.Log.Debug ("Window dimensions " + cluster_w + "x" + cluster_h);
+//            Hyena.Log.Debug ("Window dimensions " + cluster_w + "x" + cluster_h);
             // as long as window size is too small zoom out
             while (cluster_w < point_manager.Width) {
                 cluster_w *= zoom_level_mult;
                 i++;
-
             }
 
             point_manager.Level = i;
             diff_zoom_clustering = i - point_manager.Level;
 
-            Hyena.Log.Debug ("Zoom initialized with \nscale="+
-                                   stage.Width / point_manager.Width + " level="+ point_manager.Level +
-                                   " diff=" + diff_zoom_clustering);
+//            Hyena.Log.Debug ("Zoom initialized with \nscale="+
+//                                   stage.Width / point_manager.Width + " level="+ point_manager.Level +
+//                                   " diff=" + diff_zoom_clustering);
+
+            double width = stage.Width / point_manager.Width;
+            double height = stage.Height / point_manager.Height;
 
 
-
-            this.SetZoomLevel (stage.Width / point_manager.Width);
+            this.SetZoomLevel (width);
+//            Hyena.Log.Information (String.Format ("Zoom position {0},{1}",
+//                                                  0, stage.Height / 2f - (float)point_manager.Height*(float)zoom_level/2f));
             this.SetPosition (0, stage.Height / 2f - (float)point_manager.Height*(float)zoom_level/2f);
-
         }
+
 
         /// <summary>
         /// Initializes the prototype texture, the animations, and the event handler.
@@ -466,9 +477,18 @@ namespace NoNoise.Visualization
         /// </param>
         private void SetZoomLevel (double scale)
         {
+            Hyena.Log.Information ("Zoom level set to "+scale);
             zoom_level = scale;
+//            SetPosition (0,0);
+//            double sx, sy;
+//            GetScale (out sx, out sy);
+
+//            Hyena.Log.Information (String.Format ("Scale {0},{1}", sx, sy));
             SetScale (zoom_level, zoom_level);
 
+//            float x, y;
+//            GetTransformedPosition (out x, out y);
+//            Hyena.Log.Information (String.Format ("Scale pos {0},{1}", x, y));
             foreach (SongActor s in actor_manager.Actors)
                 s.SetScale (1/zoom_level, 1/zoom_level);
         }
@@ -537,7 +557,8 @@ namespace NoNoise.Visualization
 
             //update clipping every new frame
             animation_timeline.NewFrame += delegate {
-                UpdateClipping ();
+//                UpdateClipping ();
+                SecureUpdateClipping ();
             };
 
             animation_timeline.Start();
@@ -672,8 +693,8 @@ namespace NoNoise.Visualization
 
             clustering_animation_timeline.Start ();
 
-            UpdateClipping ();
-
+//            UpdateClipping ();
+            SecureUpdateClipping ();
         }
 
         /// <summary>
@@ -843,6 +864,7 @@ namespace NoNoise.Visualization
             GetTransformedPosition (out tx, out ty);
             GetScale (out sx, out sy);
 
+//            Hyena.Log.Information (String.Format ("Scale {0},{1}",sx, sy));
             x = (-(float)SongActor.CircleSize-tx)/sx;
             y = (-(float)SongActor.CircleSize-ty)/sy;
             width = (stage.Width+2*(float)SongActor.CircleSize)/sx;
@@ -855,13 +877,14 @@ namespace NoNoise.Visualization
         /// </summary>
         public void UpdateClipping ()
         {
-//            Hyena.Log.Information ("Update Clipping");
             double x, y, width, height;
             GetClippingWindow (out x, out y, out width, out height );
 
-
             List<SongPoint> points;
             SongPoint p;
+
+//            Hyena.Log.Information (String.Format ("Clipping window at {0},{1} with {2}x{3}",
+//                                                  x, y, width, height));
 
             points = point_manager.GetPointsInWindow (x, y, width, height);
             int old_points_count = points.Count;
@@ -924,6 +947,8 @@ namespace NoNoise.Visualization
 
                 AddClusteringAnimation (p, i >= old_points_count);
             }
+
+//            Hyena.Log.Information ("Clipping count " + points_visible.Count);
         }
         #endregion
 
@@ -1043,7 +1068,8 @@ namespace NoNoise.Visualization
             if (mouse_down) {
 
                 this.SetPosition (newx, newy);
-                UpdateClipping ();
+//                UpdateClipping ();
+                SecureUpdateClipping ();
 
             } else if (selection_enabled){
 
@@ -1056,6 +1082,14 @@ namespace NoNoise.Visualization
             mouse_old_y = y;
         }
 
+        public void InitOnShow ()
+        {
+            if (!zoom_initialized) {
+                zoom_initialized = true;
+                InitializeZoomLevel ();
+                SecureUpdateClipping ();
+            }
+        }
         /// <summary>
         /// Handles changes of the window size.
         /// </summary>
@@ -1067,17 +1101,23 @@ namespace NoNoise.Visualization
         /// </param>
         private void HandleWindowSizeChanged (object o, AllocationChangedArgs args)
         {
-            if (stage.Width == 1)
+            if (stage.Width <= 1)
                 return;
 
-            if (!zoom_initialized) {
-                zoom_initialized = true;
-
-                InitializeZoomLevel ();
-
-            }
             selection.SetSize (stage.Width, stage.Height);
+
+            SecureUpdateClipping ();
+        }
+
+        private void SecureUpdateClipping ()
+        {
+            this.Painted += HandleHandlePainted;
+        }
+
+        private void HandleHandlePainted (object sender, EventArgs e)
+        {
             UpdateClipping ();
+            this.Painted -= HandleHandlePainted;
         }
 
         /// <summary>

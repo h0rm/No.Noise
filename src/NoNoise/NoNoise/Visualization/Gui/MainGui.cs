@@ -227,7 +227,7 @@ namespace NoNoise.Visualization.Gui
             toolbar.SetPosition (0.5f+(float)Math.Round (stage.Width/2f-infobox.Width/2f+zoom_button_in.Width), toolbar.Y);
             infobox.SetPosition (stage.Width, 0);
             selection_info.SetPosition (stage.Width, stage.Height);
-            Hyena.Log.Information ("Stage size x " + stage.X + "x" + stage.Height);
+//            Hyena.Log.Information ("Stage size x " + stage.X + "x" + stage.Height);
         }
 
         /// <summary>
