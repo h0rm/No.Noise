@@ -238,7 +238,7 @@ namespace NoNoise.Visualization
         }
 
         #region Initialzation
-        
+
         /// <summary>
         /// Initializes the <see cref="SongActorManager"/>.
         /// </summary>
@@ -351,6 +351,17 @@ namespace NoNoise.Visualization
             this.SetPosition (0, stage.Height / 2f - (float)point_manager.Height*(float)zoom_level/2f);
         }
 
+        /// <summary>
+        /// Initializes the zoom and clustering level. This is only done once.
+        /// </summary>
+        public void InitOnShow ()
+        {
+            if (!zoom_initialized) {
+                zoom_initialized = true;
+                InitializeZoomLevel ();
+                SecureUpdateClipping ();
+            }
+        }
 
         /// <summary>
         /// Initializes the prototype texture, the animations, and the event handler.
@@ -950,6 +961,15 @@ namespace NoNoise.Visualization
 
 //            Hyena.Log.Information ("Clipping count " + points_visible.Count);
         }
+
+        /// <summary>
+        /// The clipping is updated after the next Paint event.
+        /// </summary>
+        private void SecureUpdateClipping ()
+        {
+            this.Painted += HandleHandlePainted;
+        }
+
         #endregion
 
         #region Selection
@@ -1082,14 +1102,7 @@ namespace NoNoise.Visualization
             mouse_old_y = y;
         }
 
-        public void InitOnShow ()
-        {
-            if (!zoom_initialized) {
-                zoom_initialized = true;
-                InitializeZoomLevel ();
-                SecureUpdateClipping ();
-            }
-        }
+
         /// <summary>
         /// Handles changes of the window size.
         /// </summary>
@@ -1109,11 +1122,17 @@ namespace NoNoise.Visualization
             SecureUpdateClipping ();
         }
 
-        private void SecureUpdateClipping ()
-        {
-            this.Painted += HandleHandlePainted;
-        }
 
+        /// <summary>
+        /// Handler for the <see cref="Painted"/> event which is called once to update
+        /// the clipping. 
+        /// </summary>
+        /// <param name="sender">
+        /// A <see cref="System.Object"/>
+        /// </param>
+        /// <param name="e">
+        /// A <see cref="EventArgs"/>
+        /// </param>
         private void HandleHandlePainted (object sender, EventArgs e)
         {
             UpdateClipping ();

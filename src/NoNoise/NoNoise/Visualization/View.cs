@@ -57,6 +57,9 @@ namespace NoNoise.Visualization
             InitHandler ();
         }
 
+        /// <summary>
+        /// Initializes all Handlers.
+        /// </summary>
         private void InitHandler ()
         {
             gui.ButtonClicked += HandleGuiButtonClicked;
@@ -93,6 +96,18 @@ namespace NoNoise.Visualization
             };
         }
 
+        /// <summary>
+        /// Returns the titles and artists to the given <see cref="SongInfoArgs"/>.
+        /// </summary>
+        /// <param name="args">
+        /// A <see cref="SongInfoArgs"/> which contains a list of song ids.
+        /// </param>
+        /// <param name="titles">
+        /// A <see cref="List<String>"/>
+        /// </param>
+        /// <param name="artists">
+        /// A <see cref="List<String>"/>
+        /// </param>
         private void GetSongLists (SongInfoArgs args, ref List<String> titles, ref List<String> artists)
         {
             foreach (int i in args.SongIDs) {
@@ -103,7 +118,7 @@ namespace NoNoise.Visualization
 
                 if (track == null)
                     continue;
-                
+
                 titles.Add (track.TrackTitle == "" ? "Unknown Title" : track.TrackTitle);
                 artists.Add (track.ArtistName == "" ? "Unknown Artist" : track.ArtistName);
 //                titles.Add (info[i].Title == "" ? "Unknown Title" : info[i].Title);
@@ -111,6 +126,15 @@ namespace NoNoise.Visualization
             }
         }
 
+        /// <summary>
+        /// Handler for button click events fired by the main gui.
+        /// </summary>
+        /// <param name="source">
+        /// A <see cref="System.Object"/>
+        /// </param>
+        /// <param name="args">
+        /// A <see cref="MainGui.ButtonClickedArgs"/>
+        /// </param>
         void HandleGuiButtonClicked (object source, MainGui.ButtonClickedArgs args)
         {
             switch (args.ButtonClicked) {
@@ -141,6 +165,12 @@ namespace NoNoise.Visualization
             }
         }
 
+        /// <summary>
+        /// Adds the songs given by a list of ids to a new playlist.
+        /// </summary>
+        /// <param name="list">
+        /// A <see cref="List<System.Int32>"/>
+        /// </param>
         public void GeneratePlaylist (List<int> list)
         {
             if (add_to_playlist_event != null)
@@ -152,11 +182,24 @@ namespace NoNoise.Visualization
             point_group.UpdateClipping ();
 //            point_group
         }
+
+        /// <summary>
+        /// [Debug] Handler for debug button clicks.
+        /// </summary>
+        /// <param name="source">
+        /// A <see cref="System.Object"/>
+        /// </param>
+        /// <param name="args">
+        /// A <see cref="MainGui.DebugEventArgs"/>
+        /// </param>
         void HandleGuiDebugButtonPressedEvent  (object source, MainGui.DebugEventArgs args)
         {
             point_group.UpdateClipping ();
         }
 
+        /// <summary>
+        /// Retrieves the Pca-coordinates from the analyser and updates the visualization.
+        /// </summary>
         public void GetPcaCoordinates ()
         {
             if (BansheeLibraryAnalyzer.Singleton == null)
@@ -174,6 +217,9 @@ namespace NoNoise.Visualization
             point_group.LoadPcaData (data);
         }
 
+        /// <summary>
+        /// [Debug] Updates the visualization with test data containing airport location.
+        /// </summary>
         public void TestGenerateData ()
         {
             //point_group.TestGenerateCircles(5000,5000,2000);
@@ -181,11 +227,20 @@ namespace NoNoise.Visualization
             point_group.ParseTextFile ("../../airport_locations.tsv", 8000);
         }
 
+        /// <summary>
+        /// Applies the search filter on the visualization.
+        /// </summary>
+        /// <param name="not_hidden">
+        /// A <see cref="List<System.Int32>"/> which specifies the songs which are not hidden.
+        /// </param>
         public void UpdateHiddenSongs (List<int> not_hidden)
         {
             point_group.UpdateHiddenSongs (not_hidden);
         }
 
+        /// <summary>
+        /// Event fired when a new playlist is created.
+        /// </summary>
         public event AddToPlaylistEvent OnAddToPlaylist {
             add { add_to_playlist_event += value; }
             remove { add_to_playlist_event -= value;}
@@ -195,6 +250,9 @@ namespace NoNoise.Visualization
 
         private AddToPlaylistEvent add_to_playlist_event;
 
+        /// <summary>
+        /// Arguments for the <see cref="AddToPlaylistEvent"/> which contain a list of song ids.
+        /// </summary>
         public struct AddToPlaylistEventArgs
         {
             public List<int> SongIDs {
