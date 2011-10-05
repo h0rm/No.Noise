@@ -558,6 +558,7 @@ namespace Banshee.NoNoise
             } catch (Exception e) {
                 Hyena.Log.Exception ("NoNoise/BLA - PCA Problem", e);
             }
+            Hyena.ThreadAssist.ProxyToMain (sc.PcaCoordinatesUpdated);
         }
 
         private void PcaForMusicLibraryVectorEdition ()

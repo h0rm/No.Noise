@@ -95,6 +95,11 @@ namespace Banshee.NoNoise
             scan_event (this, new ScanFinishedEventArgs ("supi"));
         }
 
+        public void PcaCoordinatesUpdated ()
+        {
+            view.GetPcaCoordinates ();
+        }
+
         void HandleViewOnAddToPlaylist (object sender, View.AddToPlaylistEventArgs args)
         {
 
