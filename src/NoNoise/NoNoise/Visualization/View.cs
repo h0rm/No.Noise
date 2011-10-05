@@ -36,7 +36,6 @@ namespace NoNoise.Visualization
         SongGroup point_group;
         MainGui gui;
         BansheeLibraryAnalyzer analyzer;
-        Dictionary<int, NoNoise.Data.TrackData> info;
 
         object enter_counter_lock = new Object ();
         int enter_counter = 0;
@@ -111,19 +110,20 @@ namespace NoNoise.Visualization
         private void GetSongLists (SongInfoArgs args, ref List<String> titles, ref List<String> artists)
         {
             foreach (int i in args.SongIDs) {
-//                if (!info.ContainsKey (i))
-//                    continue;
 
                 Banshee.Collection.TrackInfo track = analyzer.GetTrackInfoFor (i);
 
-                if (track == null)
+                if (track == null) {
                     continue;
+                    Hyena.Log.Debug ("Warning, track not found");
+                }
 
-                titles.Add (track.TrackTitle == "" ? "Unknown Title" : track.TrackTitle);
-                artists.Add (track.ArtistName == "" ? "Unknown Artist" : track.ArtistName);
-//                titles.Add (info[i].Title == "" ? "Unknown Title" : info[i].Title);
-//                artists.Add (info[i].Artist == "" ? "Unknown Artist" : info[i].Artist);
+                titles.Add (String.Copy (track.TrackTitle == "" || track.TrackTitle == null
+                                                            ? "Unknown Title" : track.TrackTitle));
+                artists.Add (String.Copy (track.ArtistName == "" || track.ArtistName == null
+                                                            ? "Unknown Artist" : track.ArtistName));
             }
+
         }
 
         /// <summary>
@@ -209,10 +209,6 @@ namespace NoNoise.Visualization
 
 
             List<NoNoise.Data.DataEntry> data = analyzer.PcaCoordinates;
-            info = new Dictionary<int, NoNoise.Data.TrackData> (data.Count);
-
-            foreach (NoNoise.Data.DataEntry d in data)
-                info.Add (d.ID, d.Value);
 
             point_group.LoadPcaData (data);
         }
@@ -223,7 +219,6 @@ namespace NoNoise.Visualization
         public void TestGenerateData ()
         {
             //point_group.TestGenerateCircles(5000,5000,2000);
-            info = new Dictionary<int, NoNoise.Data.TrackData> (0);
             point_group.ParseTextFile ("../../airport_locations.tsv", 8000);
         }
 

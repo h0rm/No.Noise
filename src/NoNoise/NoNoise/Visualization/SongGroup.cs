@@ -1125,7 +1125,7 @@ namespace NoNoise.Visualization
 
         /// <summary>
         /// Handler for the <see cref="Painted"/> event which is called once to update
-        /// the clipping. 
+        /// the clipping.
         /// </summary>
         /// <param name="sender">
         /// A <see cref="System.Object"/>

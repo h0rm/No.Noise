@@ -115,7 +115,8 @@ namespace NoNoise.Visualization
             double w,h;
 
             for (i = 0; i < max_clustering_level; i++) {
-                tree = tree_list[i].GetClusteredTree ();
+//                tree = tree_list[i].GetClusteredTree (Width * Math.Sqrt (2) / ((double)(max_clustering_level - i -1)));
+                tree = tree_list[i].GetAdvancedClusteredTree (double.MaxValue);
 
                 //check if number of points is above minimum
                 if (tree.Count < min_points)
