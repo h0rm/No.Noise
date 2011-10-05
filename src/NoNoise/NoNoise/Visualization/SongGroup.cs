@@ -184,8 +184,7 @@ namespace NoNoise.Visualization
 
             points_visible = new List<SongPoint> (num_of_actors);
 
-            if (initialized)
-                InitializeZoomLevel ();
+            SecureUpdateClipping ();
         }
 
         /// <summary>
@@ -239,6 +238,7 @@ namespace NoNoise.Visualization
         }
 
         #region Initialzation
+        
         /// <summary>
         /// Initializes the <see cref="SongActorManager"/>.
         /// </summary>

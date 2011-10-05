@@ -96,11 +96,18 @@ namespace NoNoise.Visualization
         private void GetSongLists (SongInfoArgs args, ref List<String> titles, ref List<String> artists)
         {
             foreach (int i in args.SongIDs) {
-                if (!info.ContainsKey (i))
-                    continue;
+//                if (!info.ContainsKey (i))
+//                    continue;
 
-                titles.Add (info[i].Title == "" ? "Unknown Title" : info[i].Title);
-                artists.Add (info[i].Artist == "" ? "Unknown Artist" : info[i].Artist);
+                Banshee.Collection.TrackInfo track = analyzer.GetTrackInfoFor (i);
+
+                if (track == null)
+                    continue;
+                
+                titles.Add (track.TrackTitle == "" ? "Unknown Title" : track.TrackTitle);
+                artists.Add (track.ArtistName == "" ? "Unknown Artist" : track.ArtistName);
+//                titles.Add (info[i].Title == "" ? "Unknown Title" : info[i].Title);
+//                artists.Add (info[i].Artist == "" ? "Unknown Artist" : info[i].Artist);
             }
         }
 
