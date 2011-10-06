@@ -109,6 +109,7 @@ namespace NoNoise.Visualization
         /// </summary>
         public void Cluster ()
         {
+            Hyena.Log.Information ("Clustering started");
             QuadTree<SongPoint> tree;
 
             int i;
