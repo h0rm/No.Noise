@@ -53,7 +53,7 @@ namespace Banshee.NoNoise
 
         // TODO remove debug helper bools
 //        private readonly bool STORE_ENTIRE_MATRIX = false;
-        private readonly bool DB_CHEATER_MODE = false;
+        private readonly bool DB_CHEATER_MODE = true;
 
         public const int PCA_MEAN = 0;
         public const int PCA_MEAN_DUR = 1;
@@ -157,6 +157,8 @@ namespace Banshee.NoNoise
 //            new Thread (new ThreadStart (ConvertMusicLibrary)).Start ();
 
             db = new NoNoiseDBHandler ();
+            
+            GetPcaData ();
 
 //            Testing ();
             // BPM detector
@@ -189,7 +191,6 @@ namespace Banshee.NoNoise
 
             Hyena.Log.Debug ("NoNoise/BLA - starting pca query");
 //            new Thread (new ThreadStart (GetPcaData)).Start ();
-            GetPcaData ();
 
 //            Hyena.Log.Debug ("NoNoise/BLA - blabla: " + coords [0].Value.Artist + " - " + coords [0].Value.Title);
         }
@@ -558,7 +559,7 @@ namespace Banshee.NoNoise
             } catch (Exception e) {
                 Hyena.Log.Exception ("NoNoise/BLA - PCA Problem", e);
             }
-            Hyena.ThreadAssist.ProxyToMain (sc.PcaCoordinatesUpdated);
+//            Hyena.ThreadAssist.ProxyToMain (sc.PcaCoordinatesUpdated);
         }
 
         private void PcaForMusicLibraryVectorEdition ()
