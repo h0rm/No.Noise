@@ -253,6 +253,13 @@ namespace NoNoise.Visualization.Util
             }
         }
 
+        /// <summary>
+        /// Returns a new tree which is a clustered version of this tree. This is an advanced
+        /// version, because the nearest neighbours are clustered first. 
+        /// </summary>
+        /// <returns>
+        /// A <see cref="QuadTree<T>"/>
+        /// </returns>
         public QuadTree<T> GetAdvancedClusteredTree (double max_search_radius)
         {
             QuadTree<T> clustered_tree = new QuadTree<T> (quadTreeRoot.Rectangle);
@@ -260,33 +267,30 @@ namespace NoNoise.Visualization.Util
 
             List<T> items;
 
-            List<Neighbours<T>> neighbours = new List<Neighbours<T>> (clone_tree.Count/2+1);
+            Neighbours<T> min;
 
             // As long as objects in tree merge
             while (clone_tree.Count > 0) {
 
                 items = clone_tree.GetAllObjects ();
-                neighbours.Clear ();
 
-                //Find neerest neigbour for all points
-                for (int i = 0; i < Math.Ceiling((double)clone_tree.Count/2); i++) {
+                min = new Neighbours<T>() {
+                    First = items[0],
+                    Second = clone_tree.GetNearest (items[0], max_search_radius)
+                };
 
-                    T nearest = clone_tree.GetNearest (items[i], max_search_radius);
-                    neighbours.Add (new Neighbours<T>(){
+                //Find neerest neigbour for all points - count / 2?
+                for (int i = 1; i < clone_tree.Count; i++) {
+
+                    Neighbours<T> current = new Neighbours<T> (){
                         First = items[i],
-                        Second = nearest
-                    });
+                        Second = clone_tree.GetNearest (items[i], max_search_radius)
+                    };
+
+                    if (current.Distance < min.Distance)
+                        min = current;
                 }
-
-//                Hyena.Log.Debug ("Neighbours " + neighbours.Count);
-
-                double d_min = neighbours.Min (p => p.Distance);
-
-                Hyena.Log.Debug ("Count " + clone_tree.Count + " Min distance : " + d_min);
-
-                Neighbours<T> min = (from n in neighbours
-                        where n.Distance == d_min
-                        select n).ToArray()[0];
+//                Hyena.Log.Debug ("Count " + clone_tree.Count + " Min distance : " + min.Distance);
 
                 clone_tree.Remove (min.First);
 
@@ -297,8 +301,6 @@ namespace NoNoise.Visualization.Util
                     clone_tree.Remove (min.Second);
                     clustered_tree.Add (min.First.GetMerged (min.Second));
                 }
-                //Find smallest distance
-//                int min = neighbours.Min (p => p.Distance);
             }
 
             clone_tree = null;

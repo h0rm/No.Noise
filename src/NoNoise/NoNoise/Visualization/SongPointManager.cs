@@ -36,7 +36,7 @@ namespace NoNoise.Visualization
     {
         private int max_clustering_level = 8;
         private List<QuadTree<SongPoint>> tree_list;
-        private const int min_points = 5;
+        private const int min_points = 8;
         private int level = 0;
         private Dictionary<int,SongPoint> dict;
 
