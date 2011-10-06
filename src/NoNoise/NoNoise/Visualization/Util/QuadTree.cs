@@ -231,7 +231,7 @@ namespace NoNoise.Visualization.Util
             quadTreeRoot.GetWindow (num_of_points, out width, out height);
         }
 
-        private class Neighbours<S> where S : IStorable<S>
+        private class Neighbours<S> : IComparable<Neighbours<S>> where S : IStorable<S>
         {
             public S First {
                 get;
@@ -251,11 +251,16 @@ namespace NoNoise.Visualization.Util
                     return First.XY.DistanceTo (Second.XY);
                 }
             }
+
+            public int CompareTo (Neighbours<S> other)
+            {
+                return Distance.CompareTo (other.Distance);
+            }
         }
 
         /// <summary>
         /// Returns a new tree which is a clustered version of this tree. This is an advanced
-        /// version, because the nearest neighbours are clustered first. 
+        /// version, because the nearest neighbours are clustered first.
         /// </summary>
         /// <returns>
         /// A <see cref="QuadTree<T>"/>
@@ -265,32 +270,59 @@ namespace NoNoise.Visualization.Util
             QuadTree<T> clustered_tree = new QuadTree<T> (quadTreeRoot.Rectangle);
             QuadTree<T> clone_tree = (QuadTree<T>)Clone ();
 
-            List<T> items;
+            List<T> items = clone_tree.GetAllObjects ();
 
-            Neighbours<T> min;
+            List<Neighbours<T>> neighbours = new List<Neighbours<T>> (clone_tree.Count);
+
+            //initialize list
+            foreach (T item in items) {
+                T nearest = clone_tree.GetNearest (item, max_search_radius);
+
+                neighbours.Add (new Neighbours<T>(){
+                    First = item,
+                    Second = nearest
+                });
+            }
+
+            neighbours.Sort ();
+
+            // List empty, abort
+            if (neighbours.Count == 0)
+                return clustered_tree;
+
+            Neighbours<T> min = neighbours[0];
 
             // As long as objects in tree merge
             while (clone_tree.Count > 0) {
 
                 items = clone_tree.GetAllObjects ();
 
-                min = new Neighbours<T>() {
-                    First = items[0],
-                    Second = clone_tree.GetNearest (items[0], max_search_radius)
-                };
+                for (int i=0; i<neighbours.Count; i++)
+                {
+                    Neighbours<T> current = neighbours[i];
 
-                //Find neerest neigbour for all points - count / 2?
-                for (int i = 1; i < clone_tree.Count; i++) {
+                    // If first is in removed connection, remove
+                    if (current.First.Equals (min.First) || current.First.Equals(min.Second)) {
+                        neighbours[i] = neighbours[neighbours.Count - 1];
+                        neighbours.RemoveAt (neighbours.Count - 1);
+                        i--;
+                        continue;
+                    }
 
-                    Neighbours<T> current = new Neighbours<T> (){
-                        First = items[i],
-                        Second = clone_tree.GetNearest (items[i], max_search_radius)
-                    };
-
-                    if (current.Distance < min.Distance)
-                        min = current;
+                    // If second is removed, recalculate
+                    if (current.Second.Equals (min.First) || current.Second.Equals (min.Second)) {
+                        neighbours[i].Second = clone_tree.GetNearest (neighbours[i].First, max_search_radius);
+                    }
                 }
-//                Hyena.Log.Debug ("Count " + clone_tree.Count + " Min distance : " + min.Distance);
+
+                if (neighbours.Count == 0)
+                    break;
+
+                neighbours.Sort ();
+
+                min = neighbours [0];
+
+                Hyena.Log.Debug ("Count " + clone_tree.Count + " Min distance : " + min.Distance);
 
                 clone_tree.Remove (min.First);
 
