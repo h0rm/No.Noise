@@ -80,8 +80,11 @@ namespace NoNoise.Visualization
                 if(args.SongIDs.Count == 0) {
                     gui.ClearInfoSelection ();
                 } else {
+
                     GetSongLists (args, ref songs, ref artists);
+                    Hyena.Log.Information ("Retrieved song info");
                     gui.UpdateSelection (songs, artists);
+                    Hyena.Log.Information ("Updated song info");
                 }
             };
 

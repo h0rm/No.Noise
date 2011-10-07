@@ -1025,6 +1025,7 @@ namespace NoNoise.Visualization
             }
 
             UpdateClipping ();
+
             FireSongSelected (new SongInfoArgs (selected_ids));
         }
         #endregion Selection

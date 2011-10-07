@@ -284,6 +284,8 @@ namespace NoNoise.Visualization
         {
             foreach (SongPoint p in tree_list[0].GetAllObjects())
                 p.MarkRemovedifSelected ();
+
+            InvalidatePositions ();
         }
 
         /// <summary>
@@ -302,6 +304,8 @@ namespace NoNoise.Visualization
         {
             foreach (SongPoint p in tree_list[0].GetAllObjects())
                 p.IsRemoved = false;
+
+            InvalidatePositions ();
         }
 
         /// <summary>
@@ -339,6 +343,15 @@ namespace NoNoise.Visualization
 //                    dict[i].MarkShown ();
                     dict[i].IsHidden = false;
             }
+
+            InvalidatePositions ();
+        }
+
+        private void InvalidatePositions ()
+        {
+            foreach (SongPoint p in tree_list[0].GetAllObjects())
+//                p.MarkHidden ();
+                p.InvalidatePosition ();
         }
     }
 }

@@ -37,6 +37,7 @@ namespace NoNoise.Visualization
         private double x;
         private double y;
         private SelectionMode selection;
+        private bool pos_valid = false;
 
         /// <summary>
         /// Selection mode of a point
@@ -98,6 +99,17 @@ namespace NoNoise.Visualization
             }
         }
 
+        public void InvalidatePosition ()
+        {
+            if (pos_valid == false)
+                return;
+
+            pos_valid = false;
+
+            if (Parent != null)
+                Parent.InvalidatePosition ();
+        }
+        
         /// <summary>
         /// Returns true if this point is a leaf node (i.e. no children).
         /// </summary>
@@ -154,10 +166,12 @@ namespace NoNoise.Visualization
         /// </summary>
         public double X {
             get {
-                if (IsLeaf || MainChild == null)
+                if (IsLeaf || MainChild == null || pos_valid)
                     return x;
 
-                return MainChild.X;
+                pos_valid = true;
+                x = MainChild.X;
+                return x;
             }
 
             private set { x = value; }
@@ -168,9 +182,11 @@ namespace NoNoise.Visualization
         /// </summary>
         public double Y {
             get {
-                if (IsLeaf || MainChild == null)
+                if (IsLeaf || MainChild == null || pos_valid)
                     return y;
 
+                pos_valid = true;
+                y = MainChild.Y;
                 return MainChild.Y;
             }
 
