@@ -1,4 +1,4 @@
-﻿/* NOTES:
+/* NOTES:
  This is a modified version of http://quadtree.svn.sourceforge.net/ written
  by John McDonald and Gary Texmo.
  */
@@ -256,6 +256,58 @@ namespace NoNoise.Visualization.Util
             {
                 return Distance.CompareTo (other.Distance);
             }
+        }
+
+        public QuadTree<T> GetFastClusteredTree (double max_search_radius)
+        {
+            QuadTree<T> clustered_tree = new QuadTree<T> (quadTreeRoot.Rectangle);
+            QuadTree<T> clone_tree = (QuadTree<T>)Clone ();
+
+            if (clone_tree.Count == 0)
+                return clustered_tree;
+
+            List<T> items;
+            T current = default (T);
+
+            while (clone_tree.Count > 0)
+            {
+                // Need new point
+                if (current == null) {
+                    items = clone_tree.GetAllObjects ();
+                    current = items[0];
+                }
+
+                // Neighbour
+                T nearest = clone_tree.GetNearest (current, max_search_radius);
+
+                // no neighbour found
+                if (nearest == null) {
+                    clustered_tree.Add (current.GetMerged (default (T)));
+                    clone_tree.Remove (current);
+                    current = default (T);
+//                    Hyena.Log.Debug ("(+) Tree count = " + clone_tree.Count);
+                    continue;
+                }
+
+                T reverse = clone_tree.GetNearest (nearest, max_search_radius);
+
+                // nearest element (both directions)
+                if (reverse.Equals (current)) {
+                    clustered_tree.Add (current.GetMerged (nearest));
+                    clone_tree.Remove (current);
+                    clone_tree.Remove (nearest);
+//                    Hyena.Log.Debug ("(+) Tree count = " + clone_tree.Count);
+                    current = default (T);
+                } else {    // search next
+                    current = nearest;
+//                    Hyena.Log.Debug ("(*) Tree count = " + clone_tree.Count);
+                }
+
+
+            }
+
+            clone_tree = null;
+            return clustered_tree;
         }
 
         /// <summary>

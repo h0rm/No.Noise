@@ -1341,7 +1341,7 @@ namespace Banshee.NoNoise
                                            ti.Duration.TotalSeconds))
                             throw new Exception("AddEntry failed!");
                     } catch (Exception e) {
-                        Hyena.Log.Exception ("NoNoise - PCA Problem", e);
+//                        Hyena.Log.Exception ("NoNoise - PCA Problem", e);
                     }
                 }
             }
