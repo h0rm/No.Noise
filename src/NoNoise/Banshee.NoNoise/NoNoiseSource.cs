@@ -39,6 +39,8 @@ using Gtk;
 using NoNoise.Visualization;
 using NoNoise.Visualization.Util;
 
+// TODO delete this class
+
 namespace Banshee.NoNoise
 {
 
