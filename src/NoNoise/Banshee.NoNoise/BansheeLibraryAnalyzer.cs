@@ -55,6 +55,7 @@ namespace Banshee.NoNoise
 //        private readonly bool STORE_ENTIRE_MATRIX = false;
         private readonly bool DB_CHEATER_MODE = false;
 
+        #region Constants
         public const int PCA_MEAN = 0;
         public const int PCA_MEAN_DUR = 1;
         public const int PCA_SQR_MEAN = 2;
@@ -65,14 +66,13 @@ namespace Banshee.NoNoise
         public const int PCA_MIN_DUR = 7;
         public const int PCA_MED = 8;
         public const int PCA_MED_DUR = 9;
-        private int pca_mode = PCA_MEAN_DUR;
+        #endregion
 
         #region Members
+        private int pca_mode = -1;
         private Banshee.Library.MusicLibrarySource ml;
-//        private SortedDictionary<int, TrackInfo> library;
         private NoNoiseClutterSourceContents sc;
         private NoNoiseDBHandler db;
-//        private PCAnalyzer ana;
         private IPcaAdder pca_adder;
         private List<DataEntry> coords;
         private bool analyzing_lib;
@@ -123,6 +123,8 @@ namespace Banshee.NoNoise
         public int PcaMode {
             get { return pca_mode; }
             set {
+                if (pca_mode == value)
+                    return;
                 lock (pca_synch) {
                     pca_mode = value;
                 }
@@ -220,7 +222,7 @@ namespace Banshee.NoNoise
             bla.sc = sc;
 
             Hyena.Log.Debug ("NoNoise/BLA - starting pca/write track data threads");
-            bla.SwitchPcaMode ();
+//            bla.SwitchPcaMode ();
 //            new Thread (new ThreadStart (PcaForMusicLibraryVectorEdition)).Start ();
             new Thread (new ThreadStart (bla.WriteTrackInfosToDB)).Start ();
 
@@ -244,25 +246,6 @@ namespace Banshee.NoNoise
         {
             return Init (sc, false);
         }
-
-        /// <summary>
-        /// Stores the trackinfos from the music library in a sorted dictionary
-        /// mapped to the banshee_id.
-        /// </summary>
-//        private void ConvertMusicLibrary ()
-//        {
-//            lock (lib_synch) {
-//                library = new SortedDictionary<int, TrackInfo> ();
-//
-//                for (int i = 0; i < ml.TrackModel.Count; i++) {
-//                    DatabaseTrackInfo dti = ml.TrackModel [i] as DatabaseTrackInfo;
-//    //                int bid = ml.GetTrackIdForUri (ti.Uri);
-//                    library.Add (dti.TrackId, dti as TrackInfo);
-//                }
-//            }
-//
-//            Hyena.Log.Debug ("NoNoise/BLA - library conversion finished");
-//        }
 
         private void SwitchPcaMode ()
         {
@@ -532,18 +515,23 @@ namespace Banshee.NoNoise
             /// SIHT EVOMER
 
             if (data_up_to_date && !forceNew) {
-                Hyena.Log.Information ("NoNoise - Data already up2date - aborting pca.");
+                Hyena.Log.Information ("NoNoise/BLA - Data already up2date - aborting pca.");
                 return;
             }
 
             if (analyzing_lib) {
-                Hyena.Log.Information ("NoNoise - Music library is currently beeing scanned - aborting pca.");
+                Hyena.Log.Information ("NoNoise/BLA - Music library is currently beeing scanned - aborting pca.");
                 return;
             }
 
             if (!lib_scanned) {
-                Hyena.Log.Information ("NoNoise - No mirage data available for pca - aborting.");
+                Hyena.Log.Information ("NoNoise/BLA - No mirage data available for pca - aborting.");
                 return;     // TODO something clever!
+            }
+
+            if (pca_adder == null) {
+                Hyena.Log.Debug ("NoNoise/BLA - PCA adder is null - aborting.");
+                return;
             }
 
             Hyena.Log.Debug ("NoNoise/BLA - PcaFor... called");
@@ -566,6 +554,7 @@ namespace Banshee.NoNoise
             } catch (Exception e) {
                 Hyena.Log.Exception ("NoNoise/BLA - PCA Problem", e);
             }
+            // TODO update once it works
 //            Hyena.ThreadAssist.ProxyToMain (sc.PcaCoordinatesUpdated);
         }
 
@@ -820,7 +809,7 @@ namespace Banshee.NoNoise
         private void HandleTracksChanged (Source sender, TrackEventArgs args)
         {
             try {
-                // TODO implement
+                // TODO remove
                 Hyena.Log.Debug ("NoNoise/BLA - tracks changed (unhandled): " +
                                  args.ChangedFields.ToString ());
             } catch (Exception e) {
@@ -1261,6 +1250,25 @@ namespace Banshee.NoNoise
 //            Hyena.Log.DebugFormat ("NoNoise/BLA - Updated music library. new size: {0}", library.Count);
 //        }
 
+        /// <summary>
+        /// Stores the trackinfos from the music library in a sorted dictionary
+        /// mapped to the banshee_id.
+        /// </summary>
+//        private void ConvertMusicLibrary ()
+//        {
+//            lock (lib_synch) {
+//                library = new SortedDictionary<int, TrackInfo> ();
+//
+//                for (int i = 0; i < ml.TrackModel.Count; i++) {
+//                    DatabaseTrackInfo dti = ml.TrackModel [i] as DatabaseTrackInfo;
+//    //                int bid = ml.GetTrackIdForUri (ti.Uri);
+//                    library.Add (dti.TrackId, dti as TrackInfo);
+//                }
+//            }
+//
+//            Hyena.Log.Debug ("NoNoise/BLA - library conversion finished");
+//        }
+
         /*
          * rather useless
         private void CheckGetTrackID ()
@@ -1303,6 +1311,7 @@ namespace Banshee.NoNoise
         */
         #endregion
 
+        #region PCA variants
         private interface IPcaAdder {
             /// <summary>
             /// Adds feature vectors from the database to the PCAnalyzer,
@@ -1548,6 +1557,7 @@ namespace Banshee.NoNoise
                 }
             }
         }
+        #endregion
     }
 }
 

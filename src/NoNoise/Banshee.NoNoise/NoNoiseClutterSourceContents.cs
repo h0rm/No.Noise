@@ -97,7 +97,9 @@ namespace Banshee.NoNoise
 
         public void PcaCoordinatesUpdated ()
         {
+            Clutter.Threads.Enter ();
             view.GetPcaCoordinates ();
+            Clutter.Threads.Leave ();
         }
 
         void HandleViewOnAddToPlaylist (object sender, View.AddToPlaylistEventArgs args)

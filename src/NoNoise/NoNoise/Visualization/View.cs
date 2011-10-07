@@ -113,7 +113,7 @@ namespace NoNoise.Visualization
         /// </param>
         private void GetSongLists (SongInfoArgs args, ref List<String> titles, ref List<String> artists)
         {
-            foreach (int i in args.SongIDs) {
+            foreach (int i in args.SongIDs) {   // TODO change back to GetTrackInfoFor, ...
 
 //                Banshee.Collection.TrackInfo track = analyzer.GetTrackInfoFor (i);
 
