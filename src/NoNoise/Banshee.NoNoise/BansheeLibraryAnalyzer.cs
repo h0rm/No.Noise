@@ -112,6 +112,9 @@ namespace Banshee.NoNoise
             get { return analyzing_lib; }
         }
 
+        /// <summary>
+        /// Boolean variable indicating whether the library has already been scanned.
+        /// </summary>
         public bool IsLibraryScanned {
             get { return lib_scanned; }
         }
@@ -205,7 +208,7 @@ namespace Banshee.NoNoise
         /// <param name="sc">
         /// The <see cref="NoNoiseClutterSourceContents"/> which is used as callback.
         /// </param>
-        /// <param name="forceNew">
+        /// <param name="force_new">
         /// If this is true then a new instance will be initialized even if an
         /// old one already exists. Otherwise Init () might return an existing
         /// instance.
@@ -213,9 +216,9 @@ namespace Banshee.NoNoise
         /// <returns>
         /// The singleton instance of <see cref="BansheeLibraryAnalyzer"/>
         /// </returns>
-        public static BansheeLibraryAnalyzer Init (NoNoiseClutterSourceContents sc, bool forceNew)
+        public static BansheeLibraryAnalyzer Init (NoNoiseClutterSourceContents sc, bool force_new)
         {
-            if (!forceNew && bla != null)
+            if (!force_new && bla != null)
                 return bla;
 
             bla = new BansheeLibraryAnalyzer ();
@@ -247,6 +250,10 @@ namespace Banshee.NoNoise
             return Init (sc, false);
         }
 
+        /// <summary>
+        /// Sets the instance of pca_adder according to the current PCA mode and
+        /// starts PCA computation in a new thread afterwards.
+        /// </summary>
         private void SwitchPcaMode ()
         {
             lock (pca_synch) {
@@ -505,7 +512,11 @@ namespace Banshee.NoNoise
         /// stores it in the database.
         /// Vector Edition!
         /// </summary>
-        private void PcaForMusicLibraryVectorEdition (bool forceNew)
+        /// <param name="force_new">
+        /// A <see cref="System.Boolean"/> indicating whether PCA coordinates
+        /// should be computed even if old ones seem to be up to date.
+        /// </param>
+        private void PcaForMusicLibraryVectorEdition (bool force_new)
         {
             /// REMOVE THIS
             if (DB_CHEATER_MODE) {
@@ -514,7 +525,7 @@ namespace Banshee.NoNoise
             }
             /// SIHT EVOMER
 
-            if (data_up_to_date && !forceNew) {
+            if (data_up_to_date && !force_new) {
                 Hyena.Log.Information ("NoNoise/BLA - Data already up2date - aborting pca.");
                 return;
             }
@@ -558,11 +569,19 @@ namespace Banshee.NoNoise
 //            Hyena.ThreadAssist.ProxyToMain (sc.PcaCoordinatesUpdated);
         }
 
+        /// <summary>
+        /// This method is equivalent to PcaForMusicLibraryVectorEdition (false).
+        /// <see cref="PcaForMusicLibraryVectorEdition (bool)"/>
+        /// </summary>
         private void PcaForMusicLibraryVectorEdition ()
         {
             PcaForMusicLibraryVectorEdition (false);
         }
 
+        /// <summary>
+        /// This method is equivalent to PcaForMusicLibraryVectorEdition (true).
+        /// <see cref="PcaForMusicLibraryVectorEdition (bool)"/>
+        /// </summary>
         private void PcaForMusicLibraryVectorEditionForceNew ()
         {
             PcaForMusicLibraryVectorEdition (true);
@@ -590,6 +609,16 @@ namespace Banshee.NoNoise
             return data;
         }
 
+        /// <summary>
+        /// Computes the squared mean for each row of the MFCC matrix.
+        /// </summary>
+        /// <param name="mfcc">
+        /// The MFCC <see cref="Mirage.Matrix"/>
+        /// </param>
+        /// <returns>
+        /// A <see cref="Mirage.Vector"/> containing the squared mean
+        /// vector of the MFCC matrix
+        /// </returns>
         private Mirage.Vector ConvertMfccToSqrMean (Mirage.Matrix mfcc)
         {
             Mirage.Vector data = new Mirage.Vector (mfcc.rows);
@@ -605,6 +634,16 @@ namespace Banshee.NoNoise
             return data;
         }
 
+        /// <summary>
+        /// Computes the maximum for each row of the MFCC matrix.
+        /// </summary>
+        /// <param name="mfcc">
+        /// The MFCC <see cref="Mirage.Matrix"/>
+        /// </param>
+        /// <returns>
+        /// A <see cref="Mirage.Vector"/> containing the maximum
+        /// vector of the MFCC matrix
+        /// </returns>
         private Mirage.Vector ConvertMfccToMax (Mirage.Matrix mfcc)
         {
             Mirage.Vector data = new Mirage.Vector (mfcc.rows);
@@ -620,6 +659,16 @@ namespace Banshee.NoNoise
             return data;
         }
 
+        /// <summary>
+        /// Computes the minimum for each row of the MFCC matrix.
+        /// </summary>
+        /// <param name="mfcc">
+        /// The MFCC <see cref="Mirage.Matrix"/>
+        /// </param>
+        /// <returns>
+        /// A <see cref="Mirage.Vector"/> containing the minimum
+        /// vector of the MFCC matrix
+        /// </returns>
         private Mirage.Vector ConvertMfccToMin (Mirage.Matrix mfcc)
         {
             Mirage.Vector data = new Mirage.Vector (mfcc.rows);
@@ -635,6 +684,16 @@ namespace Banshee.NoNoise
             return data;
         }
 
+        /// <summary>
+        /// Computes the median for each row of the MFCC matrix.
+        /// </summary>
+        /// <param name="mfcc">
+        /// The MFCC <see cref="Mirage.Matrix"/>
+        /// </param>
+        /// <returns>
+        /// A <see cref="Mirage.Vector"/> containing the median
+        /// vector of the MFCC matrix
+        /// </returns>
         private Mirage.Vector ConvertMfccToMedian (Mirage.Matrix mfcc)
         {
             Mirage.Vector data = new Mirage.Vector (mfcc.rows);
