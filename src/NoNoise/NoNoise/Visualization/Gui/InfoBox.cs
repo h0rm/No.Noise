@@ -28,6 +28,7 @@ using Clutter;
 using System.Collections.Generic;
 using Cairo;
 using System.Linq;
+using System.Diagnostics;
 
 namespace NoNoise.Visualization.Gui
 {
@@ -150,6 +151,7 @@ namespace NoNoise.Visualization.Gui
             Update (title, subtile);
         }
 
+
         /// <summary>
         /// Updates the text in the infobox.
         /// </summary>
@@ -166,25 +168,26 @@ namespace NoNoise.Visualization.Gui
 
             List<String> t, s;
             if (titles.Count > (Mode == InfoBox.Size.Expanded ? 5 : 2)) {
-                List<CountedSubtitles> cs = new List<CountedSubtitles> ();
 
-                // sort
-                foreach (String a in subtitles) {
+                Dictionary<String, CountedSubtitles> dict = new Dictionary<String, CountedSubtitles> ();
 
-                    if (cs.Find (delegate (CountedSubtitles i) {
-                                    return i.Name.ToLower () == a.ToLower (); }) == null) {
 
-                        cs.Add (new CountedSubtitles
-                          { Name = a,
-                            Count = subtitles.FindAll (
-                                     delegate (String i) {
-                                        return i.ToLower () == a.ToLower ();
-                                     }).Count
-                          });
+                foreach (String sub in subtitles) {
+
+                    String lower = sub.ToLower ();
+                    if (dict.ContainsKey (sub.ToLower ()))
+                    {
+                        dict[lower].Count++;
+                    } else {
+                        dict.Add (lower, new CountedSubtitles {
+                            Name = sub,
+                            Count = 1
+                        });
                     }
                 }
 
-                var collection = from c in cs
+
+                var collection = from c in dict.Values
                                  orderby c.Count descending
                                  select c;
 

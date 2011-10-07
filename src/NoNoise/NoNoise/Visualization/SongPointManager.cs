@@ -115,9 +115,14 @@ namespace NoNoise.Visualization
             int i;
             double w,h;
 
+            Hyena.Log.Information ("[0] Clustering points " + tree_list[0].Count);
             for (i = 0; i < max_clustering_level; i++) {
 //                tree = tree_list[i].GetClusteredTree (Width * Math.Sqrt (2) / ((double)(max_clustering_level - i -1)));
-                tree = tree_list[i].GetClusteredTree (double.MaxValue);
+//                tree = tree_list[i].GetAdvancedClusteredTree (double.MaxValue);
+//                tree = tree_list[i].GetClusteredTree (double.MaxValue);
+                tree = tree_list[i].GetFastClusteredTree (double.MaxValue);
+
+                Hyena.Log.Information ("["+(i+1)+"] Clustering points " + tree.Count);
 
                 //check if number of points is above minimum
                 if (tree.Count < min_points)
@@ -279,6 +284,8 @@ namespace NoNoise.Visualization
         {
             foreach (SongPoint p in tree_list[0].GetAllObjects())
                 p.MarkRemovedifSelected ();
+
+            InvalidatePositions ();
         }
 
         /// <summary>
@@ -297,6 +304,8 @@ namespace NoNoise.Visualization
         {
             foreach (SongPoint p in tree_list[0].GetAllObjects())
                 p.IsRemoved = false;
+
+            InvalidatePositions ();
         }
 
         /// <summary>
@@ -334,6 +343,15 @@ namespace NoNoise.Visualization
 //                    dict[i].MarkShown ();
                     dict[i].IsHidden = false;
             }
+
+            InvalidatePositions ();
+        }
+
+        private void InvalidatePositions ()
+        {
+            foreach (SongPoint p in tree_list[0].GetAllObjects())
+//                p.MarkHidden ();
+                p.InvalidatePosition ();
         }
     }
 }
