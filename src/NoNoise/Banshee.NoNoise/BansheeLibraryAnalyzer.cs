@@ -53,7 +53,7 @@ namespace Banshee.NoNoise
 
         // TODO remove debug helper bools
 //        private readonly bool STORE_ENTIRE_MATRIX = false;
-        private readonly bool DB_CHEATER_MODE = true;
+        private readonly bool DB_CHEATER_MODE = false;
 
         public const int PCA_MEAN = 0;
         public const int PCA_MEAN_DUR = 1;
@@ -524,6 +524,13 @@ namespace Banshee.NoNoise
         /// </summary>
         private void PcaForMusicLibraryVectorEdition (bool forceNew)
         {
+            /// REMOVE THIS
+            if (DB_CHEATER_MODE) {
+                Hyena.Log.Information ("NoNoise/BLA - cheater mode - not calculating pca");
+                return;
+            }
+            /// SIHT EVOMER
+
             if (data_up_to_date && !forceNew) {
                 Hyena.Log.Information ("NoNoise - Data already up2date - aborting pca.");
                 return;
@@ -664,6 +671,13 @@ namespace Banshee.NoNoise
         /// </summary>
         private void WriteTrackInfosToDB ()
         {
+            /// REMOVE THIS
+            if (DB_CHEATER_MODE) {
+                Hyena.Log.Information ("NoNoise/BLA - cheater mode - not writing track infos");
+                return;
+            }
+            /// SIHT EVOMER
+
             if (data_up_to_date) {
                 Hyena.Log.Information ("NoNoise - Data already up2date - aborting write-track-infos.");
                 return;

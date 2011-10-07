@@ -35,6 +35,8 @@ namespace Banshee.NoNoise
 {
     public static class NoNoiseSchemas
     {
+        public enum PcaMfccOptions { Mean, SquaredMean, Median, Minimum, Maximum };
+
         internal static readonly SchemaEntry<bool> Startup = new SchemaEntry<bool>(
             "nonoise", "startup",
             false,
@@ -47,6 +49,13 @@ namespace Banshee.NoNoise
             false,
             "NoNoise Visualization",
             "Enable or disable the NoNoise Visualization"
+        );
+        
+        internal static readonly SchemaEntry<string> PcaMfcc = new SchemaEntry<string>(
+            "nonoise", "pca_mfcc",
+            (string) Enum.GetName (typeof(PcaMfccOptions), PcaMfccOptions.Mean),
+            AddinManager.CurrentLocalizer.GetString ("MFCC vector used"),
+            AddinManager.CurrentLocalizer.GetString ("Selects which vector of the MFCC matrix should be used for the PCA")
         );
 
         internal static readonly SchemaEntry<bool> PcaUseMean = new SchemaEntry<bool>(

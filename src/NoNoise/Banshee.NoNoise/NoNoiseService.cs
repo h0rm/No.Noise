@@ -24,6 +24,7 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 using System;
+using System.Collections.Generic;
 
 using Banshee.Gui;
 using Banshee.Base;
@@ -33,6 +34,7 @@ using Banshee.Sources.Gui;
 // Other namespaces you might want:
 using Banshee.ServiceStack;
 using Banshee.Preferences;
+using Banshee.Preferences.Gui;
 using Banshee.MediaEngine;
 using Banshee.PlaybackController;
 using Banshee.Library;
@@ -132,35 +134,57 @@ namespace Banshee.NoNoise
         private Page preferences;
         private Section debug;
         private Section pca;
-        private SchemaPreference<bool> mean;
-        private SchemaPreference<bool> sqr_mean;
-        private SchemaPreference<bool> median;
-        private SchemaPreference<bool> min;
-        private SchemaPreference<bool> max;
+        private PreferenceBase pb;
+        private ComboBox cb;
 
         void InstallPreferences ()
         {
             if (!pref_installed) {
-                preferences = preference_service.Add (new Page ("nonoise", Catalog.GetString ("No.Noise"), 20));
-        
-                debug = preferences.Add (new Section ("debug", Catalog.GetString ("Debug"), 1));
-                debug.Add (new SchemaPreference<bool> (NoNoiseSchemas.Startup, NoNoiseSchemas.Startup.ShortDescription,
-                                                       NoNoiseSchemas.Startup.LongDescription));
-                pca = preferences.Add (new Section ("pca", "PCA", 2));
-                pca.Add (mean = new SchemaPreference<bool> (NoNoiseSchemas.PcaUseMean, NoNoiseSchemas.PcaUseMean.ShortDescription,
-                                                     NoNoiseSchemas.PcaUseMean.LongDescription, PcaUseMeanHandler));
-                pca.Add (sqr_mean = new SchemaPreference<bool> (NoNoiseSchemas.PcaUseSquaredMean, NoNoiseSchemas.PcaUseSquaredMean.ShortDescription,
-                                                     NoNoiseSchemas.PcaUseSquaredMean.LongDescription, PcaUseSquaredMeanHandler));
-                pca.Add (median = new SchemaPreference<bool> (NoNoiseSchemas.PcaUseMedian, NoNoiseSchemas.PcaUseMedian.ShortDescription,
-                                                     NoNoiseSchemas.PcaUseMedian.LongDescription, PcaUseMedianHandler));
-                pca.Add (min = new SchemaPreference<bool> (NoNoiseSchemas.PcaUseMinimum, NoNoiseSchemas.PcaUseMinimum.ShortDescription,
-                                                     NoNoiseSchemas.PcaUseMinimum.LongDescription, PcaUseMinimumHandler));
-                pca.Add (max = new SchemaPreference<bool> (NoNoiseSchemas.PcaUseMaximum, NoNoiseSchemas.PcaUseMaximum.ShortDescription,
-                                                     NoNoiseSchemas.PcaUseMaximum.LongDescription, PcaUseMaximumHandler));
-                pca.Add (new SchemaPreference<bool> (NoNoiseSchemas.PcaUseDuration, NoNoiseSchemas.PcaUseDuration.ShortDescription,
-                                                     NoNoiseSchemas.PcaUseDuration.LongDescription, PcaUseDurationHandler));
-                pref_installed = true;
+                try {
+                    preferences = preference_service.Add (new Page ("nonoise", Catalog.GetString ("No.Noise"), 20));
+            
+                    debug = preferences.Add (new Section ("debug", Catalog.GetString ("Debug"), 1));
+                    debug.Add (new SchemaPreference<bool> (NoNoiseSchemas.Startup, NoNoiseSchemas.Startup.ShortDescription,
+                                                           NoNoiseSchemas.Startup.LongDescription));
+                    pca = preferences.Add (new Section ("pca", "PCA", 2));
+//                    pb = new SchemaPreference<string> (NoNoiseSchemas.PcaMfcc, NoNoiseSchemas.PcaMfcc.ShortDescription,
+//                                                           NoNoiseSchemas.PcaMfcc.LongDescription);
+//                    cb = new ComboBox (new string [] {
+//                        Enum.GetName (typeof(NoNoiseSchemas.PcaMfccOptions), NoNoiseSchemas.PcaMfccOptions.Mean),
+//                        Enum.GetName (typeof(NoNoiseSchemas.PcaMfccOptions), NoNoiseSchemas.PcaMfccOptions.SquaredMean),
+//                        Enum.GetName (typeof(NoNoiseSchemas.PcaMfccOptions), NoNoiseSchemas.PcaMfccOptions.Median),
+//                        Enum.GetName (typeof(NoNoiseSchemas.PcaMfccOptions), NoNoiseSchemas.PcaMfccOptions.Minimum),
+//                        Enum.GetName (typeof(NoNoiseSchemas.PcaMfccOptions), NoNoiseSchemas.PcaMfccOptions.Maximum)
+//                    });
+//                    cb.Active = (int) Enum.Parse (typeof (NoNoiseSchemas.PcaMfccOptions), NoNoiseSchemas.PcaMfcc.Get ());
+//                    cb.Changed += PcaUseHandler;
+//                    pb.DisplayWidget = cb;
+//    //                preference_service.
+//                    cb.Destroyed += HandleCbDestroyed;
+//                    pca.Add (pb);
+    
+    //                pca.Add (mean = new SchemaPreference<bool> (NoNoiseSchemas.PcaUseMean, NoNoiseSchemas.PcaUseMean.ShortDescription,
+    //                                                     NoNoiseSchemas.PcaUseMean.LongDescription, PcaUseMeanHandler));
+    //                pca.Add (sqr_mean = new SchemaPreference<bool> (NoNoiseSchemas.PcaUseSquaredMean, NoNoiseSchemas.PcaUseSquaredMean.ShortDescription,
+    //                                                     NoNoiseSchemas.PcaUseSquaredMean.LongDescription, PcaUseSquaredMeanHandler));
+    //                pca.Add (median = new SchemaPreference<bool> (NoNoiseSchemas.PcaUseMedian, NoNoiseSchemas.PcaUseMedian.ShortDescription,
+    //                                                     NoNoiseSchemas.PcaUseMedian.LongDescription, PcaUseMedianHandler));
+    //                pca.Add (min = new SchemaPreference<bool> (NoNoiseSchemas.PcaUseMinimum, NoNoiseSchemas.PcaUseMinimum.ShortDescription,
+    //                                                     NoNoiseSchemas.PcaUseMinimum.LongDescription, PcaUseMinimumHandler));
+    //                pca.Add (max = new SchemaPreference<bool> (NoNoiseSchemas.PcaUseMaximum, NoNoiseSchemas.PcaUseMaximum.ShortDescription,
+    //                                                     NoNoiseSchemas.PcaUseMaximum.LongDescription, PcaUseMaximumHandler));
+                    pca.Add (new SchemaPreference<bool> (NoNoiseSchemas.PcaUseDuration, NoNoiseSchemas.PcaUseDuration.ShortDescription,
+                                                         NoNoiseSchemas.PcaUseDuration.LongDescription, PcaUseDurationHandler));
+                    pref_installed = true;
+                } catch (Exception e) {
+                    Hyena.Log.Exception ("blub", e);
+                }
             }
+        }
+
+        void HandleCbDestroyed (object sender, EventArgs e)
+        {
+            Hyena.Log.Debug ("NoNoise/Serv - combobox destroyed");
         }
 
         private void OnServiceStarted (ServiceStartedArgs args)
@@ -376,6 +400,22 @@ namespace Banshee.NoNoise
             source_manager.SourceAdded -= OnSourceAdded;
         }
 
+        private void PcaUseHandler (object sender, EventArgs e)
+        {
+            Hyena.Log.Debug ("NoNoise/Serv - update handler called");
+            try {
+                NoNoiseSchemas.PcaMfcc.Set (cb.ActiveText);
+            } catch (Exception ex) {
+                Hyena.Log.Exception ("blub", ex);
+            }
+//            switch ((NoNoiseSchemas.PcaMfccOptions) Enum.Parse (typeof (NoNoiseSchemas.PcaMfccOptions), cb.ActiveText)) {
+//            case NoNoiseSchemas.PcaMfccOptions.Mean:
+//                break;
+//            default:
+//                break;
+//            }
+        }
+
         private void PcaUseMeanHandler ()
         {
             Hyena.Log.Debug ("NoNoise/Serv - update handler called - mean");
@@ -434,32 +474,6 @@ namespace Banshee.NoNoise
                 else
                     BansheeLibraryAnalyzer.Singleton.PcaMode = BansheeLibraryAnalyzer.PCA_MAX;
 //                SetOthersFalse (NoNoiseSchemas.PcaUseMaximum);
-            }
-        }
-
-        private void SetOthersFalse (SchemaEntry<bool> current)
-        {
-            lock (this) {
-                if (!current.Equals (NoNoiseSchemas.PcaUseMean)) {
-                    Hyena.Log.Debug ("NoNoise/Serv - setting mean to false");
-                    mean.Value = false;
-                }
-                if (!current.Equals (NoNoiseSchemas.PcaUseSquaredMean)) {
-                    Hyena.Log.Debug ("NoNoise/Serv - setting sqr mean to false");
-                    sqr_mean.Value = false;
-                }
-                if (!current.Equals (NoNoiseSchemas.PcaUseMedian)) {
-                    Hyena.Log.Debug ("NoNoise/Serv - setting median to false");
-                    median.Value = false;
-                }
-                if (!current.Equals (NoNoiseSchemas.PcaUseMinimum)) {
-                    Hyena.Log.Debug ("NoNoise/Serv - setting min to false");
-                    min.Value = false;
-                }
-                if (!current.Equals (NoNoiseSchemas.PcaUseMaximum)) {
-                    Hyena.Log.Debug ("NoNoise/Serv - setting max to false");
-                    max.Value = false;
-                }
             }
         }
 
