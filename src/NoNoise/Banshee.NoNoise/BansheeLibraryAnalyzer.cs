@@ -80,10 +80,12 @@ namespace Banshee.NoNoise
         private bool data_up_to_date;
         private bool stop_scan;
         private bool added_while_scanning;
+        private bool updating_db;
         private Gtk.ThreadNotify finished;
         private Thread thr;
         private object scan_synch;
         private object pca_synch;
+        private object update_synch;
 //        private object lib_synch;   // WARN make sure it is never locked on lib_synch inside of another lock
         private object db_synch;
 
@@ -155,6 +157,7 @@ namespace Banshee.NoNoise
 
             scan_synch = new object ();
             pca_synch = new object ();
+            update_synch = new object ();
 //            lib_synch = new object ();
             db_synch = new object ();
 
@@ -186,6 +189,7 @@ namespace Banshee.NoNoise
 
             analyzing_lib = false;
             added_while_scanning = false;
+            updating_db = false;
             lib_scanned = CheckLibScanned ();
             data_up_to_date = CheckDataUpToDate ();
 
@@ -335,7 +339,7 @@ namespace Banshee.NoNoise
         private bool CheckLibScanned ()
         {
             int cnt = -1;
-            lock (db_synch) {       // TODO check for removed (<)
+            lock (db_synch) {
                 cnt = db.GetMirDataCount ();
 //                Hyena.Log.Debug ("NoNoise/DB - MIRData count: " + cnt);
             }
@@ -346,8 +350,8 @@ namespace Banshee.NoNoise
             }
             Hyena.Log.Debug ("NoNoise/BLA - lib scanned: " + lib_scanned);
 
-            if (cnt > ml.TrackModel.Count)      // FIXME should be in both checks, but who knows what happens
-                new Thread (new ThreadStart (RemoveDeletedTracks)).Start (); // when they both run at the same time
+            if (cnt > ml.TrackModel.Count && !updating_db)
+                new Thread (new ThreadStart (RemoveDeletedTracks)).Start ();
 
             return lib_scanned;
         }
@@ -363,7 +367,7 @@ namespace Banshee.NoNoise
         {
             int cnt = -1;
             bool eq = false;
-            lock (db_synch) {       // TODO check for removed (<)
+            lock (db_synch) {
                 cnt = db.GetPcaDataCount ();
                 eq = cnt == db.GetTrackDataCount ();
                 eq &= cnt == ml.TrackModel.Count;
@@ -373,6 +377,9 @@ namespace Banshee.NoNoise
                 data_up_to_date = eq;
             }
             Hyena.Log.Debug ("NoNoise/BLA - data up to date: " + data_up_to_date);
+
+            if (cnt > ml.TrackModel.Count && !updating_db)
+                new Thread (new ThreadStart (RemoveDeletedTracks)).Start ();
 
             return data_up_to_date;
         }
@@ -713,6 +720,8 @@ namespace Banshee.NoNoise
         }
         #endregion
 
+        #region Library updates
+
         /// <summary>
         /// Checks for each track in the music library if it is already in the
         /// database. If not, inserts it.
@@ -726,10 +735,10 @@ namespace Banshee.NoNoise
             }
             /// SIHT EVOMER
 
-            if (data_up_to_date) {
-                Hyena.Log.Information ("NoNoise - Data already up2date - aborting write-track-infos.");
-                return;
-            }
+//            if (data_up_to_date) {
+//                Hyena.Log.Information ("NoNoise - Data already up2date - aborting write-track-infos.");
+//                return;
+//            }
 
             foreach (DatabaseTrackInfo dti in DatabaseTrackInfo.Provider.FetchAll ()) {
                 try {
@@ -750,13 +759,15 @@ namespace Banshee.NoNoise
             }
         }
 
-        #region Library updates
-
         /// <summary>
         /// Checks the music library for deleted tracks and removes them from the database.
         /// </summary>
         private void RemoveDeletedTracks ()
         {
+            lock (update_synch) {
+                updating_db = true;
+            }
+
             SortedList<int, int> ids = new SortedList<int, int> ();
             foreach (DatabaseTrackInfo dti in DatabaseTrackInfo.Provider.FetchAll ()) {
                 int bid = dti.TrackId;
@@ -790,6 +801,10 @@ namespace Banshee.NoNoise
             Hyena.Log.Debug ("NoNoise/BLA - updating other tables...");
             lock (db_synch) {
                 db.SynchTablesWithTrackData ();
+            }
+
+            lock (update_synch) {
+                updating_db = false;
             }
         }
         #endregion
@@ -1418,6 +1433,13 @@ namespace Banshee.NoNoise
                     try {
                         TrackInfo ti = DatabaseTrackInfo.Provider.FetchSingle (bid) as TrackInfo;
 
+                        if (ti == null) {
+                            if (!BansheeLibraryAnalyzer.Singleton.updating_db)
+                                new Thread (new ThreadStart (BansheeLibraryAnalyzer.Singleton.RemoveDeletedTracks))
+                                    .Start ();
+                            continue;
+                        }
+
                         if (!ana.AddEntry (bid, BansheeLibraryAnalyzer.Singleton.
                                            ConvertMirageVector (vectorMap [bid]),
                                            ti.Duration.TotalSeconds))
@@ -1464,6 +1486,13 @@ namespace Banshee.NoNoise
                 foreach (int bid in vectorMap.Keys) {
                     try {
                         TrackInfo ti = DatabaseTrackInfo.Provider.FetchSingle (bid) as TrackInfo;
+
+                        if (ti == null) {
+                            if (!BansheeLibraryAnalyzer.Singleton.updating_db)
+                                new Thread (new ThreadStart (BansheeLibraryAnalyzer.Singleton.RemoveDeletedTracks))
+                                    .Start ();
+                            continue;
+                        }
 
                         if (!ana.AddEntry (bid, BansheeLibraryAnalyzer.Singleton.
                                            ConvertMirageVector (vectorMap [bid]),
@@ -1512,6 +1541,13 @@ namespace Banshee.NoNoise
                     try {
                         TrackInfo ti = DatabaseTrackInfo.Provider.FetchSingle (bid) as TrackInfo;
 
+                        if (ti == null) {
+                            if (!BansheeLibraryAnalyzer.Singleton.updating_db)
+                                new Thread (new ThreadStart (BansheeLibraryAnalyzer.Singleton.RemoveDeletedTracks))
+                                    .Start ();
+                            continue;
+                        }
+
                         if (!ana.AddEntry (bid, BansheeLibraryAnalyzer.Singleton.
                                            ConvertMirageVector (vectorMap [bid]),
                                            ti.Duration.TotalSeconds))
@@ -1559,6 +1595,13 @@ namespace Banshee.NoNoise
                     try {
                         TrackInfo ti = DatabaseTrackInfo.Provider.FetchSingle (bid) as TrackInfo;
 
+                        if (ti == null) {
+                            if (!BansheeLibraryAnalyzer.Singleton.updating_db)
+                                new Thread (new ThreadStart (BansheeLibraryAnalyzer.Singleton.RemoveDeletedTracks))
+                                    .Start ();
+                            continue;
+                        }
+
                         if (!ana.AddEntry (bid, BansheeLibraryAnalyzer.Singleton.
                                            ConvertMirageVector (vectorMap [bid]),
                                            ti.Duration.TotalSeconds))
@@ -1605,6 +1648,13 @@ namespace Banshee.NoNoise
                 foreach (int bid in vectorMap.Keys) {
                     try {
                         TrackInfo ti = DatabaseTrackInfo.Provider.FetchSingle (bid) as TrackInfo;
+
+                        if (ti == null) {
+                            if (!BansheeLibraryAnalyzer.Singleton.updating_db)
+                                new Thread (new ThreadStart (BansheeLibraryAnalyzer.Singleton.RemoveDeletedTracks))
+                                    .Start ();
+                            continue;
+                        }
 
                         if (!ana.AddEntry (bid, BansheeLibraryAnalyzer.Singleton.
                                            ConvertMirageVector (vectorMap [bid]),

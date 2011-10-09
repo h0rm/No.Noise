@@ -89,8 +89,6 @@ namespace Banshee.NoNoise
             }
         }
 
-
-
         private static string menu_xml = @"
             <ui>
                 <menubar name=""MainMenu"">
@@ -102,6 +100,19 @@ namespace Banshee.NoNoise
                 </menubar>
             </ui>
         ";
+
+        private Page preferences;
+        private Section debug;
+        private Section pca;
+        private PreferenceBase pb;
+        private ComboBox cb;
+        private readonly string[] CB_ENTRIES = new string [] {
+                Enum.GetName (typeof(NoNoiseSchemas.PcaMfccOptions), NoNoiseSchemas.PcaMfccOptions.Mean),
+                Enum.GetName (typeof(NoNoiseSchemas.PcaMfccOptions), NoNoiseSchemas.PcaMfccOptions.SquaredMean),
+                Enum.GetName (typeof(NoNoiseSchemas.PcaMfccOptions), NoNoiseSchemas.PcaMfccOptions.Median),
+                Enum.GetName (typeof(NoNoiseSchemas.PcaMfccOptions), NoNoiseSchemas.PcaMfccOptions.Minimum),
+                Enum.GetName (typeof(NoNoiseSchemas.PcaMfccOptions), NoNoiseSchemas.PcaMfccOptions.Maximum)
+            };
 
         public NoNoiseService ()
         {
@@ -131,19 +142,6 @@ namespace Banshee.NoNoise
                 source_manager.SourceAdded += OnSourceAdded;
         }
 
-        private Page preferences;
-        private Section debug;
-        private Section pca;
-        private PreferenceBase pb;
-        private ComboBox cb;
-        private string[] cb_entries = new string [] {
-                Enum.GetName (typeof(NoNoiseSchemas.PcaMfccOptions), NoNoiseSchemas.PcaMfccOptions.Mean),
-                Enum.GetName (typeof(NoNoiseSchemas.PcaMfccOptions), NoNoiseSchemas.PcaMfccOptions.SquaredMean),
-                Enum.GetName (typeof(NoNoiseSchemas.PcaMfccOptions), NoNoiseSchemas.PcaMfccOptions.Median),
-                Enum.GetName (typeof(NoNoiseSchemas.PcaMfccOptions), NoNoiseSchemas.PcaMfccOptions.Minimum),
-                Enum.GetName (typeof(NoNoiseSchemas.PcaMfccOptions), NoNoiseSchemas.PcaMfccOptions.Maximum)
-            };
-
         void InstallPreferences ()
         {
             if (!pref_installed) {
@@ -155,7 +153,7 @@ namespace Banshee.NoNoise
                 pca = preferences.Add (new Section ("pca", "PCA", 2));
                 pb = new SchemaPreference<string> (NoNoiseSchemas.PcaMfcc, NoNoiseSchemas.PcaMfcc.ShortDescription,
                                                        NoNoiseSchemas.PcaMfcc.LongDescription);
-                cb = new ComboBox (cb_entries);
+                cb = new ComboBox (CB_ENTRIES);
                 cb.Active = (int) Enum.Parse (typeof (NoNoiseSchemas.PcaMfccOptions), NoNoiseSchemas.PcaMfcc.Get ());
                 cb.Changed += PcaUseHandler;
                 pb.DisplayWidget = cb;
@@ -198,8 +196,6 @@ namespace Banshee.NoNoise
                 SetupSourceContents ();
             }
         }
-
-
 
         private bool SetupInterfaceActions ()
         {
@@ -375,6 +371,10 @@ namespace Banshee.NoNoise
             source_manager.SourceAdded -= OnSourceAdded;
         }
 
+        /// <summary>
+        /// Switches the enum value of NoNoiseSchemas.PcaMfcc and sets the PCA
+        /// mode of BansheeLibraryAnalyzer accordingly.
+        /// </summary>
         private void SwitchPcaMfccOptions ()
         {
             switch ((NoNoiseSchemas.PcaMfccOptions) Enum.Parse (typeof (NoNoiseSchemas.PcaMfccOptions),
@@ -417,12 +417,32 @@ namespace Banshee.NoNoise
             }
         }
 
+        /// <summary>
+        /// Handles change events of the MFCC combo box.
+        /// </summary>
+        /// <param name="sender">
+        /// A <see cref="System.Object"/>
+        /// </param>
+        /// <param name="e">
+        /// A <see cref="EventArgs"/>
+        /// </param>
         private void PcaUseHandler (object sender, EventArgs e)
         {
             Hyena.Log.Debug ("NoNoise/Serv - update handler called");
             NoNoiseSchemas.PcaMfcc.Set (cb.ActiveText);
         }
 
+        /// <summary>
+        /// Handles combo box destroyed events. This is used to only update the
+        /// PCA when the preference dialog is closed and to recreate the combo
+        /// box to prevent a fatal error.
+        /// </summary>
+        /// <param name="sender">
+        /// A <see cref="System.Object"/>
+        /// </param>
+        /// <param name="e">
+        /// A <see cref="EventArgs"/>
+        /// </param>
         private void HandleCbDestroyed (object sender, EventArgs e)
         {
             Hyena.Log.Debug ("NoNoise/Serv - combobox destroyed");
@@ -430,11 +450,10 @@ namespace Banshee.NoNoise
             SwitchPcaMfccOptions ();
 
             // create it again to prevent fatal error on re-opening preferences
-            cb = new ComboBox (cb_entries);
+            cb = new ComboBox (CB_ENTRIES);
             cb.Active = (int) Enum.Parse (typeof (NoNoiseSchemas.PcaMfccOptions), NoNoiseSchemas.PcaMfcc.Get ());
             cb.Changed += PcaUseHandler;
             pb.DisplayWidget = cb;
-//                preference_service.
             cb.Destroyed += HandleCbDestroyed;
         }
 
