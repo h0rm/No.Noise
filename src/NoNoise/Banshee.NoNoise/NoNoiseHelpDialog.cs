@@ -46,16 +46,11 @@ NoNoise general help text. NoNoise general help text. NoNoise general help text.
             "Mel-Frequency Cepstral Coefficients (MFCCs) are mathematical coefficients for sound modeling. For each " +
             "song, a large matrix with MFCCs is computed using the Banshee Mirage plug-in. You can try different " +
             "vectors of this matrix to enhance the visualization of your music library.\n\n" +
-            "\t* Mean: A vector containing the mean value of each row of " +
-                    "\t\tthe matrix\n" +
-            "\t* SquaredMean: A vector containing the square root of the " +
-                    "\t\tsum of squared values of each row of the matrix\n" +
-            "\t* Median: A vector containing the median value of each row " +
-                    "\t\tof the matrix\n" +
-            "\t* Minimum: A vector containing the smallest value of each " +
-                    "\t\trow of the matrix\n" +
-            "\t* Maximum: A vector containing the largest value of each " +
-                    "\t\trow of the matrix\n\n" +
+            "* Mean: A vector containing the mean value of each row of the matrix\n" +
+            "* SquaredMean: A vector containing the square root of the sum of squared values of each row of the matrix\n" +
+            "* Median: A vector containing the median value of each row of the matrix\n" +
+            "* Minimum: A vector containing the smallest value of each row of the matrix\n" +
+            "* Maximum: A vector containing the largest value of each row of the matrix\n\n" +
             "Song Duration:\nIf this is checked, the song duration is also taken as feature for the PCA.\n";
 
         public NoNoiseHelpDialog ()
