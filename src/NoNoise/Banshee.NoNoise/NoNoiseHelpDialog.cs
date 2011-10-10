@@ -52,6 +52,18 @@ NoNoise general help text. NoNoise general help text. NoNoise general help text.
             "* Minimum: A vector containing the smallest value of each row of the matrix\n" +
             "* Maximum: A vector containing the largest value of each row of the matrix\n\n" +
             "Song Duration:\nIf this is checked, the song duration is also taken as feature for the PCA.\n";
+        private readonly string credits = "NoNoise uses the following libraries/pieces of code:\n\n" +
+            "Math.NET Iridium, part of the Math.NET Project\n" +
+            "http://mathnet.opensourcedotnet.info\n" +
+            "Copyright (c) 2002-2008, Christoph Rüegg,  http://christoph.ruegg.name\n" +
+            "\t\t\t\t\tJoannes Vermorel, http://www.vermorel.com\n" +
+            "GNU Lesser General Public License\nVersion 2.1, February 1999\n\n" +
+            "Mirage, Banshee plug-in\n" +
+            "http://hop.at/mirage\n" +
+            "Dominik Schnitzer <dominik@schnitzer.at>\n" +
+            "Bertrand Lorentz <bertrand.lorentz@gmail.com>\n" +
+            "GPL License Version 2\n\n" +
+            "\n";
 
         public NoNoiseHelpDialog ()
         {
@@ -59,6 +71,7 @@ NoNoise general help text. NoNoise general help text. NoNoise general help text.
 
             AddHelpPage (notebook, "General", general_help);
             AddHelpPage (notebook, "Settings", settings_help);
+            AddHelpPage (notebook, "Credits", credits);
 
             Button close_button = new Button ();
             close_button.Label = "Close";
@@ -67,7 +80,7 @@ NoNoise general help text. NoNoise general help text. NoNoise general help text.
             Title = "NoNoise Help";
             VBox.PackStart (notebook, true, true, 5);
             AddActionWidget (close_button, 0);
-            SetDefaultSize (460, 380);
+            SetDefaultSize (520, 380);
             Resizable = false;
 
             ShowAll ();
@@ -85,7 +98,7 @@ NoNoise general help text. NoNoise general help text. NoNoise general help text.
             tv.WrapMode = WrapMode.Word;
             ScrolledWindow sw = new ScrolledWindow ();
             sw.AddWithViewport (tv);
-            sw.SetSizeRequest (460, 380);
+            sw.SetSizeRequest (520, 380);
             box.PackStart (sw, true, true, 5);
             notebook.AppendPage (box, new Label (title));
         }
