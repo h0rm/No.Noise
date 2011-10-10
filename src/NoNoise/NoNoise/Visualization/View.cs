@@ -44,7 +44,7 @@ namespace NoNoise.Visualization
         public View () : base ()
         {
             SetSizeRequest (100,100);
-            Stage.Color = new Color (0,0,0,255);
+            Stage.Color = new Color (0.1,0.1,0.1,255);
             point_group = new SongGroup (Stage);
             gui = new MainGui (Stage);
 
@@ -94,9 +94,13 @@ namespace NoNoise.Visualization
 
             gui.DebugButtonPressedEvent += HandleGuiDebugButtonPressedEvent;
 
-            this.ExposeEvent += delegate {
-                point_group.InitOnShow ();
-            };
+//            this.ExposeEvent += HandleHandleExposeEvent;
+        }
+
+        void HandleHandleExposeEvent (object o, Gtk.ExposeEventArgs args)
+        {
+            point_group.InitOnShow ();
+            this.ExposeEvent -= HandleHandleExposeEvent;
         }
 
         /// <summary>
@@ -201,7 +205,8 @@ namespace NoNoise.Visualization
         /// </param>
         void HandleGuiDebugButtonPressedEvent  (object source, MainGui.DebugEventArgs args)
         {
-            point_group.UpdateClipping ();
+//            point_group.UpdateClipping ();
+            this.ExposeEvent += HandleHandleExposeEvent;
         }
 
         /// <summary>
@@ -221,6 +226,8 @@ namespace NoNoise.Visualization
                 info.Add (d.ID, d.Value);
 
             point_group.LoadPcaData (data);
+
+            this.ExposeEvent += HandleHandleExposeEvent;
         }
 
         /// <summary>

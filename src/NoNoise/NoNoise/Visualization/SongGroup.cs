@@ -176,13 +176,30 @@ namespace NoNoise.Visualization
 
             point_manager = new SongPointManager (0, 0, 30000, 30000);
 
+            double x_min = entries.Min ( p => p.X);
+            double y_min = entries.Min ( p => p.Y);
+            double x_max = entries.Max ( p => p.X);
+            double y_max = entries.Max ( p => p.Y);
+
+
+            double dx = 30000 / (x_max - x_min);
+            double dy = 30000 / (y_max - y_min);
+
+            double offx = -x_min * dx;
+            double offy = -y_min * dx;
+
+            Hyena.Log.Information (String.Format ("Max_x = {0}, Min_x = {1}\n   Max_y = {2}, Min_y = {3}" +
+              "  Dx = {4}, Dy = {5}\n   offx = {6}, offy = {7}", x_min, x_max, y_min, y_max, dx, dy, offx, offy));
             foreach (DataEntry e in entries) {
-                point_manager.Add (e.X*30000, e.Y*30000, e.ID);
+                point_manager.Add (e.X*dx + offx, e.Y*dy + offy, e.ID);
             }
 
             point_manager.Cluster ();
 
             points_visible = new List<SongPoint> (num_of_actors);
+
+            if (initialized)
+                InitializeZoomLevel ();
 
             SecureUpdateClipping ();
         }
@@ -348,7 +365,7 @@ namespace NoNoise.Visualization
             this.SetZoomLevel (width);
 //            Hyena.Log.Information (String.Format ("Zoom position {0},{1}",
 //                                                  0, stage.Height / 2f - (float)point_manager.Height*(float)zoom_level/2f));
-            this.SetPosition (0, stage.Height / 2f - (float)point_manager.Height*(float)zoom_level/2f);
+//            this.SetPosition (0, stage.Height / 2f - (float)point_manager.Height*(float)zoom_level/2f);
         }
 
         /// <summary>
@@ -359,10 +376,15 @@ namespace NoNoise.Visualization
             if (!zoom_initialized) {
                 zoom_initialized = true;
                 InitializeZoomLevel ();
-                SecureUpdateClipping ();
+                UpdateView ();
+            } else {
+                StopAllAnimations ();
+                InitializeZoomLevel ();
+                UpdateView ();
             }
         }
 
+        Rectangle background;
         /// <summary>
         /// Initializes the prototype texture, the animations, and the event handler.
         /// </summary>
@@ -372,6 +394,9 @@ namespace NoNoise.Visualization
 
             Reactive = true;
 
+            background = new Rectangle (new Color (0,0,0,1.0));
+            background.SetSize (30000,30000);
+            this.Add (background);
             InitAnimations ();
             InitSongActors ();
             InitSelectionActor ();
@@ -488,14 +513,49 @@ namespace NoNoise.Visualization
         /// </param>
         private void SetZoomLevel (double scale)
         {
+
+
             Hyena.Log.Information ("Zoom level set to "+scale);
+
+            float trans_x = Width /2.0f, trans_y = Height /2.0f;
+
+            double scale_x, scale_y;
+            this.GetScale (out scale_x, out scale_y);
+            this.SetPosition (0,0);
+
+
+//            //raus zoomen
+            this.SetScale (1.0, 1.0);
+
+            float trans_x_unif = stage.Width/2.0f, trans_y_unif = stage.Height/2.0f;
+//            this.TransformStagePoint (stage.Width/2.0f, stage.Height/2.0f, out trans_x_unif, out trans_y_unif);
+
+            Hyena.Log.Information ( String.Format ("Zoom\n" +
+             "   Pos = {0},{1}\n" +
+             "   Scale = {2} @\n" +
+             "   Trans = {3},{4}\n" +
+             "   Stage = {5},{6}\n" +
+             "   UnifTrans = {7},{8}\n" +
+             "   Size = {9},{10}", this.X, this.Y, scale_x, trans_x,
+                                                   trans_y, stage.Width, stage.Height,
+                                                   trans_x_unif, trans_y_unif,
+                                                   this.Width, this.Height));
+
+
+            double pos_x = (double)this.X + ((double)trans_x_unif - (double)trans_x);
+            double pos_y = (double)this.Y + ((double)trans_y_unif - (double)trans_y);
+
+            this.SetPosition ((float)pos_x, (float)pos_y);
+
+            this.SetScaleFull (scale, scale, trans_x, trans_y);
+
             zoom_level = scale;
 //            SetPosition (0,0);
 //            double sx, sy;
 //            GetScale (out sx, out sy);
 
 //            Hyena.Log.Information (String.Format ("Scale {0},{1}", sx, sy));
-            SetScale (zoom_level, zoom_level);
+//            SetScale (zoom_level, zoom_level);
 
 //            float x, y;
 //            GetTransformedPosition (out x, out y);
@@ -520,12 +580,13 @@ namespace NoNoise.Visualization
         /// </param>
         private void ZoomOnPosition (bool inwards, float x, float y)
         {
-            //Transformed position
+//            //Transformed position
             float trans_x = 0, trans_y = 0;
             this.TransformStagePoint (x, y, out trans_x, out trans_y);
 
             double scale_x, scale_y;
             this.GetScale (out scale_x, out scale_y);
+
 //            //raus zoomen
             this.SetScale (1.0, 1.0);
 
@@ -538,6 +599,31 @@ namespace NoNoise.Visualization
 
             //punkt auf objekt schieben
             this.SetPosition ((float)pos_x, (float)pos_y);
+
+
+//            float trans_x = 0, trans_y = 0;
+//            this.TransformStagePoint (x, y, out trans_x, out trans_y);
+////
+//            double scale_x, scale_y;
+//            this.GetScale (out scale_x, out scale_y);
+////
+//            float cx, cy;
+//
+//            this.GetScaleCenter (out cx, out cy);
+////            // raus zoomen
+////            float old_x, old_y;
+////            this.SetScaleFull (scale_x, scale_y, trans_x, trans_y);
+//////            this.SetScaleFull (1, 1, 0, 0);
+//
+//            Hyena.Log.Information ( String.Format ("Zoom\n" +
+//             "   Pos = {0},{1}\n" +
+//             "   Scale = {2} @ {5},{6}" +
+//             "   Trans = {3},{4}", this.X, this.Y, scale_x, trans_x, trans_y, cx, cy));
+
+//
+//            zoom_animation_behave.SetBounds (scale_x, scale_y, 0.02, 0.02);
+//
+//            animation_timeline.Start();
 
             double old_zoom_level = zoom_level;
 
@@ -573,6 +659,9 @@ namespace NoNoise.Visualization
             };
 
             animation_timeline.Start();
+
+//            SecureUpdateClipping ();
+
         }
 
         /// <summary>
@@ -626,6 +715,17 @@ namespace NoNoise.Visualization
 
             // Update view
             UpdateView ();
+        }
+
+        private void StopAllAnimations ()
+        {
+            animation_timeline.Stop ();
+            animation_timeline.Rewind ();
+
+            clustering_animation_timeline.Stop ();
+            clustering_animation_timeline.Rewind ();
+
+            clustering_animation = SongGroup.ClusteringAnimation.None;
         }
 
         /// <summary>
@@ -1088,15 +1188,31 @@ namespace NoNoise.Visualization
 
             if (mouse_down) {
 
+                // calc transformed position
+                float cx, cy;
+                GetScaleCenter (out cx, out cy);
+
+                double sx, sy;
+                GetScale (out sx, out sy);
+
+                // calculate stage center in non-scaled coordinates
+                float tcx = stage.Width /2f - cx * (float)(1-sx);
+                float tcy = stage.Height /2f - cy * (float)(1-sy);
+
+                // Check if inside bounds
+                newx = tcx < newx ? tcx : newx;
+                newy = tcy < newy ? tcy : newy;
+
+                newx = tcx - this.Width * (float)sx > newx ? tcx - this.Width * (float)sx : newx;
+                newy = tcy - this.Height * (float)sx > newy ? tcy - this.Height * (float)sx : newy;
+
                 this.SetPosition (newx, newy);
-//                UpdateClipping ();
+
                 SecureUpdateClipping ();
 
             } else if (selection_enabled){
 
-
                 selection.LineTo (x, y);
-
             }
 
             mouse_old_x = x;

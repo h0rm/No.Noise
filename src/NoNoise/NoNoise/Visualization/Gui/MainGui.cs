@@ -138,7 +138,7 @@ namespace NoNoise.Visualization.Gui
             this.Add (selection_info);
 //            selection_info.Reactive = true;
 //            selection_info.SetPosition (500,500);
-//            InitDebug ();
+            InitDebug ();
             this.Reactive = false;
             InitHandler ();
         }
