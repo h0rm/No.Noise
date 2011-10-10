@@ -92,6 +92,10 @@ namespace NoNoise.Visualization
                 gui.ClearInfoSelection ();
             };
 
+            point_group.SongStartPlaying += delegate(object source, SongInfoArgs args) {
+                GeneratePlaylist (args.SongIDs, false);
+            };
+
             gui.DebugButtonPressedEvent += HandleGuiDebugButtonPressedEvent;
 
 //            this.ExposeEvent += HandleHandleExposeEvent;
@@ -171,7 +175,7 @@ namespace NoNoise.Visualization
                 break;
 
             case MainGui.ButtonClickedArgs.Button.Playlist:
-                GeneratePlaylist (point_group.GetSelectedSongIDs ());
+                GeneratePlaylist (point_group.GetSelectedSongIDs (), true);
                 break;
             }
         }
@@ -182,10 +186,10 @@ namespace NoNoise.Visualization
         /// <param name="list">
         /// A <see cref="List<System.Int32>"/>
         /// </param>
-        public void GeneratePlaylist (List<int> list)
+        public void GeneratePlaylist (List<int> list, bool persistant)
         {
             if (add_to_playlist_event != null)
-                    add_to_playlist_event (this, new AddToPlaylistEventArgs (list));
+                    add_to_playlist_event (this, new AddToPlaylistEventArgs (list,persistant));
         }
 
         public void FinishedInit ()
@@ -272,9 +276,21 @@ namespace NoNoise.Visualization
                 private set;
             }
 
+            public bool Persistant {
+                get;
+                private set;
+            }
+
+            public AddToPlaylistEventArgs (List<int> ids, bool persistent)
+            {
+                SongIDs = ids;
+                Persistant = persistent;
+            }
+
             public AddToPlaylistEventArgs (List<int> ids)
             {
                 SongIDs = ids;
+                Persistant = false;
             }
         }
     }

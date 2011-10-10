@@ -56,7 +56,7 @@ namespace Banshee.NoNoise
         private InterfaceActionService action_service;
         private PreferenceService preference_service;
 
-		private ISourceContents no_noise_contents;
+		private NoNoiseClutterSourceContents no_noise_contents;
         private bool scan_action_enabled = false;
 
         private bool pref_installed = false;
@@ -247,17 +247,11 @@ namespace Banshee.NoNoise
             if (scan_action_enabled) {
                 ScanAction.Label = "Start no.Noise scan";
 
-                if (no_noise_contents is NoNoiseSourceContents)
-                    ((NoNoiseSourceContents)no_noise_contents).Scan (false);
-                else if (no_noise_contents is NoNoiseClutterSourceContents)
-                    ((NoNoiseClutterSourceContents)no_noise_contents).Scan (false);
+                no_noise_contents.Scan (false);
             } else {
                 ScanAction.Label = "Pause no.Noise scan";
 
-                if (no_noise_contents is NoNoiseSourceContents)
-                    ((NoNoiseSourceContents)no_noise_contents).Scan (true);
-                else if (no_noise_contents is NoNoiseClutterSourceContents)
-                    ((NoNoiseClutterSourceContents)no_noise_contents).Scan (true);
+                no_noise_contents.Scan (true);
             }
 
             scan_action_enabled = !scan_action_enabled;
@@ -338,7 +332,7 @@ namespace Banshee.NoNoise
             return true;
         }
 
-        private ISourceContents GetSourceContents ()
+        private NoNoiseClutterSourceContents GetSourceContents ()
         {
             int startViz = 0;
 
@@ -361,7 +355,7 @@ namespace Banshee.NoNoise
                 return new NoNoiseClutterSourceContents (true);
 
             default:
-                return new NoNoiseSourceContents ();
+                return new NoNoiseClutterSourceContents (true);
             }
             
         }
@@ -371,7 +365,7 @@ namespace Banshee.NoNoise
 
 //            Clutter.Threads.Enter ();
             music_library.Properties.Remove ("Nereid.SourceContents");
-//            no_noise_contents.Dispose ();
+            no_noise_contents.Dispose ();
 //            Clutter.Threads.Leave ();
 
             NoNoiseAction.Activated -= OnNoNoiseToggle;

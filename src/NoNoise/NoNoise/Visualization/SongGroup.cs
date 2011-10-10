@@ -65,6 +65,7 @@ namespace NoNoise.Visualization
     public delegate void SongHighlightEvent (Object source, SongInfoArgs args);
     public delegate void SelectionClearedEvent (Object source);
     public delegate void SongLeaveEvent (Object source);
+    public delegate void SongStartPlayingEvent (Object source, SongInfoArgs args);
 
     public class SongGroup: Clutter.Group
     {
@@ -76,6 +77,8 @@ namespace NoNoise.Visualization
 
         SongSelectedEvent song_selected;
         SelectionClearedEvent selection_cleared;
+
+        SongStartPlayingEvent song_start_playing;
 
         private readonly double zoom_level_mult = Math.Sqrt (2);
         private double zoom_level = 1.0;
@@ -152,6 +155,11 @@ namespace NoNoise.Visualization
         public event SelectionClearedEvent SelectionCleared {
             add { selection_cleared += value; }
             remove { selection_cleared -= value; }
+        }
+
+        public event SongStartPlayingEvent SongStartPlaying {
+            add { song_start_playing += value; }
+            remove { song_start_playing -= value; }
         }
         #endregion
 
@@ -376,11 +384,11 @@ namespace NoNoise.Visualization
             if (!zoom_initialized) {
                 zoom_initialized = true;
                 InitializeZoomLevel ();
-                UpdateView ();
+                SecureUpdateView ();
             } else {
                 StopAllAnimations ();
                 InitializeZoomLevel ();
-                UpdateView ();
+                SecureUpdateView ();
             }
         }
 
@@ -1067,7 +1075,12 @@ namespace NoNoise.Visualization
         /// </summary>
         private void SecureUpdateClipping ()
         {
-            this.Painted += HandleHandlePainted;
+            this.Painted += HandlePaintedUpdateClipping;
+        }
+
+        private void SecureUpdateView ()
+        {
+            this.Painted += HandlePaintedUpdateView;
         }
 
         #endregion
@@ -1250,10 +1263,17 @@ namespace NoNoise.Visualization
         /// <param name="e">
         /// A <see cref="EventArgs"/>
         /// </param>
-        private void HandleHandlePainted (object sender, EventArgs e)
+        private void HandlePaintedUpdateClipping (object sender, EventArgs e)
         {
             UpdateClipping ();
-            this.Painted -= HandleHandlePainted;
+            this.Painted -= HandlePaintedUpdateClipping;
+        }
+
+
+        private void HandlePaintedUpdateView (object sender, EventArgs e)
+        {
+            UpdateView ();
+            this.Painted -= HandlePaintedUpdateView;
         }
 
         /// <summary>
@@ -1273,6 +1293,27 @@ namespace NoNoise.Visualization
             }
 
             uint button = EventHelper.GetButton (args.Event);
+
+            if (button != 1)
+                return;
+
+            uint click_count = EventHelper.GetClickCount (args.Event);
+
+            if (click_count == 2) {
+                float x, y;
+                EventHelper.GetCoords (args.Event, out x, out y);
+    
+                Hyena.Log.Debug ("Click count = " + click_count);
+
+                Actor clicked = stage.GetActorAtPos (PickMode.Reactive, (int)x, (int)y);
+
+                if (clicked != null) {
+                    if ((clicked is SongActor)) {
+                        if ((clicked as SongActor).Owner != null)
+                            FireSongStartPlaying (new SongInfoArgs ((clicked as SongActor).Owner.GetAllIDs ()));
+                    }
+                }
+            }
 
             if (selection_enabled) {
                 selection.Stop ();
@@ -1299,6 +1340,7 @@ namespace NoNoise.Visualization
                 return;
 
             uint button = EventHelper.GetButton (args.Event);
+
 
             EventHelper.GetCoords (args.Event, out mouse_old_x, out mouse_old_y);
             selection.Reset ();
@@ -1363,6 +1405,12 @@ namespace NoNoise.Visualization
         {
             if (selection_cleared != null)
                 selection_cleared (this);
+        }
+
+        private void FireSongStartPlaying (SongInfoArgs args)
+        {
+            if (song_start_playing != null)
+                song_start_playing (this, args);
         }
 
 
