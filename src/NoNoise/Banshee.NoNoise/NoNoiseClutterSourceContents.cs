@@ -116,27 +116,12 @@ namespace Banshee.NoNoise
             
             ITrackModelSource trackmodel = (ITrackModelSource)source;
 
-            trackmodel.TrackModel.Selection.SelectAll ();
-            Hyena.Log.Information ("Add to playlist start");
-
-            foreach (TrackInfo t in trackmodel.TrackModel.SelectedItems) {
-                DatabaseTrackInfo track_info = (t as DatabaseTrackInfo);
-
-                if (track_info == null)
-                    continue;
-
-                if (!args.SongIDs.ContainsKey (track_info.TrackId)) {
-
-                    trackmodel.TrackModel.Selection.Unselect (trackmodel.TrackModel.IndexOf (t));
-
-                } else {
-
-//                    Hyena.Log.Information (String.Format ("Added {0}: {1} - {2}",track_info.TrackId,
-//                                                      track_info.ArtistName, track_info.TrackTitle));
-                }
+            for (int i = 0; i < trackmodel.TrackModel.Count; i++) {
+                DatabaseTrackInfo track_info = (trackmodel.TrackModel [i] as DatabaseTrackInfo);
+                if (args.SongIDs.ContainsKey (track_info.TrackId))
+                    trackmodel.TrackModel.Selection.Select (i);
             }
 
-            Hyena.Log.Information ("Add to playlist after loop");
             PlaylistSource playlist;
 
             if (args.Persistant) {
@@ -161,10 +146,7 @@ namespace Banshee.NoNoise
                 playlist = playing;
             }
 
-            Hyena.Log.Information ("Add to playlist created playlist");
             playlist.AddSelectedTracks (source);
-
-            Hyena.Log.Information ("Add to playlist added tracks");
 
             trackmodel.TrackModel.Selection.Clear ();
             playlist.NotifyUser ();
@@ -175,8 +157,6 @@ namespace Banshee.NoNoise
                 ServiceManager.PlayerEngine.Play ();
             else
                 ServiceManager.PlaybackController.First ();
-
-            Hyena.Log.Information ("Add to playlist end");
         }
 
         public bool SetSource (ISource source)

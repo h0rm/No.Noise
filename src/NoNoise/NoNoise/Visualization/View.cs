@@ -271,7 +271,7 @@ namespace NoNoise.Visualization
         /// </summary>
         public struct AddToPlaylistEventArgs
         {
-            public SortedList<int,int> SongIDs {
+            public Dictionary<int,int> SongIDs {
                 get;
                 private set;
             }
@@ -283,7 +283,7 @@ namespace NoNoise.Visualization
 
             public AddToPlaylistEventArgs (List<int> ids, bool persistent)
             {
-                SongIDs = new SortedList<int, int> ();
+                SongIDs = new Dictionary<int, int> ();
                 foreach (int id in ids)
                     SongIDs.Add (id, id);
 
