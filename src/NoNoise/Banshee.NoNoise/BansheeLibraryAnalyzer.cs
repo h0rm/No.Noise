@@ -344,10 +344,13 @@ namespace Banshee.NoNoise
 //                Hyena.Log.Debug ("NoNoise/DB - MIRData count: " + cnt);
             }
 
+            bool old_lib_scanned = lib_scanned;
             lock (scan_synch) {
 //                Hyena.Log.Debug ("NoNoise/DB - tm count: " + ml.TrackModel.Count);
                 lib_scanned = (cnt == ml.TrackModel.Count);
             }
+            if (old_lib_scanned != lib_scanned && sc != null)
+                sc.ScannableChanged (!lib_scanned);
             Hyena.Log.Debug ("NoNoise/BLA - lib scanned: " + lib_scanned);
 
             if (cnt > ml.TrackModel.Count && !updating_db)
@@ -747,6 +750,7 @@ namespace Banshee.NoNoise
 
                     lock (db_synch) {
                         if (!db.ContainsInfoForTrack (bid)) {
+//                            if (!db.InsertTrackID (bid)) {
                             if (!db.InsertTrackInfo (new TrackData (
                                                        bid, ti.ArtistName, ti.TrackTitle,
                                                        ti.AlbumTitle, (int)ti.Duration.TotalSeconds)))
@@ -837,9 +841,8 @@ namespace Banshee.NoNoise
                 }
     
                 CheckLibScanned ();
-                CheckDataUpToDate ();
     
-                if (!data_up_to_date) {
+                if (!CheckDataUpToDate ()) {
                     new Thread (new ThreadStart (PcaForMusicLibraryVectorEdition)).Start ();
                     new Thread (new ThreadStart (WriteTrackInfosToDB)).Start ();
                 }
@@ -861,10 +864,9 @@ namespace Banshee.NoNoise
         {
             Hyena.Log.Debug ("NoNoise/BLA - tracks deleted (untested)");
 
-            if (!CheckDataUpToDate ()) {
+            if (!CheckDataUpToDate () && !updating_db) {
                 try {
-//                    UpdateMusicLibrary ();
-                    RemoveDeletedTracks ();     // TODO in new thread ?
+                    RemoveDeletedTracks ();
                 } catch (Exception e) {
                     Hyena.Log.Exception ("NoNoise/BLA - tracks deleted handler exception", e);
                 }

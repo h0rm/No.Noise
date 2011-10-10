@@ -961,6 +961,43 @@ namespace NoNoise.Data
                 return InsertTrackInfo (td);
         }
 
+        public bool InsertTrackIDs (List<int> ids)
+        {
+            bool succ = true;
+            foreach (int bid in ids) {
+                if (!ContainsInfoForTrack (bid))
+                    succ &= InsertTrackID (bid);
+            }
+            return succ;
+        }
+
+        public bool InsertTrackID (int bid)
+        {
+            IDbCommand dbcmd = null;
+            try {
+                dbcon.Open ();
+                dbcmd = dbcon.CreateCommand ();
+
+                dbcmd.CommandText = "INSERT INTO TrackData (banshee_id) VALUES (@bid)";
+                SqliteParameter id = new SqliteParameter ("@bid", bid);
+                dbcmd.Parameters.Add (id);
+                dbcmd.Prepare ();
+
+                dbcmd.ExecuteNonQuery ();
+            } catch (Exception e) {
+                Log.Exception ("NoNoise/DB - TrackInfo insert failed for bid: " + bid, e);
+                return false;
+            } finally {
+                if (dbcmd != null)
+                    dbcmd.Dispose ();
+                dbcmd = null;
+                if (dbcon != null)
+                    dbcon.Close ();
+            }
+
+            return true;
+        }
+
         /// <summary>
         /// Queries the database if it contains TrackData for the track with
         /// the given banshee_id.

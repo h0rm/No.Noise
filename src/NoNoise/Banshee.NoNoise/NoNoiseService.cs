@@ -287,6 +287,11 @@ namespace Banshee.NoNoise
             ScanAction.Sensitive = false;
         }
 
+        private void ScannableChanged (object source, NoNoiseClutterSourceContents.ToggleScannableEventArgs args)
+        {
+            ScanAction.Sensitive = args.Scannable;
+        }
+
         private bool SetupSourceContents ()
         {
             if (source_contents_set_up)
@@ -302,8 +307,10 @@ namespace Banshee.NoNoise
 
             source_contents_set_up = true;
 
-            if (no_noise_contents is NoNoiseClutterSourceContents)
+            if (no_noise_contents is NoNoiseClutterSourceContents) {
                 (no_noise_contents as NoNoiseClutterSourceContents).OnScanFinished += ScanFinished;
+                (no_noise_contents as NoNoiseClutterSourceContents).OnToggleScannable += ScannableChanged;
+            }
 
             no_noise_contents.SetSource(music_library);
 

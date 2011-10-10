@@ -32,26 +32,72 @@ namespace Banshee.NoNoise
 {
     public class NoNoiseHelpDialog : Gtk.Dialog
     {
+        private readonly string general_help =
+@"Help text!
+
+This is going to be the help text!
+NoNoise general help text. NoNoise general help text. NoNoise general help text. NoNoise general help text.
+";
+        private readonly string settings_help = "While the NoNoise plug-in is activated, you " +
+            "can access its settings via Edit > Preferences and switching to the NoNoise tab.\n\n\nPCA:\n" +
+            "In this section you can adjust the features for the Principal Component Analysis (PCA). If you are not " +
+            "familiar with PCA, a simplified explanation could be: This is used to convert multidimensional song data " +
+            "into 2D data (i.e. coordinates) for the visualization.\n\nMFCC Vector:\n" +
+            "Mel-Frequency Cepstral Coefficients (MFCCs) are mathematical coefficients for sound modeling. For each " +
+            "song, a large matrix with MFCCs is computed using the Banshee Mirage plug-in. You can try different " +
+            "vectors of this matrix to enhance the visualization of your music library.\n\n" +
+            "\t* Mean: A vector containing the mean value of each row of " +
+                    "\t\tthe matrix\n" +
+            "\t* SquaredMean: A vector containing the square root of the " +
+                    "\t\tsum of squared values of each row of the matrix\n" +
+            "\t* Median: A vector containing the median value of each row " +
+                    "\t\tof the matrix\n" +
+            "\t* Minimum: A vector containing the smallest value of each " +
+                    "\t\trow of the matrix\n" +
+            "\t* Maximum: A vector containing the largest value of each " +
+                    "\t\trow of the matrix\n\n" +
+            "Song Duration:\nIf this is checked, the song duration is also taken as feature for the PCA.\n";
 
         public NoNoiseHelpDialog ()
         {
             Notebook notebook = new Notebook ();
-            VBox box1 = new VBox ();
-            Label text1 = new Label ("NoNoise general help text. NoNoise general help text. NoNoise general help text.");
-            box1.PackStart (text1, true, true, 5);
-            notebook.AppendPage (box1, new Label ("General"));
 
-            VBox box2 = new VBox ();
-            Label text2 = new Label ("NoNoise specific help text. NoNoise specific help text. NoNoise specific help text.");
-            box2.PackStart (text2, true, true, 5);
-            notebook.AppendPage (box2, new Label ("Specific"));
+            AddHelpPage (notebook, "General", general_help);
+            AddHelpPage (notebook, "Settings", settings_help);
+
+            Button close_button = new Button ();
+            close_button.Label = "Close";
+            close_button.Clicked += new EventHandler (OnCloseButtonClicked);
 
             Title = "NoNoise Help";
             VBox.PackStart (notebook, true, true, 5);
-            SetDefaultSize (240, 180);
+            AddActionWidget (close_button, 0);
+            SetDefaultSize (460, 380);
             Resizable = false;
 
             ShowAll ();
+        }
+
+        private void AddHelpPage (Notebook notebook, string title, string text)
+        {
+            VBox box = new VBox ();
+            TextView tv = new TextView ();
+            tv.Editable = false;
+            tv.CursorVisible = false;
+            TextBuffer tb = new TextBuffer (new TextTagTable ());
+            tb.Text = text;
+            tv.Buffer = tb;
+            tv.WrapMode = WrapMode.Word;
+            ScrolledWindow sw = new ScrolledWindow ();
+            sw.AddWithViewport (tv);
+            sw.SetSizeRequest (460, 380);
+            box.PackStart (sw, true, true, 5);
+            notebook.AppendPage (box, new Label (title));
+        }
+
+        private void OnCloseButtonClicked (object sender, EventArgs e)
+        {
+            Destroy ();
         }
     }
 }
