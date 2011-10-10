@@ -39,10 +39,11 @@ using Mono.Unix;
 
 namespace Banshee.NoNoise
 {
-    public class NoNoiseClutterSourceContents : ISourceContents
+    public class NoNoiseClutterSourceContents : ISourceContents, IDisposable
     {
-        MusicLibrarySource source;
-        View view;
+        private MusicLibrarySource source;
+        private View view;
+        private PlaylistSource playing;
 
         public delegate void ScanFinishedEvent (object source, ScanFinishedEventArgs args);
         private ScanFinishedEvent scan_event;
@@ -126,19 +127,41 @@ namespace Banshee.NoNoise
                 }
             }
 
-            PlaylistSource playlist = new PlaylistSource (Catalog.GetString ("NoNoise"), source);
-            playlist.Save ();
-            playlist.PrimarySource.AddChildSource (playlist);
+            PlaylistSource playlist;
+
+            if (args.Persistant) {
+                playlist = new PlaylistSource (Catalog.GetString ("NoNoise"), source);
+
+                playlist.Save ();
+                playlist.PrimarySource.AddChildSource (playlist);
+
+            } else {
+
+                if (playing != null) {
+                    playing.Deactivate ();
+                    playing.Unmap ();
+                    playing = null;
+                }
+
+                playing = new PlaylistSource (Catalog.GetString ("playing NoNoise"), source);
+                playing.Save ();
+
+//                playing.PrimarySource.AddChildSource (playing);
+
+                playlist = playing;
+            }
 
             playlist.AddSelectedTracks (source);
 
             trackmodel.TrackModel.Selection.Clear ();
             playlist.NotifyUser ();
-        }
 
-        ~ NoNoiseClutterSourceContents ()
-        {
-            Dispose ();
+            ServiceManager.PlaybackController.Source = playlist;
+
+            if (!ServiceManager.PlayerEngine.IsPlaying ())
+                ServiceManager.PlayerEngine.Play ();
+            else
+                ServiceManager.PlaybackController.First ();
         }
 
         public bool SetSource (ISource source)
@@ -192,12 +215,18 @@ namespace Banshee.NoNoise
         {
             Clutter.Threads.Enter ();
             view = null;
+            Clutter.Threads.Leave ();
+
+            if (playing != null)
+                playing.Unmap ();
+            playing = null;
+
+
 //            if (view != null) {
 //                view.Dispose ();
 //                view = null;
 //            }
 
-            Clutter.Threads.Leave ();
         }
         public void ResetSource () { }
         public Widget Widget { get { return view; } }
