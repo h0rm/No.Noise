@@ -55,6 +55,7 @@ namespace Banshee.NoNoise
 //        private readonly bool STORE_ENTIRE_MATRIX = false;
         private readonly bool DB_CHEATER_MODE = true;
 
+        #region Constants
         public const int PCA_MEAN = 0;
         public const int PCA_MEAN_DUR = 1;
         public const int PCA_SQR_MEAN = 2;
@@ -65,14 +66,13 @@ namespace Banshee.NoNoise
         public const int PCA_MIN_DUR = 7;
         public const int PCA_MED = 8;
         public const int PCA_MED_DUR = 9;
-        private int pca_mode = PCA_MEAN_DUR;
+        #endregion
 
         #region Members
+        private int pca_mode = -1;
         private Banshee.Library.MusicLibrarySource ml;
-//        private SortedDictionary<int, TrackInfo> library;
         private NoNoiseClutterSourceContents sc;
         private NoNoiseDBHandler db;
-//        private PCAnalyzer ana;
         private IPcaAdder pca_adder;
         private List<DataEntry> coords;
         private bool analyzing_lib;
@@ -80,10 +80,12 @@ namespace Banshee.NoNoise
         private bool data_up_to_date;
         private bool stop_scan;
         private bool added_while_scanning;
+        private bool updating_db;
         private Gtk.ThreadNotify finished;
         private Thread thr;
         private object scan_synch;
         private object pca_synch;
+        private object update_synch;
 //        private object lib_synch;   // WARN make sure it is never locked on lib_synch inside of another lock
         private object db_synch;
 
@@ -112,6 +114,9 @@ namespace Banshee.NoNoise
             get { return analyzing_lib; }
         }
 
+        /// <summary>
+        /// Boolean variable indicating whether the library has already been scanned.
+        /// </summary>
         public bool IsLibraryScanned {
             get { return lib_scanned; }
         }
@@ -123,6 +128,8 @@ namespace Banshee.NoNoise
         public int PcaMode {
             get { return pca_mode; }
             set {
+                if (pca_mode == value)
+                    return;
                 lock (pca_synch) {
                     pca_mode = value;
                 }
@@ -150,6 +157,7 @@ namespace Banshee.NoNoise
 
             scan_synch = new object ();
             pca_synch = new object ();
+            update_synch = new object ();
 //            lib_synch = new object ();
             db_synch = new object ();
 
@@ -181,6 +189,7 @@ namespace Banshee.NoNoise
 
             analyzing_lib = false;
             added_while_scanning = false;
+            updating_db = false;
             lib_scanned = CheckLibScanned ();
             data_up_to_date = CheckDataUpToDate ();
 
@@ -203,7 +212,7 @@ namespace Banshee.NoNoise
         /// <param name="sc">
         /// The <see cref="NoNoiseClutterSourceContents"/> which is used as callback.
         /// </param>
-        /// <param name="forceNew">
+        /// <param name="force_new">
         /// If this is true then a new instance will be initialized even if an
         /// old one already exists. Otherwise Init () might return an existing
         /// instance.
@@ -211,16 +220,16 @@ namespace Banshee.NoNoise
         /// <returns>
         /// The singleton instance of <see cref="BansheeLibraryAnalyzer"/>
         /// </returns>
-        public static BansheeLibraryAnalyzer Init (NoNoiseClutterSourceContents sc, bool forceNew)
+        public static BansheeLibraryAnalyzer Init (NoNoiseClutterSourceContents sc, bool force_new)
         {
-            if (!forceNew && bla != null)
+            if (!force_new && bla != null)
                 return bla;
 
             bla = new BansheeLibraryAnalyzer ();
             bla.sc = sc;
 
             Hyena.Log.Debug ("NoNoise/BLA - starting pca/write track data threads");
-            bla.SwitchPcaMode ();
+//            bla.SwitchPcaMode ();
 //            new Thread (new ThreadStart (PcaForMusicLibraryVectorEdition)).Start ();
             new Thread (new ThreadStart (bla.WriteTrackInfosToDB)).Start ();
 
@@ -246,24 +255,9 @@ namespace Banshee.NoNoise
         }
 
         /// <summary>
-        /// Stores the trackinfos from the music library in a sorted dictionary
-        /// mapped to the banshee_id.
+        /// Sets the instance of pca_adder according to the current PCA mode and
+        /// starts PCA computation in a new thread afterwards.
         /// </summary>
-//        private void ConvertMusicLibrary ()
-//        {
-//            lock (lib_synch) {
-//                library = new SortedDictionary<int, TrackInfo> ();
-//
-//                for (int i = 0; i < ml.TrackModel.Count; i++) {
-//                    DatabaseTrackInfo dti = ml.TrackModel [i] as DatabaseTrackInfo;
-//    //                int bid = ml.GetTrackIdForUri (ti.Uri);
-//                    library.Add (dti.TrackId, dti as TrackInfo);
-//                }
-//            }
-//
-//            Hyena.Log.Debug ("NoNoise/BLA - library conversion finished");
-//        }
-
         private void SwitchPcaMode ()
         {
             lock (pca_synch) {
@@ -345,7 +339,7 @@ namespace Banshee.NoNoise
         private bool CheckLibScanned ()
         {
             int cnt = -1;
-            lock (db_synch) {       // TODO check for removed (<)
+            lock (db_synch) {
                 cnt = db.GetMirDataCount ();
 //                Hyena.Log.Debug ("NoNoise/DB - MIRData count: " + cnt);
             }
@@ -356,8 +350,8 @@ namespace Banshee.NoNoise
             }
             Hyena.Log.Debug ("NoNoise/BLA - lib scanned: " + lib_scanned);
 
-            if (cnt > ml.TrackModel.Count)      // FIXME should be in both checks, but who knows what happens
-                new Thread (new ThreadStart (RemoveDeletedTracks)).Start (); // when they both run at the same time
+            if (cnt > ml.TrackModel.Count && !updating_db)
+                new Thread (new ThreadStart (RemoveDeletedTracks)).Start ();
 
             return lib_scanned;
         }
@@ -373,7 +367,7 @@ namespace Banshee.NoNoise
         {
             int cnt = -1;
             bool eq = false;
-            lock (db_synch) {       // TODO check for removed (<)
+            lock (db_synch) {
                 cnt = db.GetPcaDataCount ();
                 eq = cnt == db.GetTrackDataCount ();
                 eq &= cnt == ml.TrackModel.Count;
@@ -383,6 +377,9 @@ namespace Banshee.NoNoise
                 data_up_to_date = eq;
             }
             Hyena.Log.Debug ("NoNoise/BLA - data up to date: " + data_up_to_date);
+
+            if (cnt > ml.TrackModel.Count && !updating_db)
+                new Thread (new ThreadStart (RemoveDeletedTracks)).Start ();
 
             return data_up_to_date;
         }
@@ -522,7 +519,11 @@ namespace Banshee.NoNoise
         /// stores it in the database.
         /// Vector Edition!
         /// </summary>
-        private void PcaForMusicLibraryVectorEdition (bool forceNew)
+        /// <param name="force_new">
+        /// A <see cref="System.Boolean"/> indicating whether PCA coordinates
+        /// should be computed even if old ones seem to be up to date.
+        /// </param>
+        private void PcaForMusicLibraryVectorEdition (bool force_new)
         {
             /// REMOVE THIS
             if (DB_CHEATER_MODE) {
@@ -531,19 +532,24 @@ namespace Banshee.NoNoise
             }
             /// SIHT EVOMER
 
-            if (data_up_to_date && !forceNew) {
-                Hyena.Log.Information ("NoNoise - Data already up2date - aborting pca.");
+            if (data_up_to_date && !force_new) {
+                Hyena.Log.Information ("NoNoise/BLA - Data already up2date - aborting pca.");
                 return;
             }
 
             if (analyzing_lib) {
-                Hyena.Log.Information ("NoNoise - Music library is currently beeing scanned - aborting pca.");
+                Hyena.Log.Information ("NoNoise/BLA - Music library is currently beeing scanned - aborting pca.");
                 return;
             }
 
             if (!lib_scanned) {
-                Hyena.Log.Information ("NoNoise - No mirage data available for pca - aborting.");
+                Hyena.Log.Information ("NoNoise/BLA - No mirage data available for pca - aborting.");
                 return;     // TODO something clever!
+            }
+
+            if (pca_adder == null) {
+                Hyena.Log.Debug ("NoNoise/BLA - PCA adder is null - aborting.");
+                return;
             }
 
             Hyena.Log.Debug ("NoNoise/BLA - PcaFor... called");
@@ -566,14 +572,23 @@ namespace Banshee.NoNoise
             } catch (Exception e) {
                 Hyena.Log.Exception ("NoNoise/BLA - PCA Problem", e);
             }
+            // TODO update once it works
 //            Hyena.ThreadAssist.ProxyToMain (sc.PcaCoordinatesUpdated);
         }
 
+        /// <summary>
+        /// This method is equivalent to PcaForMusicLibraryVectorEdition (false).
+        /// <see cref="PcaForMusicLibraryVectorEdition (bool)"/>
+        /// </summary>
         private void PcaForMusicLibraryVectorEdition ()
         {
             PcaForMusicLibraryVectorEdition (false);
         }
 
+        /// <summary>
+        /// This method is equivalent to PcaForMusicLibraryVectorEdition (true).
+        /// <see cref="PcaForMusicLibraryVectorEdition (bool)"/>
+        /// </summary>
         private void PcaForMusicLibraryVectorEditionForceNew ()
         {
             PcaForMusicLibraryVectorEdition (true);
@@ -601,6 +616,16 @@ namespace Banshee.NoNoise
             return data;
         }
 
+        /// <summary>
+        /// Computes the squared mean for each row of the MFCC matrix.
+        /// </summary>
+        /// <param name="mfcc">
+        /// The MFCC <see cref="Mirage.Matrix"/>
+        /// </param>
+        /// <returns>
+        /// A <see cref="Mirage.Vector"/> containing the squared mean
+        /// vector of the MFCC matrix
+        /// </returns>
         private Mirage.Vector ConvertMfccToSqrMean (Mirage.Matrix mfcc)
         {
             Mirage.Vector data = new Mirage.Vector (mfcc.rows);
@@ -616,6 +641,16 @@ namespace Banshee.NoNoise
             return data;
         }
 
+        /// <summary>
+        /// Computes the maximum for each row of the MFCC matrix.
+        /// </summary>
+        /// <param name="mfcc">
+        /// The MFCC <see cref="Mirage.Matrix"/>
+        /// </param>
+        /// <returns>
+        /// A <see cref="Mirage.Vector"/> containing the maximum
+        /// vector of the MFCC matrix
+        /// </returns>
         private Mirage.Vector ConvertMfccToMax (Mirage.Matrix mfcc)
         {
             Mirage.Vector data = new Mirage.Vector (mfcc.rows);
@@ -631,6 +666,16 @@ namespace Banshee.NoNoise
             return data;
         }
 
+        /// <summary>
+        /// Computes the minimum for each row of the MFCC matrix.
+        /// </summary>
+        /// <param name="mfcc">
+        /// The MFCC <see cref="Mirage.Matrix"/>
+        /// </param>
+        /// <returns>
+        /// A <see cref="Mirage.Vector"/> containing the minimum
+        /// vector of the MFCC matrix
+        /// </returns>
         private Mirage.Vector ConvertMfccToMin (Mirage.Matrix mfcc)
         {
             Mirage.Vector data = new Mirage.Vector (mfcc.rows);
@@ -646,6 +691,16 @@ namespace Banshee.NoNoise
             return data;
         }
 
+        /// <summary>
+        /// Computes the median for each row of the MFCC matrix.
+        /// </summary>
+        /// <param name="mfcc">
+        /// The MFCC <see cref="Mirage.Matrix"/>
+        /// </param>
+        /// <returns>
+        /// A <see cref="Mirage.Vector"/> containing the median
+        /// vector of the MFCC matrix
+        /// </returns>
         private Mirage.Vector ConvertMfccToMedian (Mirage.Matrix mfcc)
         {
             Mirage.Vector data = new Mirage.Vector (mfcc.rows);
@@ -665,6 +720,8 @@ namespace Banshee.NoNoise
         }
         #endregion
 
+        #region Library updates
+
         /// <summary>
         /// Checks for each track in the music library if it is already in the
         /// database. If not, inserts it.
@@ -678,10 +735,10 @@ namespace Banshee.NoNoise
             }
             /// SIHT EVOMER
 
-            if (data_up_to_date) {
-                Hyena.Log.Information ("NoNoise - Data already up2date - aborting write-track-infos.");
-                return;
-            }
+//            if (data_up_to_date) {
+//                Hyena.Log.Information ("NoNoise - Data already up2date - aborting write-track-infos.");
+//                return;
+//            }
 
             foreach (DatabaseTrackInfo dti in DatabaseTrackInfo.Provider.FetchAll ()) {
                 try {
@@ -702,13 +759,15 @@ namespace Banshee.NoNoise
             }
         }
 
-        #region Library updates
-
         /// <summary>
         /// Checks the music library for deleted tracks and removes them from the database.
         /// </summary>
         private void RemoveDeletedTracks ()
         {
+            lock (update_synch) {
+                updating_db = true;
+            }
+
             SortedList<int, int> ids = new SortedList<int, int> ();
             foreach (DatabaseTrackInfo dti in DatabaseTrackInfo.Provider.FetchAll ()) {
                 int bid = dti.TrackId;
@@ -742,6 +801,10 @@ namespace Banshee.NoNoise
             Hyena.Log.Debug ("NoNoise/BLA - updating other tables...");
             lock (db_synch) {
                 db.SynchTablesWithTrackData ();
+            }
+
+            lock (update_synch) {
+                updating_db = false;
             }
         }
         #endregion
@@ -820,7 +883,7 @@ namespace Banshee.NoNoise
         private void HandleTracksChanged (Source sender, TrackEventArgs args)
         {
             try {
-                // TODO implement
+                // TODO remove
                 Hyena.Log.Debug ("NoNoise/BLA - tracks changed (unhandled): " +
                                  args.ChangedFields.ToString ());
             } catch (Exception e) {
@@ -1261,6 +1324,25 @@ namespace Banshee.NoNoise
 //            Hyena.Log.DebugFormat ("NoNoise/BLA - Updated music library. new size: {0}", library.Count);
 //        }
 
+        /// <summary>
+        /// Stores the trackinfos from the music library in a sorted dictionary
+        /// mapped to the banshee_id.
+        /// </summary>
+//        private void ConvertMusicLibrary ()
+//        {
+//            lock (lib_synch) {
+//                library = new SortedDictionary<int, TrackInfo> ();
+//
+//                for (int i = 0; i < ml.TrackModel.Count; i++) {
+//                    DatabaseTrackInfo dti = ml.TrackModel [i] as DatabaseTrackInfo;
+//    //                int bid = ml.GetTrackIdForUri (ti.Uri);
+//                    library.Add (dti.TrackId, dti as TrackInfo);
+//                }
+//            }
+//
+//            Hyena.Log.Debug ("NoNoise/BLA - library conversion finished");
+//        }
+
         /*
          * rather useless
         private void CheckGetTrackID ()
@@ -1303,6 +1385,7 @@ namespace Banshee.NoNoise
         */
         #endregion
 
+        #region PCA variants
         private interface IPcaAdder {
             /// <summary>
             /// Adds feature vectors from the database to the PCAnalyzer,
@@ -1349,6 +1432,13 @@ namespace Banshee.NoNoise
                 foreach (int bid in vectorMap.Keys) {
                     try {
                         TrackInfo ti = DatabaseTrackInfo.Provider.FetchSingle (bid) as TrackInfo;
+
+                        if (ti == null) {
+                            if (!BansheeLibraryAnalyzer.Singleton.updating_db)
+                                new Thread (new ThreadStart (BansheeLibraryAnalyzer.Singleton.RemoveDeletedTracks))
+                                    .Start ();
+                            continue;
+                        }
 
                         if (!ana.AddEntry (bid, BansheeLibraryAnalyzer.Singleton.
                                            ConvertMirageVector (vectorMap [bid]),
@@ -1397,6 +1487,13 @@ namespace Banshee.NoNoise
                     try {
                         TrackInfo ti = DatabaseTrackInfo.Provider.FetchSingle (bid) as TrackInfo;
 
+                        if (ti == null) {
+                            if (!BansheeLibraryAnalyzer.Singleton.updating_db)
+                                new Thread (new ThreadStart (BansheeLibraryAnalyzer.Singleton.RemoveDeletedTracks))
+                                    .Start ();
+                            continue;
+                        }
+
                         if (!ana.AddEntry (bid, BansheeLibraryAnalyzer.Singleton.
                                            ConvertMirageVector (vectorMap [bid]),
                                            ti.Duration.TotalSeconds))
@@ -1443,6 +1540,13 @@ namespace Banshee.NoNoise
                 foreach (int bid in vectorMap.Keys) {
                     try {
                         TrackInfo ti = DatabaseTrackInfo.Provider.FetchSingle (bid) as TrackInfo;
+
+                        if (ti == null) {
+                            if (!BansheeLibraryAnalyzer.Singleton.updating_db)
+                                new Thread (new ThreadStart (BansheeLibraryAnalyzer.Singleton.RemoveDeletedTracks))
+                                    .Start ();
+                            continue;
+                        }
 
                         if (!ana.AddEntry (bid, BansheeLibraryAnalyzer.Singleton.
                                            ConvertMirageVector (vectorMap [bid]),
@@ -1491,6 +1595,13 @@ namespace Banshee.NoNoise
                     try {
                         TrackInfo ti = DatabaseTrackInfo.Provider.FetchSingle (bid) as TrackInfo;
 
+                        if (ti == null) {
+                            if (!BansheeLibraryAnalyzer.Singleton.updating_db)
+                                new Thread (new ThreadStart (BansheeLibraryAnalyzer.Singleton.RemoveDeletedTracks))
+                                    .Start ();
+                            continue;
+                        }
+
                         if (!ana.AddEntry (bid, BansheeLibraryAnalyzer.Singleton.
                                            ConvertMirageVector (vectorMap [bid]),
                                            ti.Duration.TotalSeconds))
@@ -1538,6 +1649,13 @@ namespace Banshee.NoNoise
                     try {
                         TrackInfo ti = DatabaseTrackInfo.Provider.FetchSingle (bid) as TrackInfo;
 
+                        if (ti == null) {
+                            if (!BansheeLibraryAnalyzer.Singleton.updating_db)
+                                new Thread (new ThreadStart (BansheeLibraryAnalyzer.Singleton.RemoveDeletedTracks))
+                                    .Start ();
+                            continue;
+                        }
+
                         if (!ana.AddEntry (bid, BansheeLibraryAnalyzer.Singleton.
                                            ConvertMirageVector (vectorMap [bid]),
                                            ti.Duration.TotalSeconds))
@@ -1548,6 +1666,7 @@ namespace Banshee.NoNoise
                 }
             }
         }
+        #endregion
     }
 }
 

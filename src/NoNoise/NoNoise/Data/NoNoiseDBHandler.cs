@@ -1037,6 +1037,13 @@ namespace NoNoise.Data
             }
         }
 
+        /// <summary>
+        /// Gets a list with all banshee_id's from the TrackData table.
+        /// </summary>
+        /// <returns>
+        /// A <see cref="List<System.Int32>"/> containing all banshee_id's
+        /// in the TrackData table
+        /// </returns>
         public List<int> GetTrackDataKeyList ()
         {
             List<int> ret = new List<int> ();
@@ -1179,6 +1186,13 @@ namespace NoNoise.Data
         }
         #endregion
 
+        /// <summary>
+        /// Updates all tables using the TrackData table as reference. After
+        /// calling this method there won't be any entries in the other tables
+        /// with banshee_id's which are not in TrackData. The opposit might
+        /// not be the case (i.e. there might be entries missing in the other
+        /// tables).
+        /// </summary>
         public void SynchTablesWithTrackData ()
         {
             IDbCommand dbcmd = null;

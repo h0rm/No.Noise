@@ -41,7 +41,6 @@ namespace Banshee.NoNoise
 {
     public class NoNoiseClutterSourceContents : ISourceContents
     {
-
         MusicLibrarySource source;
         View view;
 
@@ -80,7 +79,6 @@ namespace Banshee.NoNoise
                 view.FinishedInit ();
                 Clutter.Threads.Leave ();
             };
-
         }
 
         public void Scan (bool start)
@@ -97,12 +95,13 @@ namespace Banshee.NoNoise
 
         public void PcaCoordinatesUpdated ()
         {
+            Clutter.Threads.Enter ();
             view.GetPcaCoordinates ();
+            Clutter.Threads.Leave ();
         }
 
         void HandleViewOnAddToPlaylist (object sender, View.AddToPlaylistEventArgs args)
         {
-
             if (args.SongIDs.Count == 0)
                 return;
             
@@ -144,7 +143,6 @@ namespace Banshee.NoNoise
 
         public bool SetSource (ISource source)
         {
-
             if ((source as MusicLibrarySource) == null)
                 return false;
 
@@ -161,7 +159,6 @@ namespace Banshee.NoNoise
 
         void UpdateView ()
         {
-
             ITrackModelSource trackmodel = (ITrackModelSource)source;
 
             trackmodel.TrackModel.Selection.SelectAll ();
@@ -200,9 +197,7 @@ namespace Banshee.NoNoise
 //                view = null;
 //            }
 
-
             Clutter.Threads.Leave ();
-
         }
         public void ResetSource () { }
         public Widget Widget { get { return view; } }

@@ -47,6 +47,8 @@ using Hyena.Collections;
 using Lastfm.Services;
 using Lastfm;
 
+// TODO delete this class
+
 namespace Banshee.NoNoise
 {
     public class NoNoiseSourceContents : Banshee.Sources.Gui.ISourceContents
