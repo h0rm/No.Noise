@@ -125,7 +125,7 @@ namespace Banshee.NoNoise
                 if (track_info == null)
                     continue;
 
-                if (!args.SongIDs.Contains (track_info.TrackId)) {
+                if (!args.SongIDs.ContainsKey (track_info.TrackId)) {
 
                     trackmodel.TrackModel.Selection.Unselect (trackmodel.TrackModel.IndexOf (t));
 
