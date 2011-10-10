@@ -344,10 +344,13 @@ namespace Banshee.NoNoise
 //                Hyena.Log.Debug ("NoNoise/DB - MIRData count: " + cnt);
             }
 
+            bool old_lib_scanned = lib_scanned;
             lock (scan_synch) {
 //                Hyena.Log.Debug ("NoNoise/DB - tm count: " + ml.TrackModel.Count);
                 lib_scanned = (cnt == ml.TrackModel.Count);
             }
+            if (old_lib_scanned != lib_scanned && sc != null)
+                sc.ScannableChanged (!lib_scanned);
             Hyena.Log.Debug ("NoNoise/BLA - lib scanned: " + lib_scanned);
 
             if (cnt > ml.TrackModel.Count && !updating_db)

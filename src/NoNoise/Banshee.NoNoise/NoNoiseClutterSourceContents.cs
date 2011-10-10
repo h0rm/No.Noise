@@ -46,6 +46,8 @@ namespace Banshee.NoNoise
 
         public delegate void ScanFinishedEvent (object source, ScanFinishedEventArgs args);
         private ScanFinishedEvent scan_event;
+        public delegate void ToggleScannableEvent (object source, ToggleScannableEventArgs args);
+        private ToggleScannableEvent scannable_event;
 
         public NoNoiseClutterSourceContents (bool pcadata)
         {
@@ -91,6 +93,12 @@ namespace Banshee.NoNoise
         {
             Hyena.Log.Information ("NoNoise - Scan finished.");
             scan_event (this, new ScanFinishedEventArgs ("supi"));
+        }
+
+        public void ScannableChanged (bool scannable)
+        {
+            Hyena.Log.Debug ("NoNoise - Scannable changed to: " + scannable);
+            scannable_event (this, new ToggleScannableEventArgs (scannable));
         }
 
         public void PcaCoordinatesUpdated ()
@@ -216,10 +224,29 @@ namespace Banshee.NoNoise
             }
         }
 
-        //Event Handler which is called when the zoom level has changed
+        //Event Handler which is called when the scan has finished
         public event ScanFinishedEvent OnScanFinished {
             add { scan_event += value; }
             remove { scan_event -= value; }
+        }
+
+        public class ToggleScannableEventArgs
+        {
+            public ToggleScannableEventArgs (bool scannable)
+            {
+                Scannable = scannable;
+            }
+
+            public bool Scannable {
+                get;
+                private set;
+            }
+        }
+
+        //Event Handler which is called when the scannable state has changed
+        public event ToggleScannableEvent OnToggleScannable {
+            add { scannable_event += value; }
+            remove { scannable_event -= value; }
         }
     }
 }
