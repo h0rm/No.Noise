@@ -1298,19 +1298,22 @@ namespace NoNoise.Visualization
                 return;
 
             uint click_count = EventHelper.GetClickCount (args.Event);
+            Hyena.Log.Debug ("Click count = " + click_count);
 
-            if (click_count == 2) {
+            if (click_count >= 2 && click_count < 4) {
                 float x, y;
                 EventHelper.GetCoords (args.Event, out x, out y);
     
-                Hyena.Log.Debug ("Click count = " + click_count);
+
 
                 Actor clicked = stage.GetActorAtPos (PickMode.Reactive, (int)x, (int)y);
+                Hyena.Log.Debug ("Picked");
 
                 if (clicked != null) {
                     if ((clicked is SongActor)) {
                         if ((clicked as SongActor).Owner != null)
                             FireSongStartPlaying (new SongInfoArgs ((clicked as SongActor).Owner.GetAllIDs ()));
+                        Hyena.Log.Information ("Fired event");
                     }
                 }
             }
@@ -1409,6 +1412,7 @@ namespace NoNoise.Visualization
 
         private void FireSongStartPlaying (SongInfoArgs args)
         {
+            Hyena.Log.Information ("Fire function");
             if (song_start_playing != null)
                 song_start_playing (this, args);
         }

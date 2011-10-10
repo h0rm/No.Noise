@@ -117,6 +117,7 @@ namespace Banshee.NoNoise
             ITrackModelSource trackmodel = (ITrackModelSource)source;
 
             trackmodel.TrackModel.Selection.SelectAll ();
+            Hyena.Log.Information ("Add to playlist start");
 
             foreach (TrackInfo t in trackmodel.TrackModel.SelectedItems) {
                 DatabaseTrackInfo track_info = (t as DatabaseTrackInfo);
@@ -135,6 +136,7 @@ namespace Banshee.NoNoise
                 }
             }
 
+            Hyena.Log.Information ("Add to playlist after loop");
             PlaylistSource playlist;
 
             if (args.Persistant) {
@@ -146,7 +148,7 @@ namespace Banshee.NoNoise
             } else {
 
                 if (playing != null) {
-                    playing.Deactivate ();
+//                    playing.Deactivate ();
                     playing.Unmap ();
                     playing = null;
                 }
@@ -159,7 +161,10 @@ namespace Banshee.NoNoise
                 playlist = playing;
             }
 
+            Hyena.Log.Information ("Add to playlist created playlist");
             playlist.AddSelectedTracks (source);
+
+            Hyena.Log.Information ("Add to playlist added tracks");
 
             trackmodel.TrackModel.Selection.Clear ();
             playlist.NotifyUser ();
@@ -170,6 +175,8 @@ namespace Banshee.NoNoise
                 ServiceManager.PlayerEngine.Play ();
             else
                 ServiceManager.PlaybackController.First ();
+
+            Hyena.Log.Information ("Add to playlist end");
         }
 
         public bool SetSource (ISource source)
