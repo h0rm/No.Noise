@@ -439,8 +439,7 @@ namespace NoNoise.Data
                 trans = dbcon.BeginTransaction ();
 
                 foreach (DataEntry de in coords) {
-                    if (!InsertPcaCoordinate (de))
-                        succ = false;
+                    succ &= InsertPcaCoordinate (de);
                 }
 
                 trans.Commit ();
@@ -595,12 +594,53 @@ namespace NoNoise.Data
 
         public bool InsertTrackIDs (List<int> ids)
         {
+            SortedList<int, int> in_db = GetTrackDataKeyList ();
+            if (in_db == null)
+                return false;
+
             bool succ = true;
-            foreach (int bid in ids) {
-                if (!ContainsInfoForTrack (bid))
-                    succ &= InsertTrackID (bid);
+            IDbTransaction trans = null;
+            try {
+                dbcon.Open ();
+                trans = dbcon.BeginTransaction ();
+
+                foreach (int bid in ids) {
+                    if (!in_db.ContainsKey (bid))
+                        succ &= InsertTrackIDInTransaction (bid);
+                }
+
+                trans.Commit ();
+            } catch (Exception e) {
+                Log.Exception ("NoNoise/DB - PCA coordinates insert failed", e);
+                succ = false;
+                if (trans != null)
+                    trans.Rollback ();
+            } finally {
+                if (dbcon != null)
+                    dbcon.Close ();
             }
             return succ;
+        }
+
+        private bool InsertTrackIDInTransaction (int bid)
+        {
+            IDbCommand dbcmd = null;
+            try {
+                dbcmd = dbcon.CreateCommand ();
+
+                dbcmd.CommandText = string.Format ("INSERT INTO TrackData (banshee_id) VALUES ('{0}')", bid);
+
+                dbcmd.ExecuteNonQuery ();
+            } catch (Exception e) {
+                Log.Exception ("NoNoise/DB - TrackInfo insert failed for bid: " + bid, e);
+                return false;
+            } finally {
+                if (dbcmd != null)
+                    dbcmd.Dispose ();
+                dbcmd = null;
+            }
+
+            return true;
         }
 
         public bool InsertTrackID (int bid)
@@ -668,9 +708,9 @@ namespace NoNoise.Data
         /// A <see cref="List<System.Int32>"/> containing all banshee_id's
         /// in the TrackData table
         /// </returns>
-        public List<int> GetTrackDataKeyList ()
+        public SortedList<int, int> GetTrackDataKeyList ()
         {
-            List<int> ret = new List<int> ();
+            SortedList<int, int> ret = new SortedList<int, int> ();
 
             IDbCommand dbcmd = null;
             try {
@@ -680,7 +720,8 @@ namespace NoNoise.Data
                 dbcmd.CommandText = "SELECT banshee_id FROM TrackData";
                 System.Data.IDataReader reader = dbcmd.ExecuteReader ();
                 while (reader.Read ()) {
-                    ret.Add (reader.GetInt32 (0));
+                    int bid = reader.GetInt32 (0);
+                    ret.Add (bid, bid);
                 }
 
                 return ret;

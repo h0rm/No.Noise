@@ -672,21 +672,20 @@ namespace Banshee.NoNoise
 //                return;
 //            }
 
-            foreach (DatabaseTrackInfo dti in DatabaseTrackInfo.Provider.FetchAll ()) {
-                try {
-                    int bid = dti.TrackId;
+            List<int> track_ids = new List<int> ();
 
-                    lock (db_synch) {
-                        if (!db.ContainsInfoForTrack (bid)) {
-                            if (!db.InsertTrackID (bid))
-                                Hyena.Log.Error ("NoNoise/BLA - TrackInfo insert failed");
-                        }
-                    }
-                } catch (Exception e) {
-                    Hyena.Log.Exception("NoNoise/BLA - DB Problem", e);
+            foreach (DatabaseTrackInfo dti in DatabaseTrackInfo.Provider.FetchAll ())
+                track_ids.Add (dti.TrackId);
+
+            try {
+                lock (db_synch) {
+                    if (!db.InsertTrackIDs (track_ids))
+                        Hyena.Log.Error ("NoNoise/BLA - TrackInfo insert failed");
                 }
+            } catch (Exception e) {
+                Hyena.Log.Exception("NoNoise/BLA - DB Problem", e);
             }
-            Hyena.Log.Debug ("NoNoise/BLA - finished writing track data");
+            Hyena.Log.Debug ("NoNoise/BLA - track data inserted");
         }
 
         /// <summary>
@@ -705,7 +704,7 @@ namespace Banshee.NoNoise
             }
 
             // make one table the reference and let db synch the rest
-            List<int> keyList = null;
+            SortedList<int, int> keyList = null;
 
             // get data from db
             lock (db_synch) {
@@ -720,7 +719,7 @@ namespace Banshee.NoNoise
             }
 
             // remove deleted TrackData
-            foreach (int id in keyList) {
+            foreach (int id in keyList.Keys) {
                 if (!ids.ContainsKey (id)) {
                     if (!big)
                         Hyena.Log.DebugFormat ("NoNoise/BLA - removing bid {0} from TrackData...", id);
