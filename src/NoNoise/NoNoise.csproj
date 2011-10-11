@@ -299,6 +299,7 @@
     <Compile Include="Banshee.NoNoise\NoNoiseHelpDialog.cs" />
     <Compile Include="NoNoise\Data\DatabaseException.cs" />
     <Compile Include="NoNoise\Data\DataEntry.cs" />
+    <Compile Include="NoNoise\Visualization\Gui\StatusBox.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ProjectExtensions>
