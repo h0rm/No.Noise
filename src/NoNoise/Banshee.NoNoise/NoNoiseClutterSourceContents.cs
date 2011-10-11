@@ -105,6 +105,7 @@ namespace Banshee.NoNoise
         public void PcaCoordinatesUpdated ()
         {
             Clutter.Threads.Enter ();
+            Hyena.Log.Debug ("NoNoise - updating vis");
             view.GetPcaCoordinates ();
             Clutter.Threads.Leave ();
         }

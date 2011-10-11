@@ -685,7 +685,7 @@ namespace NoNoise.Data
         #region PCAData
 
         /// <summary>
-        /// Inserts a list of DataEntry's into the PCAData table.
+        /// Inserts a list of DataEntry's into the PCAData table within a single transaction.
         /// </summary>
         /// <param name="coords">
         /// A <see cref="List<DataEntry>"/> containing the data
@@ -696,15 +696,33 @@ namespace NoNoise.Data
         public bool InsertPcaCoordinates (List<DataEntry> coords)
         {
             bool succ = true;
-            foreach (DataEntry de in coords) {
-                if (!InsertPcaCoordinate (de))
-                    succ = false;
+            IDbTransaction trans = null;
+            try {
+                dbcon.Open ();
+                trans = dbcon.BeginTransaction ();
+
+                foreach (DataEntry de in coords) {
+                    if (!InsertPcaCoordinate (de))
+                        succ = false;
+                }
+
+                trans.Commit ();
+            } catch (Exception e) {
+                Log.Exception ("NoNoise/DB - PCA coordinates insert failed", e);
+                succ = false;
+                if (trans != null)
+                    trans.Rollback ();
+            } finally {
+                if (dbcon != null)
+                    dbcon.Close ();
             }
             return succ;
         }
 
         /// <summary>
         /// Inserts one DataEntry into the PCAData table.
+        /// The database connection has to be opened before calling this method
+        /// and should be closed afterwards.
         /// </summary>
         /// <param name="de">
         /// The <see cref="DataEntry"/> to be inserted
@@ -712,11 +730,10 @@ namespace NoNoise.Data
         /// <returns>
         /// True if the DataEntry was successfully inserted. False otherwise.
         /// </returns>
-        public bool InsertPcaCoordinate (DataEntry de)
+        private bool InsertPcaCoordinate (DataEntry de)
         {
             IDbCommand dbcmd = null;
             try {
-                dbcon.Open ();
                 dbcmd = dbcon.CreateCommand ();
 
                 dbcmd.CommandText = string.Format (
@@ -730,8 +747,6 @@ namespace NoNoise.Data
                 if (dbcmd != null)
                     dbcmd.Dispose ();
                 dbcmd = null;
-                if (dbcon != null)
-                    dbcon.Close ();
             }
 
             return true;
