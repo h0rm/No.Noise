@@ -93,7 +93,7 @@ namespace Banshee.NoNoise
 
             db = new NoNoiseDBHandler ();
 
-            BansheeLibraryAnalyzer bla = BansheeLibraryAnalyzer.Init (null);
+            BansheeLibraryAnalyzer.Init (null);
 
             if (dotests)
                 PerformTests ();
@@ -446,9 +446,10 @@ namespace Banshee.NoNoise
                     int bid = ml.GetTrackIdForUri (ti.Uri);
 
                     if (!db.ContainsInfoForTrack (bid)) {
-                        if (!db.InsertTrackInfo (new TrackData (
-                                                   bid, ti.ArtistName, ti.TrackTitle,
-                                                   ti.AlbumTitle, (int)ti.Duration.TotalSeconds)))
+                        if (!db.InsertTrackID (bid))
+//                        if (!db.InsertTrackInfo (new TrackData (
+//                                                   bid, ti.ArtistName, ti.TrackTitle,
+//                                                   ti.AlbumTitle, (int)ti.Duration.TotalSeconds)))
                             Hyena.Log.Error ("NoNoise - TrackInfo insert failed");
                     }
                 } catch (Exception e) {

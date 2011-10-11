@@ -36,7 +36,7 @@ namespace NoNoise.Visualization
         SongGroup point_group;
         MainGui gui;
         BansheeLibraryAnalyzer analyzer;
-        Dictionary<int, NoNoise.Data.TrackData> info;
+//        Dictionary<int, NoNoise.Data.TrackData> info;
 
         object enter_counter_lock = new Object ();
         int enter_counter = 0;

@@ -281,7 +281,6 @@
     <Compile Include="Mirage\Scms.cs" />
     <Compile Include="Mirage\ScmsConfiguration.cs" />
     <Compile Include="Mirage\Vector.cs" />
-    <Compile Include="NoNoise\Data\DataHandler.cs" />
     <Compile Include="NoNoise\Data\DataParser.cs" />
     <Compile Include="NoNoise\Data\NoNoiseDBHandler.cs" />
     <Compile Include="NoNoise\PCA\PCAnalyzer.cs" />
@@ -299,6 +298,7 @@
     <Compile Include="Banshee.NoNoise\NoNoiseSchemas.cs" />
     <Compile Include="Banshee.NoNoise\NoNoiseHelpDialog.cs" />
     <Compile Include="NoNoise\Data\DatabaseException.cs" />
+    <Compile Include="NoNoise\Data\DataEntry.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ProjectExtensions>
