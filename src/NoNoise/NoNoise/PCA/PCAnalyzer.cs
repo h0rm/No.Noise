@@ -429,7 +429,7 @@ namespace NoNoise.PCA
 
             Debug.Assert(coord.RowCount == 2 && coord.ColumnCount == 1);
 
-            return new DataEntry (key, coord[0,0], coord[1,0], null);
+            return new DataEntry (key, coord[0,0], coord[1,0]);
         }
 
         /// <summary>

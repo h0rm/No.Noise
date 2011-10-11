@@ -92,14 +92,14 @@ namespace NoNoise.Data
 		private int id;			//unique id for each track
 		private double pca_x;	//between 0...1
 		private double pca_y;	//between 0...1
-		private TrackData val;  //additional information like color
+//		private TrackData val;  //additional information like color
 		
-		public DataEntry (int id, double pca_x, double pca_y, TrackData val)
+		public DataEntry (int id, double pca_x, double pca_y) //, TrackData val)
 		{
 			this.id = id;
 			this.pca_x = pca_x;
 			this.pca_y = pca_y;
-			this.val = val;
+//			this.val = val;
 		}
 		
 		/// <summary>
@@ -128,14 +128,14 @@ namespace NoNoise.Data
 		/// <summary>
 		/// additional information like color
 		/// </summary>
-		public TrackData Value {
-			get { return val; }
-            set { val = value; }
-		}
+//		public TrackData Value {
+//			get { return val; }
+//            set { val = value; }
+//		}
 
         public override string ToString ()
         {
-            return string.Format ("[DataEntry: ID={0}, X={1}, Y={2}, Value={3}]", ID, X, Y, Value);
+            return string.Format ("[DataEntry: ID={0}, X={1}, Y={2}]", ID, X, Y);
         }
 	}
 

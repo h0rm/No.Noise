@@ -595,9 +595,9 @@ namespace NoNoise.Data
             }
         }
 
-        public List<int> GetMirDataKeyList ()
+        public SortedList<int, int> GetMirDataKeyList ()
         {
-            List<int> ret = new List<int> ();
+            SortedList<int, int> ret = new SortedList<int, int> ();
 
             IDbCommand dbcmd = null;
             try {
@@ -607,7 +607,8 @@ namespace NoNoise.Data
                 dbcmd.CommandText = "SELECT banshee_id FROM MIRData";
                 System.Data.IDataReader reader = dbcmd.ExecuteReader ();
                 while (reader.Read ()) {
-                    ret.Add (reader.GetInt32 (0));
+                    int bid = reader.GetInt32 (0);
+                    ret.Add (bid, bid);
                 }
 
                 return ret;
@@ -772,8 +773,7 @@ namespace NoNoise.Data
                 System.Data.IDataReader reader = dbcmd.ExecuteReader ();
                 while (reader.Read ()) {
                     int bid = reader.GetInt32 (2);
-                    DataEntry de = new DataEntry (bid, reader.GetDouble (0),
-                                                  reader.GetDouble (1), null);  // test if gettrackdata (bid) works (dbcon.Open()...)
+                    DataEntry de = new DataEntry (bid, reader.GetDouble (0), reader.GetDouble (1));
                     ret.Add (bid, de);
                 }
 
@@ -800,7 +800,7 @@ namespace NoNoise.Data
         public List<DataEntry> GetPcaCoordinates ()
         {
             List<DataEntry> ret = new List<DataEntry> ();
-            Dictionary<int, TrackData> trackdata = GetTrackDataDictionary ();
+//            Dictionary<int, TrackData> trackdata = GetTrackDataDictionary ();
 
             IDbCommand dbcmd = null;
             try {
@@ -811,11 +811,11 @@ namespace NoNoise.Data
                 System.Data.IDataReader reader = dbcmd.ExecuteReader ();
                 while (reader.Read ()) {
                     int bid = reader.GetInt32 (2);
-                    TrackData td = null;
-                    if (trackdata.ContainsKey (bid))
-                        td = trackdata [bid];
+//                    TrackData td = null;
+//                    if (trackdata.ContainsKey (bid))
+//                        td = trackdata [bid];
                     DataEntry de = new DataEntry (bid, reader.GetDouble (0),
-                                                  reader.GetDouble (1), td);
+                                                  reader.GetDouble (1));
                     ret.Add (de);
                 }
 
@@ -909,6 +909,7 @@ namespace NoNoise.Data
 
             return true;
         }
+
         /// <summary>
         /// Updates the given TrackData in the TrackData table.
         /// </summary>
