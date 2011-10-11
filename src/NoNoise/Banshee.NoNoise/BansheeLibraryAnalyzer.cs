@@ -33,13 +33,8 @@ using Banshee.MediaEngine;
 using Banshee.ServiceStack;
 using Banshee.Sources;
 
-using Banshee.NoNoise.Bpm;
-
 using NoNoise.Data;
 using NoNoise.PCA;
-
-// TODO something like compute_pca button
-// TODO track_updated listener
 
 namespace Banshee.NoNoise
 {
@@ -50,10 +45,6 @@ namespace Banshee.NoNoise
     public class BansheeLibraryAnalyzer
     {
         private static BansheeLibraryAnalyzer bla = null;
-
-        // TODO remove debug helper bools
-//        private readonly bool STORE_ENTIRE_MATRIX = false;
-        private readonly bool DB_CHEATER_MODE = false;
 
         #region Constants
         public const int PCA_MEAN = 0;
@@ -86,10 +77,7 @@ namespace Banshee.NoNoise
         private object scan_synch;
         private object pca_synch;
         private object update_synch;
-//        private object lib_synch;   // WARN make sure it is never locked on lib_synch inside of another lock
         private object db_synch;
-
-        private IBpmDetector detector;
         #endregion
 
         /// <summary>
@@ -158,34 +146,11 @@ namespace Banshee.NoNoise
             scan_synch = new object ();
             pca_synch = new object ();
             update_synch = new object ();
-//            lib_synch = new object ();
             db_synch = new object ();
-
-//            Hyena.Log.Debug ("NoNoise/BLA - converting music lib");
-//            new Thread (new ThreadStart (ConvertMusicLibrary)).Start ();
 
             db = new NoNoiseDBHandler ();
             
             GetPcaData ();
-
-//            Testing ();
-            // BPM detector
-//            detector = BpmDetectJob.GetDetector ();
-//            if (detector != null) {
-//                detector.FileFinished += OnFileFinished;
-//                Hyena.Log.Debug("NoNoise - Detector is not null");
-//            }
-//            new Thread (new ThreadStart (DetectBPMs)).Start ();
-
-            /// REMOVE THIS
-            if (DB_CHEATER_MODE) {
-                analyzing_lib = false;
-                lib_scanned = true;
-                data_up_to_date = true;
-                Hyena.Log.Information ("NoNoise/BLA - cheater mode - skipping checks");
-                return;
-            }
-            /// SIHT EVOMER
 
             analyzing_lib = false;
             added_while_scanning = false;
@@ -196,12 +161,6 @@ namespace Banshee.NoNoise
             Hyena.Log.Debug ("NoNoise/BLA - adding library change handler");
             ml.TracksAdded += HandleTracksAdded;
             ml.TracksDeleted += HandleTracksDeleted;
-            ml.TracksChanged += HandleTracksChanged;
-
-            Hyena.Log.Debug ("NoNoise/BLA - starting pca query");
-//            new Thread (new ThreadStart (GetPcaData)).Start ();
-
-//            Hyena.Log.Debug ("NoNoise/BLA - blabla: " + coords [0].Value.Artist + " - " + coords [0].Value.Title);
         }
 
         /// <summary>
@@ -228,9 +187,7 @@ namespace Banshee.NoNoise
             bla = new BansheeLibraryAnalyzer ();
             bla.sc = sc;
 
-            Hyena.Log.Debug ("NoNoise/BLA - starting pca/write track data threads");
-//            bla.SwitchPcaMode ();
-//            new Thread (new ThreadStart (PcaForMusicLibraryVectorEdition)).Start ();
+            Hyena.Log.Debug ("NoNoise/BLA - starting write track data thread");
             new Thread (new ThreadStart (bla.WriteTrackInfosToDB)).Start ();
 
             return bla;
@@ -341,12 +298,10 @@ namespace Banshee.NoNoise
             int cnt = -1;
             lock (db_synch) {
                 cnt = db.GetMirDataCount ();
-//                Hyena.Log.Debug ("NoNoise/DB - MIRData count: " + cnt);
             }
 
             bool old_lib_scanned = lib_scanned;
             lock (scan_synch) {
-//                Hyena.Log.Debug ("NoNoise/DB - tm count: " + ml.TrackModel.Count);
                 lib_scanned = (cnt == ml.TrackModel.Count);
             }
             if (old_lib_scanned != lib_scanned && sc != null)
@@ -402,13 +357,6 @@ namespace Banshee.NoNoise
             if (start == analyzing_lib)
                 return;
 
-            /// REMOVE THIS
-            if (DB_CHEATER_MODE) {
-                Hyena.Log.Information ("NoNoise/BLA - cheater mode - doing nothing");
-                return;
-            }
-            /// SIHT EVOMER
-
             if (start) {
                 if (CheckLibScanned ()) {
                     Finished ();
@@ -441,7 +389,7 @@ namespace Banshee.NoNoise
             DateTime dt = DateTime.Now;
 
             Mirage.Matrix mfcc;
-            List<int> keyList = null;
+            SortedList<int, int> keyList = null;
             lock (db_synch) {
                 db_cnt = db.GetMirDataCount ();
                 keyList = db.GetMirDataKeyList ();
@@ -449,8 +397,6 @@ namespace Banshee.NoNoise
             if (keyList == null)
                 Hyena.Log.Error ("NoNoise/BLA - keyList is null!");
 
-//            for (int i = 0; i < ml.TrackModel.Count; i++) {
-//            lock (lib_synch) {
             foreach (DatabaseTrackInfo dti in DatabaseTrackInfo.Provider.FetchAll ()) {
                 if (stop_scan) {
                     lock (scan_synch) {
@@ -460,19 +406,16 @@ namespace Banshee.NoNoise
                 }
 
                 try {
-//                        TrackInfo ti = dti as TrackInfo;
-//                        TrackInfo ti = library [bid];
                     string absPath = dti.Uri.AbsolutePath;
                     int bid = dti.TrackId;
 
-                    if (!keyList.Contains (bid)) {
+                    if (!keyList.ContainsKey (bid)) {
                         mfcc = Mirage.Analyzer.AnalyzeMFCC (absPath);
 
                         lock (db_synch) {
-//                            if (!db.InsertVector (mfcc.Mean (), bid))
                             if (!db.InsertVectors (mfcc.Mean (), ConvertMfccToSqrMean (mfcc), ConvertMfccToMedian (mfcc),
                                                    ConvertMfccToMin (mfcc), ConvertMfccToMax (mfcc), bid))
-                                Hyena.Log.Error ("NoNoise - Matrix insert failed");
+                                Hyena.Log.Error ("NoNoise/BLA - Matrix insert failed");
                         }
                         db_cnt++;
                     }
@@ -484,10 +427,9 @@ namespace Banshee.NoNoise
                         dt = DateTime.Now;
                     }
                 } catch (Exception e) {
-                    Hyena.Log.Exception ("NoNoise - MFCC/DB Problem", e);
+                    Hyena.Log.Exception ("NoNoise/BLA - MFCC/DB Problem", e);
                 }
             }
-//            }
 
             finished.WakeupMain ();
         }
@@ -528,13 +470,6 @@ namespace Banshee.NoNoise
         /// </param>
         private void PcaForMusicLibraryVectorEdition (bool force_new)
         {
-            /// REMOVE THIS
-            if (DB_CHEATER_MODE) {
-                Hyena.Log.Information ("NoNoise/BLA - cheater mode - not calculating pca");
-                return;
-            }
-            /// SIHT EVOMER
-
             if (data_up_to_date && !force_new) {
                 Hyena.Log.Information ("NoNoise/BLA - Data already up2date - aborting pca.");
                 return;
@@ -568,6 +503,7 @@ namespace Banshee.NoNoise
                     db.ClearPcaData ();
                     if (!db.InsertPcaCoordinates (ana.Coordinates))
                         Hyena.Log.Error ("NoNoise/BLA - PCA coord insert failed");
+                    Hyena.Log.Debug ("NoNoise/BLA - PCA inserted into db");
                     coords = db.GetPcaCoordinates ();
                 }
             } catch (DatabaseException e) {
@@ -575,8 +511,8 @@ namespace Banshee.NoNoise
             } catch (Exception e) {
                 Hyena.Log.Exception ("NoNoise/BLA - PCA Problem", e);
             }
-            // TODO update once it works
-//            Hyena.ThreadAssist.ProxyToMain (sc.PcaCoordinatesUpdated);
+
+            Hyena.ThreadAssist.ProxyToMain (sc.PcaCoordinatesUpdated);
         }
 
         /// <summary>
@@ -731,36 +667,25 @@ namespace Banshee.NoNoise
         /// </summary>
         private void WriteTrackInfosToDB ()
         {
-            /// REMOVE THIS
-            if (DB_CHEATER_MODE) {
-                Hyena.Log.Information ("NoNoise/BLA - cheater mode - not writing track infos");
-                return;
-            }
-            /// SIHT EVOMER
-
 //            if (data_up_to_date) {
 //                Hyena.Log.Information ("NoNoise - Data already up2date - aborting write-track-infos.");
 //                return;
 //            }
 
-            foreach (DatabaseTrackInfo dti in DatabaseTrackInfo.Provider.FetchAll ()) {
-                try {
-                    TrackInfo ti = dti as TrackInfo;
-                    int bid = dti.TrackId;
+            List<int> track_ids = new List<int> ();
 
-                    lock (db_synch) {
-                        if (!db.ContainsInfoForTrack (bid)) {
-//                            if (!db.InsertTrackID (bid)) {
-                            if (!db.InsertTrackInfo (new TrackData (
-                                                       bid, ti.ArtistName, ti.TrackTitle,
-                                                       ti.AlbumTitle, (int)ti.Duration.TotalSeconds)))
-                                Hyena.Log.Error ("NoNoise - TrackInfo insert failed");
-                        }
-                    }
-                } catch (Exception e) {
-                    Hyena.Log.Exception("NoNoise - DB Problem", e);
+            foreach (DatabaseTrackInfo dti in DatabaseTrackInfo.Provider.FetchAll ())
+                track_ids.Add (dti.TrackId);
+
+            try {
+                lock (db_synch) {
+                    if (!db.InsertTrackIDs (track_ids))
+                        Hyena.Log.Error ("NoNoise/BLA - TrackInfo insert failed");
                 }
+            } catch (Exception e) {
+                Hyena.Log.Exception("NoNoise/BLA - DB Problem", e);
             }
+            Hyena.Log.Debug ("NoNoise/BLA - track data inserted");
         }
 
         /// <summary>
@@ -779,26 +704,34 @@ namespace Banshee.NoNoise
             }
 
             // make one table the reference and let db synch the rest
-            List<int> keyList = null;
+            SortedList<int, int> keyList = null;
 
             // get data from db
             lock (db_synch) {
                 keyList = db.GetTrackDataKeyList ();
             }
 
+            int diff = keyList.Count - ids.Count;
+            bool big = false;
+            if (diff > 10) {
+                big = true;
+                Hyena.Log.DebugFormat ("NoNoise/BLA - removing {0} tracks from database...", diff);
+            }
+
             // remove deleted TrackData
-            foreach (int id in keyList) {
-                    if (!ids.ContainsKey (id)) {
+            foreach (int id in keyList.Keys) {
+                if (!ids.ContainsKey (id)) {
+                    if (!big)
                         Hyena.Log.DebugFormat ("NoNoise/BLA - removing bid {0} from TrackData...", id);
-                        try {
-                            lock (db_synch) {
-                                // remove from TrackData
-                                db.RemoveTrackDataForTrack (id);
-                            }
-                        } catch (Exception e) {
-                            Hyena.Log.Exception("NoNoise - DB remove problem", e);
+                    try {
+                        lock (db_synch) {
+                            // remove from TrackData
+                            db.RemoveTrackDataForTrack (id);
                         }
+                    } catch (Exception e) {
+                        Hyena.Log.Exception("NoNoise/BLA - DB remove problem", e);
                     }
+                }
             }
 
             // update other tables
@@ -872,519 +805,10 @@ namespace Banshee.NoNoise
                 }
             }
         }
-
-        /// <summary>
-        /// Handles the tracks changed event when the user modifies files in the music library.
-        /// </summary>
-        /// <param name='sender'>
-        /// Sender.
-        /// </param>
-        /// <param name='args'>
-        /// Arguments.
-        /// </param>
-        private void HandleTracksChanged (Source sender, TrackEventArgs args)
-        {
-            try {
-                // TODO remove
-                Hyena.Log.Debug ("NoNoise/BLA - tracks changed (unhandled): " +
-                                 args.ChangedFields.ToString ());
-            } catch (Exception e) {
-                if (args == null || args.ChangedFields == null)
-                    Hyena.Log.Debug ("NoNoise/BLA - tracks changed (unhandled): args or CF null");
-                else
-                    Hyena.Log.Debug ("NoNoise/BLA - tracks changed (unhandled): CF not null");
-            }
-        }
         #endregion
 
         #region To delete
 
-        /// <summary>
-        /// Scans the music library and stores the mirage data in the database.
-        /// Calls <see cref="Finished ()"/> when everything has been scanned.
-        /// </summary>
-        private void ScanMusicLibrary ()
-        {
-            int ml_cnt = ml.TrackModel.Count;
-            int db_cnt = 0;
-            DateTime dt = DateTime.Now;
-
-            Mirage.Matrix mfcc;
-            Dictionary<int, Mirage.Matrix> mfccMap = null;
-            lock (db_synch) {
-                db_cnt = db.GetMirDataCount ();
-                mfccMap = db.GetMirageMatrices ();
-            }
-            if (mfccMap == null)
-                Hyena.Log.Error ("NoNoise/BLA - mfccMap is null!");
-
-//            for (int i = 0; i < ml.TrackModel.Count; i++) {
-            foreach (DatabaseTrackInfo dti in DatabaseTrackInfo.Provider.FetchAll ()) {
-                if (stop_scan) {
-                    lock (scan_synch) {
-                        analyzing_lib = false;
-                    }
-                    return;
-                }
-
-                try {
-//                    TrackInfo ti = ml.TrackModel [i];
-//                    string absPath = ti.Uri.AbsolutePath;
-//                    int bid = ml.GetTrackIdForUri (ti.Uri);
-                    string absPath = dti.Uri.AbsolutePath;
-                    int bid = dti.TrackId;
-
-                    if (!mfccMap.ContainsKey (bid)) {
-                        mfcc = Mirage.Analyzer.AnalyzeMFCC (absPath);
-
-                        lock (db_synch) {
-                            if (!db.InsertMatrix (mfcc, bid))
-                                Hyena.Log.Error ("NoNoise - Matrix insert failed");
-                        }
-                        db_cnt++;
-                    }
-
-                    if ((DateTime.Now - dt).TotalSeconds > 20.0) {
-                        int perc = (int)((double)db_cnt / (double)ml_cnt * 100.0);
-                        if (perc <= 100)
-                            Hyena.Log.InformationFormat ("NoNoise/Scan - {0}% finished.", perc);
-                        dt = DateTime.Now;
-                    }
-                } catch (Exception e) {
-                    Hyena.Log.Exception ("NoNoise - MFCC/DB Problem", e);
-                }
-            }
-
-            finished.WakeupMain ();
-        }
-
-        /// <summary>
-        /// Checks for each track in the music library if there is already
-        /// MIR data in the database. If not, computes the MFCC matrix and
-        /// stores it in the database.
-        /// </summary>
-        private void PcaForMusicLibrary ()
-        {
-            if (data_up_to_date) {
-                Hyena.Log.Information ("NoNoise - Data already up2date - aborting pca.");
-                return;
-            }
-
-            if (analyzing_lib) {
-                Hyena.Log.Information ("NoNoise - Music library is currently beeing scanned - aborting pca.");
-                return;
-            }
-
-            if (!lib_scanned) {
-                Hyena.Log.Information ("NoNoise - No mirage data available for pca - aborting.");
-                return;     // TODO something clever!
-            }
-
-            Hyena.Log.Debug ("NoNoise/BLA - PcaFor... called");
-
-            PCAnalyzer ana = new PCAnalyzer();
-            Dictionary<int, Mirage.Matrix> mfccMap = null;
-            lock (db_synch) {
-                mfccMap = db.GetMirageMatrices ();
-            }
-            if (mfccMap == null)
-                Hyena.Log.Error ("NoNoise/BLA - mfccMap is null!");
-
-            foreach (int bid in mfccMap.Keys) {
-                try {
-                    if (!ana.AddEntry (bid, ConvertMirageVector (mfccMap[bid].Mean ())))
-                        throw new Exception("AddEntry failed!");
-//                        if (!ana.AddEntry (bid, ConvertMfccMean(mfcc.Mean()), ti.Duration.TotalSeconds))
-//                            throw new Exception("AddEntry failed!");
-//                        if (!ana.AddEntry (bid, null, ti.Bpm, ti.Duration.TotalSeconds))
-//                            throw new Exception("AddEntry failed!");
-                } catch (Exception e) {
-                    Hyena.Log.Exception("NoNoise - PCA Problem", e);
-                }
-            }
-
-//            PcaTestings (ana, mfccMap);
-
-            try {
-                ana.PerformPCA ();
-
-                lock (db_synch) {
-                    db.ClearPcaData ();
-                    if (!db.InsertPcaCoordinates (ana.Coordinates))
-                        Hyena.Log.Error ("NoNoise - PCA coord insert failed");
-                    coords = db.GetPcaCoordinates ();
-                }
-            } catch (Exception e) {
-                Hyena.Log.Exception("PCA Problem", e);
-            }
-        }
-
-        private void Testing ()
-        {
-            TrackInfo ti = ml.TrackModel [0];
-//            int bid = ml.GetTrackIdForUri (ti.Uri);
-
-            try {
-                int ind = DatabaseTrackInfo.GetTrackIdForUri (ti.Uri);
-                TrackInfo ti2 = DatabaseTrackInfo.Provider.FetchSingle (ind);
-                Hyena.Log.DebugFormat ("NoNoise/BLA - index: {0}", ind);
-                Hyena.Log.DebugFormat ("NoNoise/BLA - test result. title: {0} vs {1}",
-                                       ti.TrackTitle, ti2.TrackTitle);
-            } catch (Exception e) {
-                Hyena.Log.Exception ("NoNoise/BLA - test failed", e);
-            }
-        }
-
-        private void DetectBPMs (TrackInfo track)
-        {
-            // on button pressed
-            if (track != null) {
-                detector.ProcessFile (track.Uri);
-            }
-        }
-
-        private void DetectBPMs ()
-        {
-            TrackInfo ti = ml.TrackModel [0];
-            DetectBPMs (ti);
-        }
-
-        private void OnFileFinished (object o, BpmEventArgs args)
-        {
-            Hyena.ThreadAssist.ProxyToMain (delegate {
-                int id = DatabaseTrackInfo.GetTrackIdForUri (args.Uri);
-                if (id >= 0) {
-                    TrackInfo ti = DatabaseTrackInfo.Provider.FetchSingle (id);
-                    Hyena.Log.Debug("NoNoise - BPM...Track: " + ti.TrackTitle);
-                    ti.Bpm = args.Bpm;
-                    ti.Update ();
-                    Hyena.Log.DebugFormat ("NoNoise - Detected BPM of {0} for {1}", args.Bpm, ti.TrackTitle);
-                }
-            });
-        }
-
-        private void PcaTestings (PCAnalyzer ana)
-        {
-            Dictionary<int, Mirage.Vector> vectorMap = null;
-
-            switch (pca_mode) {
-            case PCA_MEAN:
-                lock (db_synch) {
-                    vectorMap = db.GetMirageMeanVectors ();
-                }
-                if (vectorMap == null)
-                    Hyena.Log.Error ("NoNoise/BLA - vectorMap is null!");
-
-                foreach (int bid in vectorMap.Keys) {
-                    try {
-                        if (!ana.AddEntry (bid, ConvertMirageVector (vectorMap [bid])))
-                            throw new Exception("AddEntry failed!");
-                    } catch (Exception e) {
-                        Hyena.Log.Exception("NoNoise - PCA Problem", e);
-                    }
-                }
-                break;
-
-            case PCA_MEAN_DUR:
-                lock (db_synch) {
-                    vectorMap = db.GetMirageMeanVectors ();
-                }
-                if (vectorMap == null)
-                    Hyena.Log.Error ("NoNoise/BLA - vectorMap is null!");
-
-                foreach (DatabaseTrackInfo dti in DatabaseTrackInfo.Provider.FetchAll ()) {
-                    try {
-                        int bid = dti.TrackId;
-
-                        if (!vectorMap.ContainsKey (bid)) {
-                            Hyena.Log.Debug ("NoNoise/BLA - skipping bid: " + bid);
-                            continue;
-                        }
-                        if (!ana.AddEntry (bid, ConvertMirageVector (vectorMap [bid]),
-                                           dti.Duration.TotalSeconds))
-                            throw new Exception("AddEntry failed!");
-                    } catch (Exception e) {
-                        Hyena.Log.Exception ("NoNoise - PCA Problem", e);
-                    }
-                }
-                break;
-
-            case PCA_SQR_MEAN:
-                lock (db_synch) {
-                    vectorMap = db.GetMirageSquaredMeanVectors ();
-                }
-                if (vectorMap == null)
-                    Hyena.Log.Error ("NoNoise/BLA - vectorMap is null!");
-
-                foreach (int bid in vectorMap.Keys) {
-                    try {
-                        if (!ana.AddEntry (bid, ConvertMirageVector (vectorMap [bid])))
-                            throw new Exception("AddEntry failed!");
-                    } catch (Exception e) {
-                        Hyena.Log.Exception("NoNoise - PCA Problem", e);
-                    }
-                }
-                break;
-
-            case PCA_SQR_MEAN_DUR:
-                lock (db_synch) {
-                    vectorMap = db.GetMirageSquaredMeanVectors ();
-                }
-                if (vectorMap == null)
-                    Hyena.Log.Error ("NoNoise/BLA - vectorMap is null!");
-
-                foreach (DatabaseTrackInfo dti in DatabaseTrackInfo.Provider.FetchAll ()) {
-                    try {
-                        int bid = dti.TrackId;
-
-                        if (!vectorMap.ContainsKey (bid)) {
-                            Hyena.Log.Debug ("NoNoise/BLA - skipping bid: " + bid);
-                            continue;
-                        }
-                        if (!ana.AddEntry (bid, ConvertMirageVector (vectorMap [bid]),
-                                           dti.Duration.TotalSeconds))
-                            throw new Exception("AddEntry failed!");
-                    } catch (Exception e) {
-                        Hyena.Log.Exception ("NoNoise - PCA Problem", e);
-                    }
-                }
-                break;
-
-            case PCA_MAX:
-                lock (db_synch) {
-                    vectorMap = db.GetMirageMaxVectors ();
-                }
-                if (vectorMap == null)
-                    Hyena.Log.Error ("NoNoise/BLA - vectorMap is null!");
-
-                foreach (int bid in vectorMap.Keys) {
-                    try {
-                        if (!ana.AddEntry (bid, ConvertMirageVector (vectorMap [bid])))
-                            throw new Exception("AddEntry failed!");
-                    } catch (Exception e) {
-                        Hyena.Log.Exception("NoNoise - PCA Problem", e);
-                    }
-                }
-                break;
-
-            case PCA_MAX_DUR:
-                lock (db_synch) {
-                    vectorMap = db.GetMirageMaxVectors ();
-                }
-                if (vectorMap == null)
-                    Hyena.Log.Error ("NoNoise/BLA - vectorMap is null!");
-
-                foreach (DatabaseTrackInfo dti in DatabaseTrackInfo.Provider.FetchAll ()) {
-                    try {
-                        int bid = dti.TrackId;
-
-                        if (!vectorMap.ContainsKey (bid)) {
-                            Hyena.Log.Debug ("NoNoise/BLA - skipping bid: " + bid);
-                            continue;
-                        }
-                        if (!ana.AddEntry (bid, ConvertMirageVector (vectorMap [bid]),
-                                           dti.Duration.TotalSeconds))
-                            throw new Exception("AddEntry failed!");
-                    } catch (Exception e) {
-                        Hyena.Log.Exception ("NoNoise - PCA Problem", e);
-                    }
-                }
-                break;
-
-            case PCA_MIN:
-                lock (db_synch) {
-                    vectorMap = db.GetMirageMinVectors ();
-                }
-                if (vectorMap == null)
-                    Hyena.Log.Error ("NoNoise/BLA - vectorMap is null!");
-
-                foreach (int bid in vectorMap.Keys) {
-                    try {
-                        if (!ana.AddEntry (bid, ConvertMirageVector (vectorMap [bid])))
-                            throw new Exception("AddEntry failed!");
-                    } catch (Exception e) {
-                        Hyena.Log.Exception("NoNoise - PCA Problem", e);
-                    }
-                }
-                break;
-
-            case PCA_MIN_DUR:
-                lock (db_synch) {
-                    vectorMap = db.GetMirageMinVectors ();
-                }
-                if (vectorMap == null)
-                    Hyena.Log.Error ("NoNoise/BLA - vectorMap is null!");
-
-                foreach (DatabaseTrackInfo dti in DatabaseTrackInfo.Provider.FetchAll ()) {
-                    try {
-                        int bid = dti.TrackId;
-
-                        if (!vectorMap.ContainsKey (bid)) {
-                            Hyena.Log.Debug ("NoNoise/BLA - skipping bid: " + bid);
-                            continue;
-                        }
-                        if (!ana.AddEntry (bid, ConvertMirageVector (vectorMap [bid]),
-                                           dti.Duration.TotalSeconds))
-                            throw new Exception("AddEntry failed!");
-                    } catch (Exception e) {
-                        Hyena.Log.Exception ("NoNoise - PCA Problem", e);
-                    }
-                }
-                break;
-
-            case PCA_MED:
-                lock (db_synch) {
-                    vectorMap = db.GetMirageMedianVectors ();
-                }
-                if (vectorMap == null)
-                    Hyena.Log.Error ("NoNoise/BLA - vectorMap is null!");
-
-                foreach (int bid in vectorMap.Keys) {
-                    try {
-                        if (!ana.AddEntry (bid, ConvertMirageVector (vectorMap [bid])))
-                            throw new Exception("AddEntry failed!");
-                    } catch (Exception e) {
-                        Hyena.Log.Exception("NoNoise - PCA Problem", e);
-                    }
-                }
-                break;
-
-            case PCA_MED_DUR:
-                lock (db_synch) {
-                    vectorMap = db.GetMirageMedianVectors ();
-                }
-                if (vectorMap == null)
-                    Hyena.Log.Error ("NoNoise/BLA - vectorMap is null!");
-
-                foreach (DatabaseTrackInfo dti in DatabaseTrackInfo.Provider.FetchAll ()) {
-                    try {
-                        int bid = dti.TrackId;
-
-                        if (!vectorMap.ContainsKey (bid)) {
-                            Hyena.Log.Debug ("NoNoise/BLA - skipping bid: " + bid);
-                            continue;
-                        }
-                        if (!ana.AddEntry (bid, ConvertMirageVector (vectorMap [bid]),
-                                           dti.Duration.TotalSeconds))
-                            throw new Exception("AddEntry failed!");
-                    } catch (Exception e) {
-                        Hyena.Log.Exception ("NoNoise - PCA Problem", e);
-                    }
-                }
-                break;
-
-            default:
-                Hyena.Log.Debug ("NoNoise/BLA - default pca case, ignoring...");
-                break;
-            }
-        }
-
-        /// <summary>
-        /// Compares the dictionary with the trackinfos to the music library
-        /// and updates it (removes deleted tracks and adds new ones).
-        /// </summary>
-//        private void UpdateMusicLibrary ()
-//        {
-////            for (int i = 0; i < ml.TrackModel.Count; i++) {
-//            foreach (DatabaseTrackInfo dti in DatabaseTrackInfo.Provider.FetchAll ()) {
-////                TrackInfo ti = ml.TrackModel [i];
-////                int bid = ml.GetTrackIdForUri (ti.Uri);
-//                int bid = dti.TrackId;
-//
-//                lock (lib_synch) {
-//                    if (!library.ContainsKey (bid)) {
-//                        Hyena.Log.DebugFormat ("NoNoise/BLA - adding bid {0} to library...", bid);
-//                        library.Add (bid, dti as TrackInfo);
-//                    }
-//                }
-//            }
-//
-//            SortedList<int, int> ids = new SortedList<int, int> ();
-////            for (int i = 0; i < ml.TrackModel.Count; i++) {
-//            foreach (DatabaseTrackInfo dti in DatabaseTrackInfo.Provider.FetchAll ()) {
-//                int bid = dti.TrackId;
-//                ids.Add (bid, bid);
-//            }
-//
-//            List<int> rem = new List<int> ();
-//
-//            lock (lib_synch) {
-//                foreach (int bid in library.Keys) {
-//                    if (!ids.ContainsKey (bid)) {
-//                        Hyena.Log.DebugFormat ("NoNoise/BLA - removing track {0} from library...", bid);
-//                        rem.Add (bid);
-//                    }
-//                }
-//            }
-//
-//            foreach (int r in rem) {
-//                lock (lib_synch) {
-//                    library.Remove (r);
-//                }
-//            }
-//
-//            Hyena.Log.DebugFormat ("NoNoise/BLA - Updated music library. new size: {0}", library.Count);
-//        }
-
-        /// <summary>
-        /// Stores the trackinfos from the music library in a sorted dictionary
-        /// mapped to the banshee_id.
-        /// </summary>
-//        private void ConvertMusicLibrary ()
-//        {
-//            lock (lib_synch) {
-//                library = new SortedDictionary<int, TrackInfo> ();
-//
-//                for (int i = 0; i < ml.TrackModel.Count; i++) {
-//                    DatabaseTrackInfo dti = ml.TrackModel [i] as DatabaseTrackInfo;
-//    //                int bid = ml.GetTrackIdForUri (ti.Uri);
-//                    library.Add (dti.TrackId, dti as TrackInfo);
-//                }
-//            }
-//
-//            Hyena.Log.Debug ("NoNoise/BLA - library conversion finished");
-//        }
-
-        /*
-         * rather useless
-        private void CheckGetTrackID ()
-        {
-            Dictionary<int, TrackData> trackMap = null;
-            lock (db_synch) {
-                trackMap = db.GetTrackDataDictionary ();
-            }
-            if (trackMap == null) {
-                Hyena.Log.Error ("NoNoise/BLA - trackMap is null!");
-                return;
-            }
-            Hyena.Log.Debug ("NoNoise/BLA - trackMap size: " + trackMap.Count);
-
-            int cnt = 0;
-
-            for (int i = 0; i < ml.TrackModel.Count; i++) {
-                try {
-                    TrackInfo ti = ml.TrackModel [i];
-                    int bid = ml.GetTrackIdForUri (ti.Uri);
-
-                    if (trackMap.ContainsKey (bid)) {
-                        if (!(ti.ArtistName.Equals (trackMap [bid].Artist) && ti.TrackTitle.Equals (trackMap [bid].Title)
-                                                  && ti.AlbumTitle.Equals (trackMap [bid].Album))) {
-                            Hyena.Log.ErrorFormat ("NoNoise/BLA - id and info do not match: artist: {0} vs {1}, title: " +
-                             "{2} vs {3}, album: {4} vs {5}", ti.ArtistName, trackMap [bid].Artist, ti.TrackTitle,
-                                                   trackMap [bid].Title, ti.AlbumTitle, trackMap [bid].Album);
-                            cnt++;
-                        }
-                    } else {
-                        Hyena.Log.Error ("NoNoise/BLA - No key: " + bid);
-                    }
-                } catch (Exception e) {
-                    Hyena.Log.Exception ("NoNoise/BLA - everything failed.", e);
-                    return;
-                }
-            }
-            Hyena.Log.DebugFormat ("NoNoise/BLA - {0} mismatches", cnt);
-        }
-        */
         #endregion
 
         #region PCA variants

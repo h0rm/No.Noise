@@ -36,7 +36,7 @@ namespace NoNoise.Visualization
         SongGroup point_group;
         MainGui gui;
         BansheeLibraryAnalyzer analyzer;
-        Dictionary<int, NoNoise.Data.TrackData> info;
+//        Dictionary<int, NoNoise.Data.TrackData> info;
 
         object enter_counter_lock = new Object ();
         int enter_counter = 0;
@@ -123,20 +123,20 @@ namespace NoNoise.Visualization
         {
             foreach (int i in args.SongIDs) {   // TODO change back to GetTrackInfoFor, ...
 
-//                Banshee.Collection.TrackInfo track = analyzer.GetTrackInfoFor (i);
+                Banshee.Collection.TrackInfo track = analyzer.GetTrackInfoFor (i);
 
-//                if (track == null) {
-                if (!info.ContainsKey (i)) {
-                    continue;
+                if (track == null) {
+//                if (!info.ContainsKey (i)) {
                     Hyena.Log.Debug ("Warning, track not found");
+                    continue;
                 }
 
-//                titles.Add (String.Copy (track.TrackTitle == "" || track.TrackTitle == null
-//                                                            ? "Unknown Title" : track.TrackTitle));
-//                artists.Add (String.Copy (track.ArtistName == "" || track.ArtistName == null
-//                                                            ? "Unknown Artist" : track.ArtistName));
-                titles.Add (info[i].Title == "" ? "Unknown Title" : info[i].Title);
-                artists.Add (info[i].Artist == "" ? "Unknown Artist" : info[i].Artist);
+                titles.Add (String.Copy (track.TrackTitle == "" || track.TrackTitle == null
+                                                            ? "Unknown Title" : track.TrackTitle));
+                artists.Add (String.Copy (track.ArtistName == "" || track.ArtistName == null
+                                                            ? "Unknown Artist" : track.ArtistName));
+//                titles.Add (info[i].Title == "" ? "Unknown Title" : info[i].Title);
+//                artists.Add (info[i].Artist == "" ? "Unknown Artist" : info[i].Artist);
             }
 
         }
@@ -224,10 +224,10 @@ namespace NoNoise.Visualization
                 analyzer = BansheeLibraryAnalyzer.Singleton;
 
             List<NoNoise.Data.DataEntry> data = analyzer.PcaCoordinates;
-            info = new Dictionary<int, NoNoise.Data.TrackData> (data.Count);
+//            info = new Dictionary<int, NoNoise.Data.TrackData> (data.Count);
 
-            foreach (NoNoise.Data.DataEntry d in data)
-                info.Add (d.ID, d.Value);
+//            foreach (NoNoise.Data.DataEntry d in data)
+//                info.Add (d.ID, d.Value);
 
             point_group.LoadPcaData (data);
 
