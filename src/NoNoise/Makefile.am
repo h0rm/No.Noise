@@ -188,6 +188,7 @@ SOURCES =  \
 	NoNoise/Visualization/Gui/Button.cs \
 	NoNoise/Visualization/Gui/InfoBox.cs \
 	NoNoise/Visualization/Gui/MainGui.cs \
+	NoNoise/Visualization/Gui/StatusBox.cs \
 	NoNoise/Visualization/Gui/StyleSheet.cs \
 	NoNoise/Visualization/Gui/ToolbarButton.cs \
 	NoNoise/Visualization/Gui/ToolbarToggleButton.cs \

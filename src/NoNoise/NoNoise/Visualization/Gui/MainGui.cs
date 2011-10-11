@@ -50,6 +50,7 @@ namespace NoNoise.Visualization.Gui
         private Button playlist_button;
 
         private Group toolbar;
+        private StatusBox status_box;
 
         public MainGui (Stage stage) : base ()
         {
@@ -118,26 +119,24 @@ namespace NoNoise.Visualization.Gui
             toolbar.Add (select_button);
             toolbar.Add (remove_button);
             toolbar.Add (reset_button);
-//            toolbar.
             toolbar.Add (playlist_button);
-//            this.Add (playlist_button);
-//            toolbar.SetScale (1,1);
 
             toolbar.AnchorPointFromGravity = Gravity.North;
             toolbar.SetPosition (500,5);
-
             this.Add (toolbar);
 
             infobox = new InfoBox (style, 200,400, false);
             infobox.AnchorPointFromGravity = Gravity.NorthEast;
             this.Add (infobox);
-//            infobox.Reactive = true;
 
             selection_info = new InfoBox (style, 200, 400, true);
             selection_info.AnchorPointFromGravity = Gravity.SouthEast;
             this.Add (selection_info);
-//            selection_info.Reactive = true;
-//            selection_info.SetPosition (500,500);
+
+            status_box = new StatusBox (style, 200, 20);
+            status_box.AnchorPointFromGravity = Gravity.SouthWest;
+            this.Add (status_box);
+
             InitDebug ();
             this.Reactive = false;
             InitHandler ();
@@ -227,6 +226,7 @@ namespace NoNoise.Visualization.Gui
             toolbar.SetPosition (0.5f+(float)Math.Round (stage.Width/2f-infobox.Width/2f+zoom_button_in.Width), toolbar.Y);
             infobox.SetPosition (stage.Width, 0);
             selection_info.SetPosition (stage.Width, stage.Height);
+            status_box.SetPosition (0, stage.Height);
 //            Hyena.Log.Information ("Stage size x " + stage.X + "x" + stage.Height);
         }
 
@@ -272,6 +272,11 @@ namespace NoNoise.Visualization.Gui
         public void ClearInfoSelection ()
         {
             selection_info.Clear ();
+        }
+
+        public void UpdateStatus (String text, bool waiting)
+        {
+            status_box.Update (text, waiting);
         }
 
         /// <summary>
@@ -377,8 +382,9 @@ namespace NoNoise.Visualization.Gui
                 Hyena.Log.Debug ("Debug two");
 
                 //Call event Handler - TODO level allways 0
-                if (this.debug_event != null)
-                    debug_event (this,new DebugEventArgs (-1,"Debug two"));
+//                if (this.debug_event != null)
+//                    debug_event (this,new DebugEventArgs (-1,"Debug two"));
+                status_box.Update ("no spinner", false);
             }
         }
 
@@ -400,8 +406,9 @@ namespace NoNoise.Visualization.Gui
                 Hyena.Log.Debug ("Debug one");
 
                 //Call event Handler - TODO level allways 0
-                if (this.debug_event != null)
-                    debug_event (this,new DebugEventArgs (1,"Debug one"));
+//                if (this.debug_event != null)
+//                    debug_event (this,new DebugEventArgs (1,"Debug one"));
+                status_box.Update ("new text", true);
             }
         }
 
