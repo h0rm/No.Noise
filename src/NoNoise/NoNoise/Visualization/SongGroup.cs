@@ -594,31 +594,6 @@ namespace NoNoise.Visualization
             //punkt auf objekt schieben
             this.SetPosition ((float)pos_x, (float)pos_y);
 
-
-//            float trans_x = 0, trans_y = 0;
-//            this.TransformStagePoint (x, y, out trans_x, out trans_y);
-////
-//            double scale_x, scale_y;
-//            this.GetScale (out scale_x, out scale_y);
-////
-//            float cx, cy;
-//
-//            this.GetScaleCenter (out cx, out cy);
-////            // raus zoomen
-////            float old_x, old_y;
-////            this.SetScaleFull (scale_x, scale_y, trans_x, trans_y);
-//////            this.SetScaleFull (1, 1, 0, 0);
-//
-//            Hyena.Log.Information ( String.Format ("Zoom\n" +
-//             "   Pos = {0},{1}\n" +
-//             "   Scale = {2} @ {5},{6}" +
-//             "   Trans = {3},{4}", this.X, this.Y, scale_x, trans_x, trans_y, cx, cy));
-
-//
-//            zoom_animation_behave.SetBounds (scale_x, scale_y, 0.02, 0.02);
-//
-//            animation_timeline.Start();
-
             double old_zoom_level = zoom_level;
 
             //rein zoomen
@@ -942,9 +917,21 @@ namespace NoNoise.Visualization
         /// </summary>
         private void UpdateView ()
         {
-
             ClearView ();
             UpdateClipping ();
+        }
+
+        private new void GetTransformedPosition (out float x, out float y)
+        {
+            double sx, sy;
+            float cx, cy;
+            GetScaleCenter (out cx, out cy);
+            GetScale (out sx, out sy);
+
+            x = this.X + cx * (float)(1-sx);
+            y = this.Y + cy * (float)(1-sy);
+
+            Hyena.Log.Debug ("Transformed position");
         }
 
         /// <summary>
@@ -967,6 +954,7 @@ namespace NoNoise.Visualization
             float tx, ty;
             double sx, sy;
             GetTransformedPosition (out tx, out ty);
+
             GetScale (out sx, out sy);
 
 //            Hyena.Log.Information (String.Format ("Scale {0},{1}",sx, sy));
