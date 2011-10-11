@@ -48,6 +48,7 @@ namespace NoNoise.Visualization
             texture = new Clutter.CairoTexture (width, height);
             texture.SetSize (width, height);
             this.Add (texture);
+            vertices = new List<Point> ();
         }
 
         public new void SetSize (float width, float height)
@@ -67,7 +68,7 @@ namespace NoNoise.Visualization
         /// <summary>
         /// Clears the selection polygon.
         /// </summary>
-        private void Clear ()
+        public void Clear ()
         {
 
             texture.Clear ();
@@ -82,9 +83,10 @@ namespace NoNoise.Visualization
         /// </summary>
         public void Reset ()
         {
+//            Hyena.Log.Debug ("Reset");
             Clear ();
 
-            vertices = new List<Point> ();
+            vertices.Clear ();
 
             count = 0;
         }
@@ -109,6 +111,7 @@ namespace NoNoise.Visualization
         /// </param>
         public void Start (double x, double y, double scale, double shift_x, double shift_y)
         {
+            Hyena.Log.Debug ("Start");
             old_x = x;
             old_y = y;
 
@@ -130,6 +133,7 @@ namespace NoNoise.Visualization
         /// </summary>
         public void Stop ()
         {
+            Hyena.Log.Debug ("Stop");
             if (vertices.Count > 0) {
 
                 AddSegment (old_x,old_y);
@@ -153,6 +157,7 @@ namespace NoNoise.Visualization
         /// </param>
         public void LineTo (double x, double y)
         {
+//            Hyena.Log.Debug ("LineTo");
             DrawLine (x,y);
 
             Point p = new Point (x,y);

@@ -82,9 +82,9 @@ namespace NoNoise.Visualization
                 } else {
 
                     GetSongLists (args, ref songs, ref artists);
-                    Hyena.Log.Information ("Retrieved song info");
+//                    Hyena.Log.Information ("Retrieved song info");
                     gui.UpdateSelection (songs, artists);
-                    Hyena.Log.Information ("Updated song info");
+//                    Hyena.Log.Information ("Updated song info");
                 }
             };
 

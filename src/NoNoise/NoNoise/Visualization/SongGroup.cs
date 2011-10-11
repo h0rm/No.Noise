@@ -114,7 +114,6 @@ namespace NoNoise.Visualization
         private int diff_zoom_clustering = 0;
 
         private SelectionActor selection;
-
         private bool selection_enabled = false;
         private List<SongPoint> points_selected = new List<SongPoint> ();
 
@@ -271,9 +270,11 @@ namespace NoNoise.Visualization
         private void InitSelectionActor ()
         {
             selection = new SelectionActor (1000,1000, new Cairo.Color (1,0,0,0.9));
+//            selection.SetPosition (0,0);
+//            stage.Add (selection);
+//            selection = new SelectionManager (1000, 1000, new Cairo.Color (1, 0, 0, 0.9));
             selection.SetPosition (0,0);
             stage.Add (selection);
-
         }
 
         /// <summary>
@@ -426,6 +427,10 @@ namespace NoNoise.Visualization
         public void ToggleSelection ()
         {
             mouse_button_locked = true;
+
+            if (!selection_toggle)
+                ClearSelection ();
+
             selection_toggle = !selection_toggle;
         }
 
@@ -931,7 +936,7 @@ namespace NoNoise.Visualization
             x = this.X + cx * (float)(1-sx);
             y = this.Y + cy * (float)(1-sy);
 
-            Hyena.Log.Debug ("Transformed position");
+//            Hyena.Log.Debug ("Transformed position");
         }
 
         /// <summary>
@@ -1065,6 +1070,7 @@ namespace NoNoise.Visualization
         /// </summary>
         private void ClearSelection ()
         {
+
             point_manager.ClearSelection ();
 
             UpdateView ();
@@ -1096,15 +1102,24 @@ namespace NoNoise.Visualization
         /// </summary>
         private void UpdateSelection ()
         {
-            points_selected = selection.GetPointsInside (points_visible);
+            points_selected.AddRange (selection.GetPointsInside (points_visible));
+
+            List<SongPoint> list = selection.GetPointsInside (points_visible);
+
+            for (int i = 0; i < list.Count; i ++)
+            {
+                list[i].MarkAsSelected ();
+
+                if (list[i].Actor == null)
+                    continue;
+
+                list[i].Actor.SetPrototypeByColor (SongActor.Color.Red);
+            }
 
             List<int> selected_ids = new List<int> ();
 
             for (int i = 0; i < points_selected.Count; i ++)
             {
-                points_selected[i].MarkAsSelected ();
-                points_selected[i].Actor.SetPrototypeByColor (SongActor.Color.Red);
-
                 foreach (int id in points_selected[i].GetAllIDs ()) {
                     if (!selected_ids.Contains(id))
                         selected_ids.Add (id);
@@ -1272,22 +1287,18 @@ namespace NoNoise.Visualization
                 return;
 
             uint click_count = EventHelper.GetClickCount (args.Event);
-            Hyena.Log.Debug ("Click count = " + click_count);
+//            Hyena.Log.Debug ("Click count = " + click_count);
 
             if (click_count >= 2 && click_count < 4) {
                 float x, y;
                 EventHelper.GetCoords (args.Event, out x, out y);
-    
-
 
                 Actor clicked = stage.GetActorAtPos (PickMode.Reactive, (int)x, (int)y);
-                Hyena.Log.Debug ("Picked");
 
                 if (clicked != null) {
                     if ((clicked is SongActor)) {
                         if ((clicked as SongActor).Owner != null)
                             FireSongStartPlaying (new SongInfoArgs ((clicked as SongActor).Owner.GetAllIDs ()));
-                        Hyena.Log.Information ("Fired event");
                     }
                 }
             }
@@ -1320,14 +1331,15 @@ namespace NoNoise.Visualization
 
 
             EventHelper.GetCoords (args.Event, out mouse_old_x, out mouse_old_y);
-            selection.Reset ();
+
 
             if (button != 1)
                 return;
 
             if (selection_toggle) {
 
-                ClearSelection ();
+//                ClearSelection ();
+                selection.Reset ();
                 selection_enabled = true;
                 double scale;
                 GetScale (out scale, out scale);
