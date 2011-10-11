@@ -79,19 +79,36 @@ namespace NoNoise.Visualization
         /// </summary>
         public SelectionMode Selection {
             get {
+                //leaf
                 if (IsLeaf)
                     return selection;
 
-                if (RightChild != null) {
-                    if (RightChild.IsSelected && LeftChild.IsSelected)
+                //no right child
+                if (RightChild == null)
+                    return LeftChild.Selection;
+
+                //both visible
+                if (RightChild.IsVisible && LeftChild.IsVisible)
+                {
+                    if (RightChild.IsSelected && LeftChild.IsSelected) {
+
                         return SelectionMode.Full;
 
-                    if (RightChild.Selection != SelectionMode.None
-                        || LeftChild.Selection != SelectionMode.None)
-                        return SelectionMode.Partial;
-                }
+                    } else if (RightChild.Selection != SelectionMode.None
 
-                return LeftChild.Selection;
+                        || LeftChild.Selection != SelectionMode.None) {
+                        return SelectionMode.Partial;
+
+                    } else {
+
+                        return SelectionMode.None;
+
+                    }
+
+                } else {    //one visible
+
+                    return MainChild.Selection;
+                }
             }
 
             private set {

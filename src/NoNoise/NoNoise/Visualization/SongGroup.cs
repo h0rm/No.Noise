@@ -184,22 +184,8 @@ namespace NoNoise.Visualization
 
             point_manager = new SongPointManager (0, 0, 30000, 30000);
 
-            double x_min = entries.Min ( p => p.X);
-            double y_min = entries.Min ( p => p.Y);
-            double x_max = entries.Max ( p => p.X);
-            double y_max = entries.Max ( p => p.Y);
-
-
-            double dx = 30000 / (x_max - x_min);
-            double dy = 30000 / (y_max - y_min);
-
-            double offx = -x_min * dx;
-            double offy = -y_min * dx;
-
-            Hyena.Log.Information (String.Format ("Max_x = {0}, Min_x = {1}\n   Max_y = {2}, Min_y = {3}" +
-              "  Dx = {4}, Dy = {5}\n   offx = {6}, offy = {7}", x_min, x_max, y_min, y_max, dx, dy, offx, offy));
             foreach (DataEntry e in entries) {
-                point_manager.Add (e.X*dx + offx, e.Y*dy + offy, e.ID);
+                point_manager.Add (e.X*30000, e.Y*30000, e.ID);
             }
 
             point_manager.Cluster ();
