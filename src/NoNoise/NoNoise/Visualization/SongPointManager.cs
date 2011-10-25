@@ -308,19 +308,31 @@ namespace NoNoise.Visualization
             InvalidatePositions ();
         }
 
-        /// <summary>
-        /// Returns all selected leaf points.
-        /// </summary>
-        /// <returns>
-        /// A <see cref="List<SongPoint>"/>
-        /// </returns>
-        public List<SongPoint> GetSelected ()
+//        /// <summary>
+//        /// Returns all selected leaf points.
+//        /// </summary>
+//        /// <returns>
+//        /// A <see cref="List<SongPoint>"/>
+//        /// </returns>
+//        public List<SongPoint> GetSelected ()
+//        {
+//            List<SongPoint> ret = new List<SongPoint> ();
+//
+//            foreach (SongPoint p in tree_list[0].GetAllObjects ()) {
+//                if (p.IsSelected && p.IsVisible)
+//                    ret.Add (p);
+//            }
+//
+//            return ret;
+//        }
+
+        public List<int> GetSelectedIDs ()
         {
-            List<SongPoint> ret = new List<SongPoint> ();
+            List<int> ret = new List<int> ();
 
             foreach (SongPoint p in tree_list[0].GetAllObjects ()) {
                 if (p.IsSelected && p.IsVisible)
-                    ret.Add (p);
+                    ret.Add (p.ID);
             }
 
             return ret;

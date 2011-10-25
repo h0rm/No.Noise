@@ -45,7 +45,7 @@ namespace NoNoise.Visualization.Gui
         private ZoomButton zoom_button_out;
 
         private Button select_button;
-        private Button reset_button;
+        private ToolbarToggleButton reset_button;
         private Button remove_button;
         private Button playlist_button;
 
@@ -94,20 +94,20 @@ namespace NoNoise.Visualization.Gui
 
             toolbar = new Group ();
 //            toolbar.SetSize (306,20);
-            select_button = new ToolbarToggleButton ("select", style,
+            select_button = new ToolbarToggleButton ("select", "select on", true, style,
                                                      ToolbarButton.Border.Left, 75,20);
             select_button.SetPosition (0,0);
 
 
             remove_button = new ToolbarButton ("remove", style,
                                                ToolbarButton.Border.None, 75,20);
-            remove_button.SetPosition (76, 0);
+            remove_button.SetPosition (152, 0);
 
 
-            reset_button = new ToolbarButton ("reset", style,
+            reset_button = new ToolbarToggleButton ("reset", "clear", false, style,
                                                ToolbarButton.Border.None,
                                                75,20);
-            reset_button.SetPosition (152, 0);
+            reset_button.SetPosition (76, 0);
 
 
             playlist_button = new ToolbarButton ("playlist", style,
@@ -160,8 +160,14 @@ namespace NoNoise.Visualization.Gui
             };
 
             reset_button.ButtonPressEvent += delegate {
-                if (button_clicked != null)
-                    button_clicked (this, new ButtonClickedArgs (ButtonClickedArgs.Button.Reset));
+                if (button_clicked != null){
+
+                    if (reset_button.IsOn)
+                        button_clicked (this, new ButtonClickedArgs (ButtonClickedArgs.Button.Clear));
+                    else
+                        button_clicked (this, new ButtonClickedArgs (ButtonClickedArgs.Button.Reset));
+                }
+
             };
 
             playlist_button.ButtonPressEvent += delegate {
@@ -279,6 +285,11 @@ namespace NoNoise.Visualization.Gui
             status_box.Update (text, waiting);
         }
 
+        public void SetResetButton (bool clear)
+        {
+            reset_button.SetState (clear);
+        }
+
         /// <summary>
         /// [Debug] Draws a debug texture onto the given actor.
         /// </summary>
@@ -329,7 +340,7 @@ namespace NoNoise.Visualization.Gui
             /// <summary>
             /// Specifies the button clicked.
             /// </summary>
-            public enum Button { ZoomIn, ZoomOut, Select, Reset, Playlist, Remove};
+            public enum Button { ZoomIn, ZoomOut, Select, Reset, Playlist, Remove, Clear};
 
             public Button ButtonClicked {
                 get;

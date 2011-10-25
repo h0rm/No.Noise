@@ -115,8 +115,6 @@ namespace NoNoise.Visualization
 
         private SelectionActor selection;
         private bool selection_enabled = false;
-        private List<SongPoint> points_selected = new List<SongPoint> ();
-
         private bool selection_toggle = false;
 
         private bool mouse_button_locked = false;
@@ -428,8 +426,8 @@ namespace NoNoise.Visualization
         {
             mouse_button_locked = true;
 
-            if (!selection_toggle)
-                ClearSelection ();
+//            if (!selection_toggle)
+//                ClearSelection ();
 
             selection_toggle = !selection_toggle;
         }
@@ -458,6 +456,14 @@ namespace NoNoise.Visualization
             UpdateView ();
         }
 
+        public void ClearSongSelection ()
+        {
+            mouse_button_locked = true;
+
+            ClearSelection ();
+            UpdateView ();
+        }
+
         /// <summary>
         /// Returns a list of song ids which correspond to the selected points.
         /// </summary>
@@ -466,14 +472,7 @@ namespace NoNoise.Visualization
         /// </returns>
         public List<int> GetSelectedSongIDs ()
         {
-            List<SongPoint> selected = point_manager.GetSelected ();
-
-            List<int> ret = new List<int> (selected.Count);
-
-            foreach (SongPoint p in selected)
-                ret.Add (p.ID);
-
-            return ret;
+            return point_manager.GetSelectedIDs ();
         }
 
         /// <summary>
@@ -1075,8 +1074,6 @@ namespace NoNoise.Visualization
 
             UpdateView ();
 
-            points_selected = new List<SongPoint> ();
-
             selection.Reset ();
 
             FireSelectionCleared ();
@@ -1087,14 +1084,7 @@ namespace NoNoise.Visualization
         /// </summary>
         private void UpdateShownSelection ()
         {
-            List<int> selected_ids = new List<int> ();
-
-            foreach (SongPoint p in point_manager.GetSelected ())
-                foreach (int id in p.GetAllIDs ()) {
-                        if (!selected_ids.Contains(id))
-                            selected_ids.Add (id);
-                }
-            FireSongSelected (new SongInfoArgs (selected_ids));
+            FireSongSelected (new SongInfoArgs (point_manager.GetSelectedIDs ()));
         }
 
         /// <summary>
@@ -1102,33 +1092,19 @@ namespace NoNoise.Visualization
         /// </summary>
         private void UpdateSelection ()
         {
-            points_selected.AddRange (selection.GetPointsInside (points_visible));
-
             List<SongPoint> list = selection.GetPointsInside (points_visible);
 
-            for (int i = 0; i < list.Count; i ++)
-            {
-                list[i].MarkAsSelected ();
+            foreach (SongPoint p in list) {
 
-                if (list[i].Actor == null)
+                p.MarkAsSelected ();
+
+                if (p.Actor == null)
                     continue;
 
-                list[i].Actor.SetPrototypeByColor (SongActor.Color.Red);
+                p.Actor.SetPrototypeByColor (SongActor.Color.Red);
             }
 
-            List<int> selected_ids = new List<int> ();
-
-            for (int i = 0; i < points_selected.Count; i ++)
-            {
-                foreach (int id in points_selected[i].GetAllIDs ()) {
-                    if (!selected_ids.Contains(id))
-                        selected_ids.Add (id);
-                }
-            }
-
-            UpdateClipping ();
-
-            FireSongSelected (new SongInfoArgs (selected_ids));
+            UpdateShownSelection ();
         }
         #endregion Selection
 

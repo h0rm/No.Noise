@@ -111,7 +111,7 @@ namespace NoNoise.Visualization
         /// </param>
         public void Start (double x, double y, double scale, double shift_x, double shift_y)
         {
-            Hyena.Log.Debug ("Start");
+//            Hyena.Log.Debug ("Start");
             old_x = x;
             old_y = y;
 
@@ -133,7 +133,7 @@ namespace NoNoise.Visualization
         /// </summary>
         public void Stop ()
         {
-            Hyena.Log.Debug ("Stop");
+//            Hyena.Log.Debug ("Stop");
             if (vertices.Count > 0) {
 
                 AddSegment (old_x,old_y);

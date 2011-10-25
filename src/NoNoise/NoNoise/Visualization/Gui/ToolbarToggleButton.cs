@@ -37,10 +37,16 @@ namespace NoNoise.Visualization.Gui
         public enum State {On, Off};
 
         protected State state = State.Off;
+        private bool toggle;
 
-        public ToolbarToggleButton (String text, StyleSheet scheme, Border borders,
-                                    uint width, uint height) : base (text, scheme, borders, width, height)
+        public bool IsOn {
+            get { return state == ToolbarToggleButton.State.On; }
+        }
+        public ToolbarToggleButton (String text_one, String text_two, bool auto_toggle, StyleSheet scheme, Border borders,
+                                    uint width, uint height) : base (text_one, scheme, borders, width, height)
         {
+            toggle = auto_toggle;
+
             CairoTexture texture = new CairoTexture (width, height);
             StyleSheet s = scheme;
             s.Foreground = scheme.Background;
@@ -49,10 +55,11 @@ namespace NoNoise.Visualization.Gui
                                    scheme.Standard.Weight, scheme.Standard.Size, scheme.Background);
             s.Border = scheme.Foreground;
             Style = s;
-
+            Text = text_two;
             Draw (texture);
 
             Style = scheme;
+            Text = text_one;
             textures.Add (texture);
             texture.Hide ();
             this.Add (texture);
@@ -79,8 +86,8 @@ namespace NoNoise.Visualization.Gui
         /// </param>
         private void HandleButtonPressEvent (object o, ButtonPressEventArgs args)
         {
-            state = state == State.On ? State.Off : State.On;
-            OnStateChanged ();
+            if (toggle)
+                ToggleState ();
         }
 
         /// <summary>
@@ -97,6 +104,19 @@ namespace NoNoise.Visualization.Gui
             else
                 textures[1].Show ();
         }
+
+        public void ToggleState ()
+        {
+            state = state == State.On ? State.Off : State.On;
+            OnStateChanged ();
+        }
+
+        public void SetState (bool on)
+        {
+            state = on ? State.On : State.Off;
+            OnStateChanged ();
+        }
+
     }
 }
 

@@ -74,6 +74,8 @@ namespace NoNoise.Visualization
 
             point_group.SongSelected += delegate(object source, SongInfoArgs args) {
 
+                gui.SetResetButton (true);
+
                 List<String> songs = new List<String> ();
                 List<String> artists = new List<String> ();
 
@@ -90,6 +92,7 @@ namespace NoNoise.Visualization
 
             point_group.SelectionCleared += delegate {
                 gui.ClearInfoSelection ();
+                gui.SetResetButton (false);
             };
 
             point_group.SongStartPlaying += delegate(object source, SongInfoArgs args) {
@@ -176,6 +179,10 @@ namespace NoNoise.Visualization
 
             case MainGui.ButtonClickedArgs.Button.Playlist:
                 GeneratePlaylist (point_group.GetSelectedSongIDs (), true);
+                break;
+
+            case MainGui.ButtonClickedArgs.Button.Clear:
+                point_group.ClearSongSelection ();
                 break;
             }
         }
