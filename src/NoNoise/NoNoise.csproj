@@ -82,6 +82,7 @@
     </Reference>
     <Reference Include="System.Data" />
     <Reference Include="Mono.Data.SqliteClient" />
+    <Reference Include="Mono.Data.Sqlite" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="NoNoise.addin.xml">

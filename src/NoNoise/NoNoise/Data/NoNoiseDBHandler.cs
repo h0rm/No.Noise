@@ -27,7 +27,8 @@ using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Text;
-using Mono.Data.SqliteClient;
+//using Mono.Data.SqliteClient;
+using Mono.Data.Sqlite;
 //using Mono.Data.Sqlite;
 using MathNet.Numerics.LinearAlgebra;
 using Hyena.Data.Sqlite;
@@ -39,7 +40,7 @@ namespace NoNoise.Data
     {
         #region Constants
         // TODO change connection string to final db
-        private readonly string CONNECTION_STRING = "URI=file:nonoise.db,version=3";
+        private readonly string CONNECTION_STRING = "Data Source=nonoise.db,version=3";
 
         private readonly string CREATE_TABLE_MIRDATA =
             "CREATE TABLE IF NOT EXISTS MIRData (banshee_id INTEGER NOT NULL, mean CLOB NOT NULL, sqrmean CLOB NOT NULL, " +
