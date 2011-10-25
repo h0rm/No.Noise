@@ -456,6 +456,9 @@ namespace NoNoise.Visualization
             UpdateView ();
         }
 
+        /// <summary>
+        /// Clears the selection and updates the view.
+        /// </summary>
         public void ClearSongSelection ()
         {
             mouse_button_locked = true;
@@ -690,6 +693,9 @@ namespace NoNoise.Visualization
             UpdateView ();
         }
 
+        /// <summary>
+        /// Stops all animations (zoom and clustering)
+        /// </summary>
         private void StopAllAnimations ()
         {
             animation_timeline.Stop ();
@@ -925,6 +931,16 @@ namespace NoNoise.Visualization
             UpdateClipping ();
         }
 
+        /// <summary>
+        /// Calculates the transformed position for the given coordinated. This replaces
+        /// the buggy <see cref="Clutter.Actor.GetTransformedPosition"/>.
+        /// </summary>
+        /// <param name="x">
+        /// A <see cref="System.Single"/>
+        /// </param>
+        /// <param name="y">
+        /// A <see cref="System.Single"/>
+        /// </param>
         private new void GetTransformedPosition (out float x, out float y)
         {
             double sx, sy;
@@ -1056,6 +1072,9 @@ namespace NoNoise.Visualization
             this.Painted += HandlePaintedUpdateClipping;
         }
 
+        /// <summary>
+        /// The view is updated after the next Paint event.
+        /// </summary>
         private void SecureUpdateView ()
         {
             this.Painted += HandlePaintedUpdateView;
@@ -1234,7 +1253,16 @@ namespace NoNoise.Visualization
             this.Painted -= HandlePaintedUpdateClipping;
         }
 
-
+        /// <summary>
+        /// Handler for the <see cref="Painted"/> event which is called once to update
+        /// the view.
+        /// </summary>
+        /// <param name="sender">
+        /// A <see cref="System.Object"/>
+        /// </param>
+        /// <param name="e">
+        /// A <see cref="EventArgs"/>
+        /// </param>
         private void HandlePaintedUpdateView (object sender, EventArgs e)
         {
             UpdateView ();
@@ -1372,6 +1400,12 @@ namespace NoNoise.Visualization
                 selection_cleared (this);
         }
 
+        /// <summary>
+        /// Fires <see cref="SongStartPlayingEvent"/>
+        /// </summary>
+        /// <param name="args">
+        /// A <see cref="SongInfoArgs"/>
+        /// </param>
         private void FireSongStartPlaying (SongInfoArgs args)
         {
             Hyena.Log.Information ("Fire function");

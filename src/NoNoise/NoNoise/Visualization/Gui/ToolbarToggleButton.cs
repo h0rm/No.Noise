@@ -39,9 +39,13 @@ namespace NoNoise.Visualization.Gui
         protected State state = State.Off;
         private bool toggle;
 
+        /// <summary>
+        /// Checks if the state is On or Off.
+        /// </summary>
         public bool IsOn {
             get { return state == ToolbarToggleButton.State.On; }
         }
+
         public ToolbarToggleButton (String text_one, String text_two, bool auto_toggle, StyleSheet scheme, Border borders,
                                     uint width, uint height) : base (text_one, scheme, borders, width, height)
         {
@@ -105,12 +109,21 @@ namespace NoNoise.Visualization.Gui
                 textures[1].Show ();
         }
 
+        /// <summary>
+        /// Toggles the state.
+        /// </summary>
         public void ToggleState ()
         {
             state = state == State.On ? State.Off : State.On;
             OnStateChanged ();
         }
 
+        /// <summary>
+        /// Sets the state.
+        /// </summary>
+        /// <param name="on"> true for on, false for off
+        /// A <see cref="System.Boolean"/>
+        /// </param>
         public void SetState (bool on)
         {
             state = on ? State.On : State.Off;
