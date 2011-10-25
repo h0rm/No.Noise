@@ -45,15 +45,16 @@ namespace NoNoise.Visualization
         {
             SetSizeRequest (100,100);
             Stage.Color = new Color (0.1,0.1,0.1,255);
-            point_group = new SongGroup (Stage);
+
             gui = new MainGui (Stage);
-
-
-            Stage.Add (point_group);
             Stage.Add (gui);
+            gui.UpdateStatus ("Initializing visualization.", false);
 
+            point_group = new SongGroup (Stage);
+            Stage.Add (point_group);
             point_group.LowerBottom ();
 
+            gui.UpdateStatus ("Visualization initialized. Double click to play song.", false);
             InitHandler ();
         }
 
@@ -170,18 +171,22 @@ namespace NoNoise.Visualization
                 break;
 
             case MainGui.ButtonClickedArgs.Button.Remove:
+                gui.UpdateStatus ("Selected songs removed.", false);
                 point_group.RemoveSelected ();
                 break;
 
             case MainGui.ButtonClickedArgs.Button.Reset:
+                gui.UpdateStatus ("Visualization reset.", false);
                 point_group.ResetRemovedPoints ();
                 break;
 
             case MainGui.ButtonClickedArgs.Button.Playlist:
+                gui.UpdateStatus ("Playlist NoNoise created.", false);
                 GeneratePlaylist (point_group.GetSelectedSongIDs (), true);
                 break;
 
             case MainGui.ButtonClickedArgs.Button.Clear:
+                gui.UpdateStatus ("Selection cleared.", false);
                 point_group.ClearSongSelection ();
                 break;
             }

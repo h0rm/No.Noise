@@ -66,7 +66,7 @@ namespace NoNoise.Visualization.Gui
             Add (spinner_actor);
 
             spinner_timer = new Timer ();
-            spinner_timer.Interval = 100;
+            spinner_timer.Interval = 150;
             spinner_timer.Elapsed += HandleSpinnerNextFrame;
 
 //            Update ("",true);
@@ -158,12 +158,16 @@ namespace NoNoise.Visualization.Gui
         private void GenerateBackground (bool offset)
         {
             Cairo.Context cr = texture.Create ();
+            cr.SelectFontFace (style.Standard.Family, style.Standard.Slant, style.Standard.Weight);
+            cr.SetFontSize (style.Standard.Size);
+            cr.FontOptions.HintStyle = HintStyle.Full;
+
             TextExtents te = cr.TextExtents (Text);
 
             double x = 0.5, y = 0.5;
             double r = (height - x - y) / 2;
 
-            double width = te.Width + 10 + (offset?spinner_actor.Width+4:0) + r;
+            double width = te.XAdvance + (offset?spinner_actor.Width+4:0) + 1.5*r;
 
 
             cr.Arc (-x+width-r, y+r, r, -Math.PI/2, 0);
@@ -183,11 +187,7 @@ namespace NoNoise.Visualization.Gui
 
             cr.Color = style.Background;
 
-            cr.SelectFontFace (style.Standard.Family, style.Standard.Slant, style.Standard.Weight);
-            cr.SetFontSize (style.Standard.Size);
-
             cr.MoveTo (5 + (offset?spinner_actor.Width+4:0),2*r-height/4);
-            cr.FontOptions.HintStyle = HintStyle.Full;
             cr.ShowText (Text);
 
             ((IDisposable) cr.Target).Dispose ();

@@ -94,7 +94,7 @@ namespace NoNoise.Visualization.Gui
 
             toolbar = new Group ();
 //            toolbar.SetSize (306,20);
-            select_button = new ToolbarToggleButton ("select", "select on", true, style,
+            select_button = new ToolbarToggleButton ("select", "select", true, style,
                                                      ToolbarButton.Border.Left, 75,20);
             select_button.SetPosition (0,0);
 
@@ -133,7 +133,7 @@ namespace NoNoise.Visualization.Gui
             selection_info.AnchorPointFromGravity = Gravity.SouthEast;
             this.Add (selection_info);
 
-            status_box = new StatusBox (style, 200, 20);
+            status_box = new StatusBox (style, 400, 20);
             status_box.AnchorPointFromGravity = Gravity.SouthWest;
             this.Add (status_box);
 
