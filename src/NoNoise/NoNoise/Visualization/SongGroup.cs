@@ -514,34 +514,16 @@ namespace NoNoise.Visualization
         /// </param>
         private void SetZoomLevel (double scale)
         {
-
-
-            Hyena.Log.Information ("Zoom level set to "+scale);
-
+            Hyena.Log.Debug ("NoNoise/Vis - Zoom reset");
             float trans_x = Width /2.0f, trans_y = Height /2.0f;
 
             double scale_x, scale_y;
             this.GetScale (out scale_x, out scale_y);
             this.SetPosition (0,0);
 
-
-//            //raus zoomen
             this.SetScale (1.0, 1.0);
 
             float trans_x_unif = stage.Width/2.0f, trans_y_unif = stage.Height/2.0f;
-//            this.TransformStagePoint (stage.Width/2.0f, stage.Height/2.0f, out trans_x_unif, out trans_y_unif);
-
-            Hyena.Log.Information ( String.Format ("Zoom\n" +
-             "   Pos = {0},{1}\n" +
-             "   Scale = {2} @\n" +
-             "   Trans = {3},{4}\n" +
-             "   Stage = {5},{6}\n" +
-             "   UnifTrans = {7},{8}\n" +
-             "   Size = {9},{10}", this.X, this.Y, scale_x, trans_x,
-                                                   trans_y, stage.Width, stage.Height,
-                                                   trans_x_unif, trans_y_unif,
-                                                   this.Width, this.Height));
-
 
             double pos_x = (double)this.X + ((double)trans_x_unif - (double)trans_x);
             double pos_y = (double)this.Y + ((double)trans_y_unif - (double)trans_y);
@@ -551,16 +533,7 @@ namespace NoNoise.Visualization
             this.SetScaleFull (scale, scale, trans_x, trans_y);
 
             zoom_level = scale;
-//            SetPosition (0,0);
-//            double sx, sy;
-//            GetScale (out sx, out sy);
 
-//            Hyena.Log.Information (String.Format ("Scale {0},{1}", sx, sy));
-//            SetScale (zoom_level, zoom_level);
-
-//            float x, y;
-//            GetTransformedPosition (out x, out y);
-//            Hyena.Log.Information (String.Format ("Scale pos {0},{1}", x, y));
             foreach (SongActor s in actor_manager.Actors)
                 s.SetScale (1/zoom_level, 1/zoom_level);
         }

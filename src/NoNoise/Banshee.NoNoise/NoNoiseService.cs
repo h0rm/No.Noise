@@ -116,7 +116,7 @@ namespace Banshee.NoNoise
 
         public NoNoiseService ()
         {
-            Hyena.Log.Information ("Testing!  No.Noise extension has been instantiated!");
+            Hyena.Log.Debug ("No.Noise extension initializing.");
         }
 
         void IExtensionService.Initialize ()
@@ -127,11 +127,11 @@ namespace Banshee.NoNoise
             source_manager = ServiceManager.SourceManager;
             music_library = source_manager.MusicLibrary;
 
-            Hyena.Log.Information ("Service NoNoise Initialized: "
-                                   + "\naction_service " + (action_service == null ? "Null" : "OK")
-                                   + "\nsource_manager " + (source_manager == null ? "Null" : "OK")
-                                   + "\nmusic_library " + (music_library == null ? "Null" : "OK")
-                                   + "\npreference_service " + (preference_service == null ? "Null" : "OK"));
+//            Hyena.Log.Information ("Service NoNoise Initialized: "
+//                                   + "\naction_service " + (action_service == null ? "Null" : "OK")
+//                                   + "\nsource_manager " + (source_manager == null ? "Null" : "OK")
+//                                   + "\nmusic_library " + (music_library == null ? "Null" : "OK")
+//                                   + "\npreference_service " + (preference_service == null ? "Null" : "OK"));
 
             InstallPreferences ();
             SetupInterfaceActions ();
@@ -301,16 +301,14 @@ namespace Banshee.NoNoise
             if (music_library == null || action_service == null)// || music_library.TrackModel.Count == 0)
                 return false;
 
-            no_noise_contents = GetSourceContents ();
+            no_noise_contents = new NoNoiseClutterSourceContents (true);;
             ScanAction.Sensitive = !BansheeLibraryAnalyzer.Singleton.IsLibraryScanned;
             SwitchPcaMfccOptions ();
 
             source_contents_set_up = true;
 
-            if (no_noise_contents is NoNoiseClutterSourceContents) {
-                (no_noise_contents as NoNoiseClutterSourceContents).OnScanFinished += ScanFinished;
-                (no_noise_contents as NoNoiseClutterSourceContents).OnToggleScannable += ScannableChanged;
-            }
+            no_noise_contents.OnScanFinished += ScanFinished;
+            no_noise_contents.OnToggleScannable += ScannableChanged;
 
             no_noise_contents.SetSource(music_library);
 
@@ -334,30 +332,7 @@ namespace Banshee.NoNoise
 
         private NoNoiseClutterSourceContents GetSourceContents ()
         {
-            int startViz = 0;
-
-            try {
-                using (System.IO.StreamReader sr = new System.IO.StreamReader ("../../NoNoise.starter"))
-                {
-                    string line;
-                    if ((line = sr.ReadLine ()) != null)
-                        startViz = int.Parse (line);
-                }
-            } catch (Exception e) {
-                Hyena.Log.Exception ("NoNoise - startup error", e);
-            }
-
-            switch (startViz) {
-            case 1 :
-                return new NoNoiseClutterSourceContents (false);
-
-            case 2:
-                return new NoNoiseClutterSourceContents (true);
-
-            default:
-                return new NoNoiseClutterSourceContents (true);
-            }
-            
+            return new NoNoiseClutterSourceContents (true);
         }
 
         public void Dispose ()

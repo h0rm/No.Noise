@@ -43,6 +43,7 @@ namespace NoNoise.Visualization
 
         public View () : base ()
         {
+            Hyena.Log.Debug ("NoNoise/Vis - Clutter view initializing.");
             SetSizeRequest (100,100);
             Stage.Color = new Color (0.1,0.1,0.1,255);
 

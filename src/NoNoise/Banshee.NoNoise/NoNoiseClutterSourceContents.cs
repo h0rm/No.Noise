@@ -59,8 +59,6 @@ namespace Banshee.NoNoise
             Clutter.Threads.Init();
             Clutter.Application.InitForToolkit ();
 
-            Hyena.Log.Information ("ClutterView creation");
-
             //cv = new ClutterView();
             //cv.Init();
             Clutter.Threads.Enter ();
