@@ -281,7 +281,7 @@ namespace NoNoise.Visualization
         /// <summary>
         /// Arguments for the <see cref="AddToPlaylistEvent"/> which contain a list of song ids.
         /// </summary>
-        public struct AddToPlaylistEventArgs
+        public class AddToPlaylistEventArgs
         {
             public Dictionary<int,int> SongIDs {
                 get;

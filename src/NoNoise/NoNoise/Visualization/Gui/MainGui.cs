@@ -335,7 +335,7 @@ namespace NoNoise.Visualization.Gui
         /// <summary>
         /// Arguments for the <see cref="ButtonClickedEvent"/>
         /// </summary>
-        public struct ButtonClickedArgs
+        public class ButtonClickedArgs
         {
             /// <summary>
             /// Specifies the button clicked.
@@ -349,7 +349,8 @@ namespace NoNoise.Visualization.Gui
 
             public ButtonClickedArgs (Button button)
             {
-                ButtonClicked = button;
+                this.ButtonClicked = button;
+//                ButtonClicked = button;
             }
         }
 

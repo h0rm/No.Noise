@@ -31,7 +31,7 @@ namespace NoNoise.Visualization.Gui
     /// <summary>
     /// Helper struct which represents a font
     /// </summary>
-    public struct Font
+    public class Font
     {
         /// <summary>
         /// Font family
@@ -86,7 +86,7 @@ namespace NoNoise.Visualization.Gui
     /// <summary>
     /// Style sheet which is used to specify the appearance of all gui elements
     /// </summary>
-    public struct StyleSheet
+    public class StyleSheet
     {
         /// <summary>
         /// Foreground color
