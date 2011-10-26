@@ -27,7 +27,6 @@
       </CustomCommands>
     </CustomCommands>
     <Optimize>false</Optimize>
-    <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Windows|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -35,7 +34,6 @@
     <OutputPath>..\..\..\bin</OutputPath>
     <PlatformTarget>x86</PlatformTarget>
     <Optimize>false</Optimize>
-    <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
