@@ -1,3 +1,5 @@
+ACLOCAL_AMFLAGS = -I build/m4/shamrock -I build/m4/shave -I build/m4/extensions ${ACLOCAL_FLAGS}
+
 SUBDIRS = \
 	build \
 	help \
@@ -56,9 +58,7 @@ all-local: update-pot
 
 update-pot:
 	if [ "x$(top_srcdir)" = "x$(top_builddir)" ]; then \
-		pushd $(top_builddir)/po; \
-		$(MAKE) $(GETTEXT_PACKAGE).pot; \
-		popd; \
+		$(MAKE) -C "$(top_builddir)/po" $(GETTEXT_PACKAGE).pot; \
 	fi;
 
 # ---------------

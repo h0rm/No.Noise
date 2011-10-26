@@ -69,7 +69,7 @@ namespace Lirc
         public string NextCode ()
         {
             string code;
-            if (lirc_nextcode (out code) == 0)
+            if (lirc_glue_nextcode (out code) == 0)
                 return (code);
             else
                 return (null);
@@ -91,8 +91,8 @@ namespace Lirc
 
         public bool Connect() {
             if(!is_connected) {
-                if (lirc_init (program_name, 1) == -1) {
-                    Log.Warning ("lirc-sharp: lirc_init() failed");
+                if (lirc_glue_init (program_name, 1) == -1) {
+                    Log.Warning ("lirc-sharp: lirc_glue_init() failed");
                     this.ErrorValue = -2;
                     return(false);
                 }
@@ -112,7 +112,7 @@ namespace Lirc
             if(is_connected) {
                 Log.Debug ("lirc-sharp: Disconnecting LIRC connection...");
                 lirc_glue_freeconfig ();
-                lirc_deinit ();
+                lirc_glue_deinit ();
                 ErrorValue = -3;
                 Log.Debug ("LIRC connection disconnected");
                 is_connected = false;
@@ -150,23 +150,23 @@ namespace Lirc
 
     /* .......................lirc_client bindings.................................................*/
 
-    [DllImport("lirc_client")]
-    private extern static int lirc_init(string prog, int verbose);
+    [DllImport("liblircglue")]
+    private extern static int lirc_glue_init(string prog, int verbose);
 
-    [DllImport("lirc_client")]
-    private extern static int lirc_deinit();
+    [DllImport("liblircglue")]
+    private extern static int lirc_glue_deinit();
 
-    [DllImport("lirc_client")]
-    private extern static int lirc_nextcode(out string code);
+    [DllImport("liblircglue")]
+    private extern static int lirc_glue_nextcode(out string code);
 
-    /*[DllImport("lirc_client")]
-    private extern static int lirc_readconfig(string file, out Config config, string check);
+    /*[DllImport("liblircglue")]
+    private extern static int lirc_glue_readconfig(string file, out Config config, string check);
 
-    [DllImport("lirc_client")]
-    private extern static int lirc_freeconfig(out Config config);
+    [DllImport("liblircglue")]
+    private extern static int lirc_glue_freeconfig(out Config config);
 
-    [DllImport("lirc_client")]
-    private extern static int lirc_code2char(out Config config, string code, out string str);*/
+    [DllImport("liblircglue")]
+    private extern static int lirc_glue_code2char(out Config config, string code, out string str);*/
 
 
     /* someone write bindings for client daemon functions?  check out lirc_client.h */

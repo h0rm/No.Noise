@@ -1,11 +1,10 @@
 AC_PREREQ(2.52)
-AC_INIT([banshee-community-extensions], 1.9.5,
+AC_INIT([banshee-community-extensions], 2.2.0,
 	[http://bugzilla.gnome.org/enter_bug.cgi?product=banshee&component=Community%20Extensions])
 
 AM_INIT_AUTOMAKE([1.9 dist-bzip2 tar-ustar dist-zip foreign])
-AM_MAINTAINER_MODE
+AM_MAINTAINER_MODE([enable])
 AM_CONFIG_HEADER([config.h])
-AC_SUBST([ACLOCAL_AMFLAGS], ["-I build/m4/shamrock -I build/m4/shave -I build/m4/extensions \${ACLOCAL_FLAGS}"])
 
 IT_PROG_INTLTOOL([0.35.0])
 AC_PROG_LIBTOOL
@@ -25,11 +24,11 @@ SHAMROCK_CHECK_GNOME_DOC_UTILS(0.17.3)
 
 dnl Mono and gmcs
 SHAMROCK_CHECK_MONO_MODULE(1.9.1)
-SHAMROCK_FIND_MONO_2_0_COMPILER
+SHAMROCK_FIND_MONO_3_0_COMPILER
 SHAMROCK_FIND_MONO_RUNTIME
 
 dnl Banshee deps
-PKG_CHECK_MODULES(BANSHEE, banshee-thickclient >= 1.9.1)
+PKG_CHECK_MODULES(BANSHEE, banshee-thickclient >= 2.1.0)
 AC_SUBST(BANSHEE_LIBS)
 
 dnl Banshee Extensions Path
@@ -78,11 +77,14 @@ SHAMROCK_CHECK_UNIT_TESTS
 
 dnl Extensions
 BCE_ALARMCLOCK
+BCE_ALBUMARTWRITER
 BCE_AMPACHE
 BCE_APPINDICATOR
 BCE_AWN
 BCE_CLUTTERFLOW
 BCE_COVERWALLPAPER
+BCE_DUPLICATESONGDETECTOR
+BCE_FOLDERSYNC
 BCE_JAMENDO
 BCE_LASTFMFINGERPRINT
 BCE_LCD
@@ -132,11 +134,13 @@ help/Makefile
 po/Makefile.in
 
 src/Makefile
-src/NoNoise/Makefile
-src/Karaoke/Makefile
-src/AssemblyInfo.cs
 
+
+
+src/AssemblyInfo.cs
+src/NoNoise/Makefile
 src/AlarmClock/Makefile
+src/AlbumArtWriter/Makefile
 src/Ampache/Makefile
 src/AppIndicator/Makefile
 src/Awn/Makefile
@@ -144,7 +148,10 @@ src/ClutterFlow/Makefile
 src/ClutterFlow/Banshee.ClutterFlow/Makefile
 src/ClutterFlow/ClutterFlow/Makefile
 src/CoverWallpaper/Makefile
+src/DuplicateSongDetector/Makefile
+src/FolderSync/Makefile
 src/Jamendo/Makefile
+src/Karaoke/Makefile
 src/LastfmFingerprint/Makefile
 src/LastfmFingerprint/Banshee.LastfmFingerprint/Makefile
 src/LastfmFingerprint/liblastfmfpbridge/Makefile
@@ -201,11 +208,14 @@ ${PACKAGE}-${VERSION}
   Extensions:
     NoNoise:             yes
     Alarm Clock:           ${enable_AlarmClock}
+    AlbumArtWriter:        ${enable_AlbumArtWriter}
     Ampache:               ${enable_Ampache}
     AppIndicator:          ${enable_AppIndicator}
     Awn:                   ${enable_Awn}
     ClutterFlow:           ${enable_ClutterFlow}
     CoverWallpaper:        ${enable_CoverWallpaper}
+    DuplicateSongDetector: ${enable_DuplicateSongDetector}
+    FolderSync:            ${enable_FolderSync}
     Jamendo:               ${enable_Jamendo}
     Karaoke:               ${enable_Karaoke}
     LastfmFingerprint:     ${enable_LastfmFingerprint}

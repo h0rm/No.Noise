@@ -32,17 +32,16 @@ using ClutterFlow;
 
 namespace ClutterFlow
 {
-
-
     public class ClutterFlowFixedActor : ClutterFlowBaseActor
     {
-
         #region Fields
-        protected Clutter.CairoTexture texture;
+        private uint cover_width;
+
+        private Clutter.CairoTexture texture;
         public Clutter.CairoTexture Texture {
             get {
                 if (texture==null) {
-                    texture = new Clutter.CairoTexture ((uint) CoverManager.Behaviour.CoverWidth, (uint) CoverManager.Behaviour.CoverWidth*2);
+                    texture = new Clutter.CairoTexture (cover_width, cover_width * 2);
                     Add (texture);
                     texture.Show ();
                 }
@@ -51,20 +50,12 @@ namespace ClutterFlow
         }
 
         public override string Label {
-            get {
-                return "\nNo Matches Found";
-            }
-            set {
-                throw new System.NotImplementedException ("Label cannot be set in a ClutterFlowDummyActor."); //TODO should use reflection here
-            }
+            get { return "\nNo Matches Found"; }
         }
 
 
         public override string CacheKey {
             get { return "Dummy Actor"; }
-            set {
-                throw new System.NotImplementedException ("CacheKey cannot be set in a ClutterFlowDummyActor."); //TODO should use reflection here
-            }
         }
 
         public override string SortLabel {
@@ -82,31 +73,31 @@ namespace ClutterFlow
         }
         #endregion
 
-        public ClutterFlowFixedActor (CoverManager cover_manager) : base (cover_manager)
+        public ClutterFlowFixedActor (uint cover_width) : base ()
         {
+            this.cover_width = cover_width;
             IsReactive = false;
         }
 
-
         public void SetToPb (Gdk.Pixbuf pb)
         {
-			SetAnchorPoint (0, 0);
-				
+            SetAnchorPoint (0, 0);
+
             if (pb!=null) {
-				Cairo.Context context = Texture.Create();
-				
-				Gdk.CairoHelper.SetSourcePixbuf(context, pb, 0, 0);
-				context.Paint();
-				
-				((IDisposable) context.Target).Dispose ();
-				((IDisposable) context).Dispose ();
+                Cairo.Context context = Texture.Create ();
+
+                Gdk.CairoHelper.SetSourcePixbuf(context, pb, 0, 0);
+                context.Paint();
+
+                ((IDisposable) context.Target).Dispose ();
+                ((IDisposable) context).Dispose ();
             }
 
-			Texture.SetPosition (0, 0);
-			
+            Texture.SetPosition (0, 0);
+
             SetAnchorPoint (this.Width*0.5f, this.Height*0.25f);
-			
-			ShowAll ();
+
+            ShowAll ();
         }
     }
 }

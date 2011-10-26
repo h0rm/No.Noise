@@ -37,10 +37,8 @@ using Banshee.Configuration;
 
 namespace Banshee.Karaoke
 {
-
     public class KaraokeService : IExtensionService, IDelayedInitializeService, IDisposable
     {
-
         Bin audiobin;
         Bin playbin;
         Bin audiotee;
@@ -50,18 +48,22 @@ namespace Banshee.Karaoke
 
         private Gtk.ActionGroup actions;
         private InterfaceActionService action_service;
-        private uint ui_menu_id;
-        private uint ui_button_id;
+        private uint ui_menu_id = 0;
+        private uint ui_button_id = 0;
 
         private bool karaoke_enabled = true;
+        private bool lyrics_enabled = false;
 
         private float effect_level = 1.0f;
         private float filter_band = 220.0f;
         private float filter_width = 100.0f;
 
+        public static event EventHandler LyricsEnabledChanged;
+
         public KaraokeService ()
         {
             karaoke_enabled = IsKaraokeEnabledEntry.Get ().Equals ("True") ? true : false;
+            lyrics_enabled = IsLyricsEnabledEntry.Get ();
             effect_level = (float)EffectLevelEntry.Get ();
             effect_level = effect_level / 100;
             filter_band = (float)FilterBandEntry.Get ();
@@ -71,7 +73,7 @@ namespace Banshee.Karaoke
         #region IExtensionService implementation
         void IExtensionService.Initialize ()
         {
-
+            Marshaller.Init ();
             has_karaoke = Marshaller.CheckGstPlugin ("audiokaraoke");
             Hyena.Log.Debug ("[Karaoke] GstPlugin audiokaraoke" + (has_karaoke ? "" : " not") + " found");
             if (!has_karaoke) {
@@ -104,7 +106,6 @@ namespace Banshee.Karaoke
             action_service.UIManager.InsertActionGroup (actions, 0);
             ui_menu_id = action_service.UIManager.AddUiFromResource ("KaraokeMenu.xml");
             ui_button_id = action_service.UIManager.AddUiFromResource ("KaraokeButton.xml");
-
         }
 
         /// <summary>
@@ -128,7 +129,6 @@ namespace Banshee.Karaoke
                 audiokaraoke.SetFloatProperty ("level", effect_level);
                 audiokaraoke.SetFloatProperty ("mono-level", effect_level);
             }
-
         }
 
         /// <summary>
@@ -142,7 +142,15 @@ namespace Banshee.Karaoke
         /// </param>
         public void OnConfigure (object o, EventArgs ea)
         {
-            new KaraokeConfigDialog (this, EffectLevel, FilterBand, FilterWidth);
+            new KaraokeConfigDialog (this, EffectLevel, FilterBand, FilterWidth, IsLyricsEnabled);
+        }
+
+        void OnLyricsEnabledChanged ()
+        {
+            EventHandler handler = LyricsEnabledChanged;
+            if (handler != null) {
+                handler (this, new EventArgs ());
+            }
         }
 
         void IDelayedInitializeService.DelayedInitialize ()
@@ -153,13 +161,13 @@ namespace Banshee.Karaoke
             audiobin = new Bin (ServiceManager.PlayerEngine.ActiveEngine.GetBaseElements ()[1]);
             audiotee = new Bin (ServiceManager.PlayerEngine.ActiveEngine.GetBaseElements ()[2]);
 
-            if (playbin.IsNull ())
+            if (playbin.IsNull ()) {
                 Hyena.Log.Debug ("[Karaoke] Playbin is not yet initialized, cannot start Karaoke Mode");
+            }
 
             audiokaraoke = audiobin.GetByName ("karaoke");
 
-            if (audiokaraoke.IsNull ())
-            {
+            if (audiokaraoke.IsNull ()) {
                 audiokaraoke = ElementFactory.Make ("audiokaraoke","karaoke");
 
                 //add audiokaraoke to audiobin
@@ -181,23 +189,27 @@ namespace Banshee.Karaoke
                 audiokaraoke.SetFloatProperty ("level", effect_level);
                 audiokaraoke.SetFloatProperty ("mono-level", effect_level);
             }
-
-            //Hyena.Log.DebugFormat ("Karaoke service has been initialized! {0}", audiobin.ToString ());
         }
         #endregion
 
         #region IDisposable implementation
         void IDisposable.Dispose ()
         {
-            if (!playbin.IsNull ())
-            {
+            if (has_karaoke && !playbin.IsNull () && !audiokaraoke.IsNull ()) {
                 audiokaraoke.SetFloatProperty ("level", 0);
                 audiokaraoke.SetFloatProperty ("mono-level", 0);
             }
-            action_service.UIManager.RemoveUi (ui_menu_id);
-            action_service.UIManager.RemoveUi (ui_button_id);
-            action_service.UIManager.RemoveActionGroup (actions);
-            actions = null;
+
+            if (ui_menu_id > 0) {
+                action_service.UIManager.RemoveUi (ui_menu_id);
+            }
+            if (ui_button_id > 0) {
+                action_service.UIManager.RemoveUi (ui_button_id);
+            }
+            if (actions != null) {
+                action_service.UIManager.RemoveActionGroup (actions);
+                actions = null;
+            }
         }
         #endregion
 
@@ -213,9 +225,19 @@ namespace Banshee.Karaoke
             get { return karaoke_enabled; }
         }
 
+        public bool IsLyricsEnabled {
+            get { return this.lyrics_enabled; }
+            set {
+                lyrics_enabled = value;
+                OnLyricsEnabledChanged ();
+            }
+        }
+
         public void ApplyKaraokeEffectLevel (float new_level)
         {
-            if (!karaoke_enabled) return;
+            if (!karaoke_enabled) {
+                return;
+            }
             audiokaraoke.SetFloatProperty ("level", new_level);
             audiokaraoke.SetFloatProperty ("mono-level", new_level);
         }
@@ -262,6 +284,9 @@ namespace Banshee.Karaoke
 
         public static readonly SchemaEntry<string> IsKaraokeEnabledEntry = new SchemaEntry<string> (
                "plugins.karaoke", "karaoke_enabled", "", "Is Karaoke mode enabled", "Is Karaoke mode enabled");
+
+        public static readonly SchemaEntry<bool> IsLyricsEnabledEntry = new SchemaEntry<bool> (
+               "plugins.karaoke", "karaokelyrics_enabled", false, "Is Karaoke lyrics display enabled", "Is Karaoke lyrics display enabled");
 
         public static readonly SchemaEntry<int> EffectLevelEntry = new SchemaEntry<int> (
                "plugins.karaoke", "effect_level", 100, "Effect Level", "Effect Level");

@@ -44,132 +44,130 @@ namespace Banshee.ClutterFlow
     /// <summary>
     /// The ArtworkLookup class is an asynchronous worker thread processing artwork lookups.
     /// </summary>
-	public class ArtworkLookup : IDisposable {
-	
-		#region Fields
-		private ArtworkManager artwork_manager;
+    public class ArtworkLookup : IDisposable {
 
-		private CoverManager coverManager;
-		public CoverManager CoverManager {
-			get { return coverManager; }
-		}
+        #region Fields
+        private ArtworkManager artwork_manager;
 
-		public object SyncRoot {
-			get { return LookupQueue.SyncRoot; }
-		}
-		private FloatingQueue<ClutterFlowAlbum> LookupQueue = new FloatingQueue<ClutterFlowAlbum> ();
-		
-        protected bool threaded = false;
-        public bool Threaded {
-            get { return threaded; }
+        private CoverManager cover_manager;
+
+        public object SyncRoot {
+            get { return LookupQueue.SyncRoot; }
+        }
+        private FloatingQueue<ClutterFlowAlbum> LookupQueue = new FloatingQueue<ClutterFlowAlbum> ();
+
+        // Lock covering stopping and stopped
+        protected readonly object stopLock = new object ();
+        // Whether or not the worker thread has been asked to stop
+        protected bool stopping = false;
+        // Whether or not the worker thread has stopped
+        protected bool stopped = true;
+
+        /// <value>
+        /// Returns whether the worker thread has been asked to stop.
+        /// This continues to return true even after the thread has stopped.
+        /// </value>
+        public bool Stopping {
+            get { lock (stopLock) { return stopping; } }
+            protected set { lock (stopLock) { stopping = value; } }
         }
 
-	    protected readonly object stopLock = new object ();	// Lock covering stopping and stopped
-	    protected bool stopping = false;					// Whether or not the worker thread has been asked to stop
-	    protected bool stopped = true;						// Whether or not the worker thread has stopped
-	
-		/// <value>
-		/// Returns whether the worker thread has been asked to stop.
-	    /// This continues to return true even after the thread has stopped.
-		/// </value>
-	    public bool Stopping {
-	        get { lock (stopLock) { return stopping; } }
-            protected set { lock (stopLock) { stopping = value; } }
-	    }
-	
-		//// <value>
-	    // Returns whether the worker thread has stopped.
-		/// </value>
-	    public bool Stopped {
-	        get { return t!=null ? (t.ThreadState == ThreadState.Stopped) : true; }
-	    }
-		#endregion
+        //// <value>
+        // Returns whether the worker thread has stopped.
+        /// </value>
+        public bool Stopped {
+            get { return artwork_thread != null ? (artwork_thread.ThreadState == ThreadState.Stopped) : true; }
+        }
+        #endregion
 
-        Thread t;
-		public ArtworkLookup (CoverManager coverManager)
-		{
-			//Log.Debug ("ArtworkLookup ctor ()");
-		 	this.coverManager = coverManager;
-            CoverManager.TargetIndexChanged += HandleTargetIndexChanged;
-			artwork_manager = ServiceManager.Get<ArtworkManager> ();
-			artwork_manager.AddCachedSize (CoverManager.TextureSize);
+        Thread artwork_thread;
+        public ArtworkLookup (CoverManager cover_manager)
+        {
+            //Log.Debug ("ArtworkLookup ctor ()");
+            this.cover_manager = cover_manager;
+            this.cover_manager.TargetIndexChanged += HandleTargetIndexChanged;
+            artwork_manager = ServiceManager.Get<ArtworkManager> ();
+            artwork_manager.AddCachedSize (cover_manager.TextureSize);
+        }
 
-            threaded = ClutterFlowSchemas.ThreadedArtwork.Get ();
-            //Start ();
-		}
-
-		#region Queueing and index hinting	
-		public void Enqueue (ClutterFlowAlbum cover)
-		{
+        #region Queueing and index hinting
+        public void Enqueue (ClutterFlowAlbum cover)
+        {
             if (!cover.Enqueued) {
                 cover.Enqueued = true;
-                if (threaded) {
-                    LookupQueue.Enqueue (cover);
-                    Start ();
-                } else
-                    LoadUnthreaded (cover);
+                LookupQueue.Enqueue (cover);
+                Start ();
             }
-		}
+        }
 
-		private int new_focus = -1;
-		private object focusLock = new object ();
-		protected void HandleTargetIndexChanged(object sender, EventArgs e)
-		{
-			//Log.Debug ("ArtworkLookup HandleTargetIndexChanged locking focusLock");
-			lock (focusLock) {
-				//Log.Debug ("ArtworkLookup HandleTargetIndexChanged locked focusLock");
-				new_focus = coverManager.TargetIndex;
-			}
-		}
-		#endregion
-		
-		#region  Start/Stop Handling
+        private int new_focus = -1;
+        private object focusLock = new object ();
+        protected void HandleTargetIndexChanged(object sender, EventArgs e)
+        {
+            //Log.Debug ("ArtworkLookup HandleTargetIndexChanged locking focusLock");
+            lock (focusLock) {
+                //Log.Debug ("ArtworkLookup HandleTargetIndexChanged locked focusLock");
+                new_focus = cover_manager.TargetIndex;
+            }
+        }
+        #endregion
+
+        #region  Start/Stop Handling
         protected bool disposed = false;
-		public virtual void Dispose ()
-		{
-            if (disposed)
+        public virtual void Dispose ()
+        {
+            if (disposed) {
                 return;
+            }
             disposed = true;
 
-            CoverManager.TargetIndexChanged -= HandleTargetIndexChanged;
-            Log.Debug ("ArtworkLookup Dispose ()");
-			Stop ();
+            cover_manager.TargetIndexChanged -= HandleTargetIndexChanged;
+
+            Stop ();
             LookupQueue.Dispose ();
-		}
-	
-	    // Tells the worker thread to stop, typically after completing its
-	    // current work item. (The thread is *not* guaranteed to have stopped
-	    // by the time this method returns.)
-	    public void Stop ()
-	    {
+        }
+
+        // Tells the worker thread to stop, typically after completing its
+        // current work item. (The thread is *not* guaranteed to have stopped
+        // by the time this method returns.)
+        public void Stop ()
+        {
             Log.Debug ("ArtworkLookup Stop ()");
             Stopping = true;
-            if (SyncRoot!=null) lock (SyncRoot) {
-                Monitor.Pulse (SyncRoot);
+            if (SyncRoot != null) {
+                lock (SyncRoot) {
+                    Monitor.Pulse (SyncRoot);
+                }
             }
-	        if (t!=null) t.Join ();
-	    }
+            if (artwork_thread != null) {
+                artwork_thread.Join ();
+            }
+        }
 
         public void Start ()
         {
-            if (t==null) {
-                t = new Thread (new ThreadStart (Run));
-                t.Priority = ThreadPriority.BelowNormal;
+            if (artwork_thread == null) {
+                artwork_thread = new Thread (new ThreadStart (Run));
+                artwork_thread.Priority = ThreadPriority.BelowNormal;
                 stopping = false;
-                t.Start ();
-            } else if (t.ThreadState == ThreadState.Unstarted) {
+                artwork_thread.Start ();
+            } else if (artwork_thread.ThreadState == ThreadState.Unstarted) {
                 stopping = false;
-                t.Start ();
+                artwork_thread.Start ();
             }
         }
-		#endregion
-		
-	    // Main work loop of the class.
-	    private void Run ()
-	    {
-            if (!disposed) try {
+        #endregion
+
+        // Main work loop of the class.
+        private void Run ()
+        {
+            if (disposed) {
+                return;
+            }
+
+            try {
                 Log.Debug ("ArtworkLookup Run ()");
-	            while (!Stopping) {
+                while (!Stopping) {
                     //Log.Debug ("ArtworkLookup Run locking focusLock");
                     lock (focusLock) {
                         //Log.Debug ("ArtworkLookup Run locked focusLock");
@@ -178,49 +176,37 @@ namespace Banshee.ClutterFlow
                         new_focus = -1;
                     }
 
-					while (!Stopping && LookupQueue!=null && LookupQueue.Count==0) {
-						lock (SyncRoot) {
+                    while (!Stopping && LookupQueue != null && LookupQueue.Count == 0) {
+                        lock (SyncRoot) {
                             //Log.Debug ("ArtworkLookup Run - waiting for pulse");
-							bool ret = Monitor.Wait (SyncRoot, 5000);
+                            bool ret = Monitor.Wait (SyncRoot, 5000);
                             if (!ret) Stopping = true;
                             //Log.Debug ("ArtworkLookup Run - pulsed");
-						}
-					}
-                    if (Stopping) return;
-                    t.IsBackground = false;
-					ClutterFlowAlbum cover = LookupQueue.Dequeue ();
-					float size = cover.CoverManager.TextureSize;
-					string cache_id = cover.PbId;
-					Cairo.ImageSurface surface = artwork_manager.LookupScaleSurface(cache_id, (int) size);
-					if (surface!=null) {
+                        }
+                    }
+                    if (Stopping) {
+                        return;
+                    }
+                    ClutterFlowAlbum cover = LookupQueue.Dequeue ();
+                    float size = cover_manager.TextureSize;
+                    string cache_id = cover.PbId;
+                    Cairo.ImageSurface surface = artwork_manager.LookupScaleSurface (cache_id, (int) size);
+                    if (surface != null) {
                         Gtk.Application.Invoke (delegate {
-							SetCoverToSurface(cover, surface);
+                            SetCoverToSurface (cover, surface);
                         });
-					}
-                    t.IsBackground = true;
-	            }
-	        } finally {
-	           Log.Debug ("ArtworkLookup stopped");
-               threaded = ClutterFlowSchemas.ThreadedArtwork.Get ();
-               t = null;
-	        }
-	    }
-
-        private void LoadUnthreaded (ClutterFlowAlbum cover)
-        {
-            float size = cover.CoverManager.TextureSize;
-            string cache_id = cover.PbId;
-            Cairo.ImageSurface surface = artwork_manager.LookupScaleSurface(cache_id, (int) size);
-            if (surface!=null) {
-                SetCoverToSurface(cover, surface);
+                    }
+                }
+            } finally {
+               Log.Debug ("ArtworkLookup Run done");
             }
         }
 
         private void SetCoverToSurface (ClutterFlowAlbum cover, Cairo.ImageSurface surface)
         {
-	            cover.Enqueued = false;
-	            //cover.SwappedToDefault = false;
-				ClutterFlowActor.MakeReflection(surface, cover.Cover);
+                cover.Enqueued = false;
+                //cover.SwappedToDefault = false;
+                ClutterFlowActor.MakeReflection (surface, cover.Cover);
         }
-	}
+    }
 }

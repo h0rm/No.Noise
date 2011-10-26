@@ -35,52 +35,42 @@ using Banshee.Collection;
 using ClutterFlow;
 
 namespace Banshee.ClutterFlow
-{	
-	/// <summary>
+{
+    /// <summary>
     /// A ClutterFlowAlbum is a subclass of the ClutterFlowActor class, containing
     /// banshee related Album art fetching code.
     /// </summary>
-	public class ClutterFlowAlbum : ClutterFlowActor,  IEquatable<ClutterFlowAlbum>
-	{
-		#region Fields
-		protected static ArtworkLookup lookup;
-		public static ArtworkLookup Lookup {
-			get { return lookup; }
-			set { lookup = value; }
-		}
+    public class ClutterFlowAlbum : ClutterFlowActor, IEquatable<ClutterFlowAlbum>
+    {
+        #region Fields
+        private static ArtworkLookup artwork_lookup;
 
-		protected AlbumInfo album;
-		public virtual AlbumInfo Album {
-			get { return album; }
-			set {
-				if (album!=value) {
-					album = value;
-					Lookup.Enqueue (this);
-				}
-			}
-		}
-	
-		public virtual string PbId {
-			get { return Album!=null ? Album.ArtworkId : "NOT FOUND"; }
-		}
+        private AlbumInfo album;
+        public AlbumInfo Album {
+            get { return album; }
+            set {
+                if (album != value) {
+                    album = value;
+                    artwork_lookup.Enqueue (this);
+                }
+            }
+        }
 
-		public override string CacheKey {
-			get { return CreateCacheKey(album); }
-			set {
-				throw new System.NotImplementedException ("CacheKey cannot be set directly in a ClutterFlowAlbum," +
-				                                          "derived from the Album property."); //TODO should use reflection here
-			}
-		}
-		public static string CreateCacheKey(AlbumInfo album) {
-            return album!=null ? album.ArtistName + "\n" + album.Title : "";
-		}
+        public virtual string PbId {
+            get { return Album != null ? Album.ArtworkId : "NOT FOUND"; }
+        }
 
-		public override string Label {
-			get { return album!=null ? album.ArtistName + "\n" + album.Title : ""; }
-			set {
-				throw new System.NotImplementedException ("Label cannot be set directly in a ClutterFlowAlbum, derived from the Album property.");
-			}
-		}
+        public override string CacheKey {
+            get { return CreateCacheKey (album); }
+        }
+        public static string CreateCacheKey (AlbumInfo album)
+        {
+            return album != null ? album.ArtistName + "\n" + album.Title : "";
+        }
+
+        public override string Label {
+            get { return album != null ? album.ArtistName + "\n" + album.Title : ""; }
+        }
 
         object sync = new object();
         bool enqueued = false;
@@ -88,48 +78,31 @@ namespace Banshee.ClutterFlow
             get { lock (sync) { return enqueued; } }
             internal set { lock (sync) { enqueued = value; } }
         }
-		#endregion
+        #endregion
 
-		#region Initialization
-		public ClutterFlowAlbum (AlbumInfo album, CoverManager coverManager) : base (coverManager, null)
-		{
-			this.album = album;
-			Lookup.Enqueue(this);
-		}
-		protected override bool SetupStatics ()
-		{
-			if (lookup==null) lookup = new ArtworkLookup (CoverManager);
-			return base.SetupStatics ();
-		}
-        protected override void DisposeStatics ()
+        #region Initialization
+        public ClutterFlowAlbum (AlbumInfo album, CoverManager coverManager) : base (coverManager)
         {
-            if (lookup!=null) lookup.Dispose ();
-            lookup = null;
-            base.DisposeStatics ();
+            this.album = album;
+            if (artwork_lookup == null) {
+                artwork_lookup = new ArtworkLookup (CoverManager);
+            }
+            artwork_lookup.Enqueue(this);
         }
-		#endregion
-		
-		#region Texture Handling
-		protected override Cairo.ImageSurface GetDefaultSurface ()
-		{
-			Cairo.ImageSurface surface = new Cairo.ImageSurface(Cairo.Format.ARGB32, CoverManager.TextureSize, CoverManager.TextureSize);
-			Cairo.Context context = new Cairo.Context(surface);
-			Gdk.CairoHelper.SetSourcePixbuf(context, IconThemeUtils.LoadIcon (CoverManager.TextureSize, "media-optical", "browser-album-cover"), 0, 0);
-			context.Paint();
-			//((IDisposable) context.Target).Dispose();
-			((IDisposable) context).Dispose();
-			return  surface;
-		}	
 
-		protected override void HandleTextureSizeChanged (object sender, System.EventArgs e)
-		{
-			Lookup.Enqueue(this);
-		}
-		#endregion
-		
-		public virtual bool Equals (ClutterFlowAlbum other)
-		{
-			return other.CacheKey==this.CacheKey;
-		}
-	}
+        public override void Dispose ()
+        {
+            if (artwork_lookup != null) {
+                artwork_lookup.Dispose ();
+            }
+            artwork_lookup = null;
+            base.Dispose ();
+        }
+        #endregion
+
+        public virtual bool Equals (ClutterFlowAlbum other)
+        {
+            return other.CacheKey == this.CacheKey;
+        }
+    }
 }

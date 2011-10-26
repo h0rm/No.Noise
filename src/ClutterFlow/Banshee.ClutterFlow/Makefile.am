@@ -3,6 +3,7 @@ LINK = $(BANSHEE_LIBS) $(BANSHEE_NOWPLAYING_LIBS) $(CLUTTER_SHARP_LIBS) -r:$(DIR
 ASSEMBLY_GCONF_SCHEMA = banshee-plugin-alarm.schemas.in
 
 SOURCES =  \
+	AlbumComparer.cs \
 	AlbumLoader.cs \
 	ArtworkLookup.cs \
 	ClutterFlowAlbum.cs \
@@ -12,6 +13,7 @@ SOURCES =  \
 	ClutterFlowView.cs \
 	FloatingQueue.cs \
 	FullscreenButton.cs \
+	IndexedQueue.cs \
 	PartyModeButton.cs \
 	SortButton.cs
 

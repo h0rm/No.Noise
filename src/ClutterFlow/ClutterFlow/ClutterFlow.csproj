@@ -69,7 +69,6 @@
     <Compile Include="CoverManager.cs" />
     <Compile Include="FlowBehaviour.cs" />
     <Compile Include="ClutterFlowActor.cs" />
-    <Compile Include="ActorLoader.cs" />
     <Compile Include="ClutterWidgetBar.cs" />
     <Compile Include="ClutterGenericButton.cs" />
     <Compile Include="ClutterToggleButton.cs" />
@@ -78,6 +77,9 @@
     <Compile Include="ClutterFlowFixedActor.cs" />
     <Compile Include="AlphabetBar.cs" />
     <Compile Include="AlphabetButton.cs" />
+    <Compile Include="ClutterFlowBaseActor.cs" />
+    <Compile Include="TextureHolder.cs" />
+    <Compile Include="IActorLoader.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ProjectExtensions>
