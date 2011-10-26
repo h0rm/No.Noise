@@ -473,9 +473,18 @@ namespace NoNoise.Data
             try {
                 dbcmd = dbcon.CreateCommand ();
 
-                dbcmd.CommandText = string.Format (
-                        "INSERT INTO PCAData (banshee_id, pca_x, pca_y) VALUES ('{0}', '{1}', '{2}')",
-                        de.ID, de.X, de.Y);
+                dbcmd.CommandText = "INSERT INTO PCAData (banshee_id, pca_x, pca_y) VALUES (@bid, @x, @y)";
+
+                SqliteParameter id = new SqliteParameter ("@bid", de.ID);
+                SqliteParameter x = new SqliteParameter ("@x", de.X);
+                SqliteParameter y = new SqliteParameter ("@y", de.Y);
+                x.DbType = DbType.Double;
+                y.DbType = DbType.Double;
+                dbcmd.Parameters.Add (id);
+                dbcmd.Parameters.Add (x);
+                dbcmd.Parameters.Add (y);
+                dbcmd.Prepare ();
+
                 dbcmd.ExecuteNonQuery ();
             } catch (Exception e) {
                 Log.Exception ("NoNoise/DB - DataEntry insert failed for DE: " + de, e);

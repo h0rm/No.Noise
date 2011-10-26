@@ -124,7 +124,7 @@ namespace NoNoise.Data
             for (int i = 0; i < v.rows; i++) {
                 if (i != 0)
                     sb.Append (";");
-                sb.Append (v.d [i, 0]);
+                sb.Append (v.d [i, 0].ToString (System.Globalization.CultureInfo.InvariantCulture));
             }
             sb.Append ("]");
             return sb.ToString ();
@@ -214,7 +214,7 @@ namespace NoNoise.Data
 
             try {
                 for (int i = 0; i < rows.Length; i++) {
-                    v.d [i, 0] = float.Parse(rows [i]);
+                    v.d [i, 0] = float.Parse(rows [i], System.Globalization.CultureInfo.InvariantCulture);
                 }
             } catch (Exception e) {
                 Log.Exception("NoNoise/DB - Mirage.Vector parse exception", e);
