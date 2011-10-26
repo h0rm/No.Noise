@@ -27,7 +27,6 @@
       </CustomCommands>
     </CustomCommands>
     <Optimize>false</Optimize>
-    <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Windows|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -35,7 +34,6 @@
     <OutputPath>..\..\..\bin</OutputPath>
     <PlatformTarget>x86</PlatformTarget>
     <Optimize>false</Optimize>
-    <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
@@ -47,7 +45,6 @@
       <Package>gtk-sharp-2.0</Package>
     </Reference>
     <Reference Include="Mono.Cairo">
-      <SpecificVersion>False</SpecificVersion>
     </Reference>
     <Reference Include="Mono.Addins">
       <SpecificVersion>False</SpecificVersion>
@@ -81,7 +78,9 @@
     <EmbeddedResource Include="AlbumArtWriter.addin.xml">
       <LogicalName>AlbumArtWriter.addin.xml</LogicalName>
     </EmbeddedResource>
-    <EmbeddedResource Include="Resources\GlobalUI.xml" />
+    <EmbeddedResource Include="Resources\GlobalUI.xml">
+      <LogicalName>GlobalUI.xml</LogicalName>
+    </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Banshee.AlbumArtWriter\AlbumArtWriterJob.cs" />
