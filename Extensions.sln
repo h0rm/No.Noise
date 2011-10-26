@@ -1,6 +1,8 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 10.00
 # Visual Studio 2008
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NoNoise", "src\NoNoise\NoNoise.csproj", "{26CE8A48-B319-4DF6-B7CD-12ADC9E527DB}"
+EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DuplicateSongDetector", "src\DuplicateSongDetector\DuplicateSongDetector.csproj", "{1725FB8A-DF47-4CAF-A322-59EE97AAB5DE}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AlbumArtWriter", "src\AlbumArtWriter\AlbumArtWriter.csproj", "{5D56E36A-AB9F-4BAA-BC42-D7503AC0A3A5}"
@@ -54,8 +56,6 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Telepathy", "Telepathy", "{76693D14-3D45-4CCC-AC0A-F1372836BCFF}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Banshee.Telepathy", "src\Telepathy\Banshee.Telepathy\Banshee.Telepathy.csproj", "{C6F7D7EA-0245-4A29-AC8E-714E1677F0FC}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NDesk.DBus", "src\Telepathy\Banshee.Telepathy\NDesk.DBus\NDesk.DBus.csproj", "{09A0200F-F3AF-4BD6-9EC4-E7D80D273E4C}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "OpenVP", "OpenVP", "{673A23F5-67E8-4BE7-A47B-1BEE9B8C33CD}"
 EndProject

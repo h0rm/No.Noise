@@ -9,7 +9,7 @@ SOURCES =  \
 
 RESOURCES =  \
 	AlbumArtWriter.addin.xml \
-	Resources/GlobalUI.xml
+	Resources/GlobalUI.xml,AlbumArtWriter.Resources.GlobalUI.xml
 	
 if ENABLE_ALBUMARTWRITER
 include $(top_srcdir)/build/build.mk
