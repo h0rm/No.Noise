@@ -66,19 +66,21 @@ namespace NoNoise.Visualization
     public delegate void SelectionClearedEvent (Object source);
     public delegate void SongLeaveEvent (Object source);
     public delegate void SongStartPlayingEvent (Object source, SongInfoArgs args);
+    public delegate void InitializedEvent (Object source);
 
     public class SongGroup: Clutter.Group
     {
 
         #region Member variables
 
-        SongHighlightEvent song_enter;
-        SongLeaveEvent song_leave;
+        private SongHighlightEvent song_enter;
+        private SongLeaveEvent song_leave;
 
-        SongSelectedEvent song_selected;
-        SelectionClearedEvent selection_cleared;
+        private SongSelectedEvent song_selected;
+        private SelectionClearedEvent selection_cleared;
 
-        SongStartPlayingEvent song_start_playing;
+        private SongStartPlayingEvent song_start_playing;
+        private InitializedEvent initialized_event;
 
         private readonly double zoom_level_mult = Math.Sqrt (2);
         private double zoom_level = 1.0;
@@ -158,16 +160,29 @@ namespace NoNoise.Visualization
             add { song_start_playing += value; }
             remove { song_start_playing -= value; }
         }
+
+        public event InitializedEvent InitializationFinished {
+            add { initialized_event += value; }
+            remove { initialized_event -= value; }
+        }
+
         #endregion
 
         public SongGroup (Stage stage) : base ()
         {
+            this.Initialized = false;
             this.stage = stage;
             actor_manager = new SongActorManager (num_of_actors);
             point_manager = new SongPointManager (0, 0, 30000, 30000);
 
             InitSelectionActor ();
+            points_visible = new List<SongPoint> (num_of_actors);
 //            Init();
+        }
+
+        public bool Initialized {
+            get;
+            private set;
         }
 
         /// <summary>
@@ -183,6 +198,7 @@ namespace NoNoise.Visualization
             if (initialized)
                 ClearView ();
 
+            point_manager = new SongPointManager (0, 0, 30000, 30000);
 
             foreach (DataEntry e in entries) {
                 point_manager.Add (e.X*30000, e.Y*30000, e.ID);
@@ -396,6 +412,11 @@ namespace NoNoise.Visualization
             InitSongActors ();
 //            InitSelectionActor ();
             InitHandlers ();
+
+            // Initialized -> ready to go
+            this.Initialized =  true;
+
+            Hyena.Log.Debug ("Initializing Song Group Finished.");
         }
         #endregion
 

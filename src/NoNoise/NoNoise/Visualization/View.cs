@@ -34,11 +34,9 @@ namespace NoNoise.Visualization
 {
     public class View : Clutter.Embed
     {
-        private Object lock_view = new Object ();
-
-        SongGroup point_group;
-        MainGui gui;
-        BansheeLibraryAnalyzer analyzer;
+        private SongGroup point_group;
+        private MainGui gui;
+        private BansheeLibraryAnalyzer analyzer;
 //        Dictionary<int, NoNoise.Data.TrackData> info;
 
         object enter_counter_lock = new Object ();
@@ -62,7 +60,7 @@ namespace NoNoise.Visualization
 
             Thread thread = new Thread (delegate () {
 
-                lock (lock_view) {
+                lock (point_group) {
 
                     Clutter.Threads.Enter ();
                     Hyena.Log.Debug ("Thread Entered");
@@ -131,6 +129,9 @@ namespace NoNoise.Visualization
 
         void HandleHandleExposeEvent (object o, Gtk.ExposeEventArgs args)
         {
+            if (!point_group.Initialized)
+                return;
+
             point_group.InitOnShow ();
             this.ExposeEvent -= HandleHandleExposeEvent;
         }
@@ -233,7 +234,11 @@ namespace NoNoise.Visualization
             if (point_group == null)
                 return;
             
-            lock (lock_view) {
+            lock (point_group) {
+
+                if (!point_group.Initialized)
+                    return;
+
                 point_group.UpdateClipping ();
             }
 //            point_group
@@ -259,7 +264,7 @@ namespace NoNoise.Visualization
         /// </summary>
         public void GetPcaCoordinates ()
         {
-            if (point_group == null)
+            if (point_group == null || !point_group.Initialized)
                 return;
             
             if (BansheeLibraryAnalyzer.Singleton == null)
@@ -277,7 +282,7 @@ namespace NoNoise.Visualization
 
             Thread thread = new Thread (delegate () {
 
-                lock (lock_view) {
+                lock (point_group) {
 
                     Hyena.Log.Debug ("Waiting for point_group finished");
 
@@ -311,6 +316,9 @@ namespace NoNoise.Visualization
         /// </param>
         public void UpdateHiddenSongs (List<int> not_hidden)
         {
+            if (point_group == null || !point_group.Initialized)
+                return;
+
             lock (point_group) {
                 point_group.UpdateHiddenSongs (not_hidden);
             }
