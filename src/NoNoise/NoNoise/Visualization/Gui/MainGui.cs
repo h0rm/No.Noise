@@ -62,26 +62,59 @@ namespace NoNoise.Visualization.Gui
         private void Init ()
         {
             Hyena.Log.Debug ("GUI init");
+//
+            Font standard = new Font () {
+                Family = "Arial",
+                Slant = Cairo.FontSlant.Normal,
+                Weight = Cairo.FontWeight.Bold,
+                Size = 12,
+                Color = new Cairo.Color (0.1, 0.1, 0.1)
+            };
 
-            StyleSheet style = new StyleSheet (new Cairo.Color (0.1, 0.1, 0.1,0.5),
-                                               new Cairo.Color (1, 1, 1, 0.9),
-                                               new Cairo.Color (1, 0, 0, 0.9),
-                                               new Font ("Arial",
-                                               Cairo.FontSlant.Normal,
-                                               Cairo.FontWeight.Bold,
-                                               12, new Cairo.Color (0.1, 0.1, 0.1)),
-                                               new Font ("Arial",
-                                               Cairo.FontSlant.Normal,
-                                               Cairo.FontWeight.Bold,
-                                               12, new Cairo.Color (0.1, 0.1, 0.1)),
-                                               new Font ("Verdana",
-                                               Cairo.FontSlant.Normal,
-                                               Cairo.FontWeight.Normal,
-                                               9, new Cairo.Color (0.1, 0.1, 0.1)),
-                                               new Cairo.Color (1, 1, 1, 1),
-                                               new Cairo.Color (1, 0, 0, 0),
-                                               1.0
-                                               );
+            Font small = new Font () {
+                Family = "Verdana",
+                Slant = Cairo.FontSlant.Normal,
+                Weight = Cairo.FontWeight.Normal,
+                Size = 9,
+                Color = new Cairo.Color (0.1, 0.1, 0.1)
+            };
+
+            StyleSheet style = new StyleSheet () {
+                Foreground = new Cairo.Color (0.1, 0.1, 0.1,0.5),
+                Background = new Cairo.Color (1, 1, 1, 0.9),
+                Selection = new Cairo.Color (1, 0, 0, 0.9),
+                Standard = standard,
+                Highlighted = standard,
+                Subtitle = small,
+                Border = new Cairo.Color (1, 1, 1, 1),
+                SelectionBoarder = new Cairo.Color (1, 0, 0, 0),
+                BorderSize = 1.0
+            };
+
+//            StyleSheet (Color foreground, Color background, Color selection,
+//                           Font standard, Font highlighted, Font subtitle,
+//                           Color border, Color selection_boarder, double border_size)
+
+//            Font (String family, FontSlant slant, FontWeight weight, double font_size, Color color)
+//            StyleSheet style = new StyleSheet (new Cairo.Color (0.1, 0.1, 0.1,0.5),
+//                                               new Cairo.Color (1, 1, 1, 0.9),
+//                                               new Cairo.Color (1, 0, 0, 0.9),
+//                                               new Font ("Arial",
+//                                               Cairo.FontSlant.Normal,
+//                                               Cairo.FontWeight.Bold,
+//                                               12, new Cairo.Color (0.1, 0.1, 0.1)),
+//                                               new Font ("Arial",
+//                                               Cairo.FontSlant.Normal,
+//                                               Cairo.FontWeight.Bold,
+//                                               12, new Cairo.Color (0.1, 0.1, 0.1)),
+//                                               new Font ("Verdana",
+//                                               Cairo.FontSlant.Normal,
+//                                               Cairo.FontWeight.Normal,
+//                                               9, new Cairo.Color (0.1, 0.1, 0.1)),
+//                                               new Cairo.Color (1, 1, 1, 1),
+//                                               new Cairo.Color (1, 0, 0, 0),
+//                                               1.0
+//                                               );
 
             zoom_button_in = new ZoomButton (style, true);
 

@@ -24,6 +24,7 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 using System;
+using System.Threading;
 using Clutter;
 using System.Collections.Generic;
 using Banshee.NoNoise;
@@ -33,6 +34,8 @@ namespace NoNoise.Visualization
 {
     public class View : Clutter.Embed
     {
+        private Object lock_view = new Object ();
+
         SongGroup point_group;
         MainGui gui;
         BansheeLibraryAnalyzer analyzer;
@@ -49,14 +52,40 @@ namespace NoNoise.Visualization
 
             gui = new MainGui (Stage);
             Stage.Add (gui);
-            gui.UpdateStatus ("Initializing visualization.", false);
 
             point_group = new SongGroup (Stage);
             Stage.Add (point_group);
             point_group.LowerBottom ();
+            gui.UpdateStatus ("Initializing visualization.", false);
+
+
+
+            Thread thread = new Thread (delegate () {
+
+                lock (lock_view) {
+
+                    Clutter.Threads.Enter ();
+                    Hyena.Log.Debug ("Thread Entered");
+
+                    point_group.Init ();
+
+
+
+
+
+
+
+                    InitHandler ();
+
+                    Clutter.Threads.Leave ();
+                }
+            });
 
             gui.UpdateStatus ("Visualization initialized. Double click to play song.", false);
-            InitHandler ();
+
+            Clutter.Threads.Leave ();
+
+            thread.Start ();
         }
 
         /// <summary>
@@ -207,7 +236,9 @@ namespace NoNoise.Visualization
 
         public void FinishedInit ()
         {
-            point_group.UpdateClipping ();
+            lock (lock_view) {
+                point_group.UpdateClipping ();
+            }
 //            point_group
         }
 
@@ -242,9 +273,11 @@ namespace NoNoise.Visualization
 //            foreach (NoNoise.Data.DataEntry d in data)
 //                info.Add (d.ID, d.Value);
 
-            point_group.LoadPcaData (data);
+            lock (lock_view) {
+                point_group.LoadPcaData (data);
 
-            this.ExposeEvent += HandleHandleExposeEvent;
+                this.ExposeEvent += HandleHandleExposeEvent;
+            }
         }
 
         /// <summary>
@@ -264,7 +297,9 @@ namespace NoNoise.Visualization
         /// </param>
         public void UpdateHiddenSongs (List<int> not_hidden)
         {
-            point_group.UpdateHiddenSongs (not_hidden);
+            lock (point_group) {
+                point_group.UpdateHiddenSongs (not_hidden);
+            }
         }
 
         /// <summary>

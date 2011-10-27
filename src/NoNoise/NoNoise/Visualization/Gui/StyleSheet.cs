@@ -31,7 +31,7 @@ namespace NoNoise.Visualization.Gui
     /// <summary>
     /// Helper struct which represents a font
     /// </summary>
-    public class Font
+    public struct Font
     {
         /// <summary>
         /// Font family
@@ -72,21 +72,12 @@ namespace NoNoise.Visualization.Gui
             get;
             set;
         }
-
-        public Font (String family, FontSlant slant, FontWeight weight, double font_size, Color color)
-        {
-            Size = font_size;
-            Slant = slant;
-            Weight = weight;
-            Family = family;
-            Color = color;
-        }
     }
 
     /// <summary>
     /// Style sheet which is used to specify the appearance of all gui elements
     /// </summary>
-    public class StyleSheet
+    public struct StyleSheet
     {
         /// <summary>
         /// Foreground color
@@ -158,20 +149,6 @@ namespace NoNoise.Visualization.Gui
         public double BorderSize {
             get;
             set;
-        }
-
-        public StyleSheet (Color foreground, Color background, Color selection,
-                           Font standard, Font highlighted, Font subtitle,
-                           Color border, Color selection_boarder, double border_size)
-        {
-            Foreground = foreground;
-            Background = background;
-            Standard = standard;
-            Highlighted = highlighted;
-            Border = border;
-            BorderSize = border_size;
-            Selection = selection;
-            SelectionBoarder = selection_boarder;
         }
 
     }

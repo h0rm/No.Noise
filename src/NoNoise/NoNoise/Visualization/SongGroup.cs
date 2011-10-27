@@ -163,7 +163,10 @@ namespace NoNoise.Visualization
         public SongGroup (Stage stage) : base ()
         {
             this.stage = stage;
-            Init();
+            actor_manager = new SongActorManager (num_of_actors);
+
+            InitSelectionActor ();
+//            Init();
         }
 
         /// <summary>
@@ -252,8 +255,7 @@ namespace NoNoise.Visualization
         /// </summary>
         private void InitSongActors ()
         {
-
-            actor_manager = new SongActorManager (num_of_actors);
+            actor_manager.Init (num_of_actors);
 
             foreach (SongActor a in actor_manager.Actors) {
                 Add (a);
@@ -392,7 +394,7 @@ namespace NoNoise.Visualization
             this.Add (background);
             InitAnimations ();
             InitSongActors ();
-            InitSelectionActor ();
+//            InitSelectionActor ();
             InitHandlers ();
         }
         #endregion

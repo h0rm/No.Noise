@@ -41,7 +41,7 @@ namespace NoNoise.Visualization
         {
             SongActor.GeneratePrototypes ();
 
-            Init (count);
+//            Init (count);
         }
 
         /// <summary>

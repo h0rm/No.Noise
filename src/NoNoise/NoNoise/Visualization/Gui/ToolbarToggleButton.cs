@@ -55,8 +55,15 @@ namespace NoNoise.Visualization.Gui
             StyleSheet s = scheme;
             s.Foreground = scheme.Background;
             s.Background = scheme.Foreground;
-            s.Standard = new Font (scheme.Standard.Family, scheme.Standard.Slant,
-                                   scheme.Standard.Weight, scheme.Standard.Size, scheme.Background);
+
+            s.Standard = new Font () {
+                Family = scheme.Standard.Family,
+                Slant = scheme.Standard.Slant,
+                Weight = scheme.Standard.Weight,
+                Size = scheme.Standard.Size,
+                Color = scheme.Background
+            };
+
             s.Border = scheme.Foreground;
             Style = s;
             Text = text_two;
