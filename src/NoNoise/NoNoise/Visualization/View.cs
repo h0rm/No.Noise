@@ -34,6 +34,8 @@ namespace NoNoise.Visualization
 {
     public class View : Clutter.Embed
     {
+        private object view_lock = new Object ();
+
         private SongGroup point_group;
         private MainGui gui;
         private BansheeLibraryAnalyzer analyzer;
@@ -54,13 +56,11 @@ namespace NoNoise.Visualization
             point_group = new SongGroup (Stage);
             Stage.Add (point_group);
             point_group.LowerBottom ();
-            gui.UpdateStatus ("Initializing visualization.", false);
-
-
+            gui.UpdateStatus ("Initializing visualization.", true);
 
             Thread thread = new Thread (delegate () {
 
-                lock (point_group) {
+                lock (view_lock) {
 
                     Clutter.Threads.Enter ();
                     Hyena.Log.Debug ("Thread Entered");
@@ -73,7 +73,7 @@ namespace NoNoise.Visualization
                 }
             });
 
-            gui.UpdateStatus ("Visualization initialized. Double click to play song.", false);
+//            gui.UpdateStatus ("Visualization initialized. Double click to play song.", false);
 
             Clutter.Threads.Leave ();
 
@@ -96,15 +96,13 @@ namespace NoNoise.Visualization
             };
 
             point_group.SongSelected += delegate(object source, SongInfoArgs args) {
-
-                gui.SetResetButton (true);
-
                 List<String> songs = new List<String> ();
                 List<String> artists = new List<String> ();
 
                 if(args.SongIDs.Count == 0) {
                     gui.ClearInfoSelection ();
                 } else {
+                    gui.SetResetButton (true);
 
                     GetSongLists (args, ref songs, ref artists);
 //                    Hyena.Log.Information ("Retrieved song info");
@@ -129,11 +127,12 @@ namespace NoNoise.Visualization
 
         void HandleHandleExposeEvent (object o, Gtk.ExposeEventArgs args)
         {
-            if (!point_group.Initialized)
-                return;
+            lock (view_lock) {
 
-            point_group.InitOnShow ();
-            this.ExposeEvent -= HandleHandleExposeEvent;
+                point_group.InitOnShow ();
+                this.ExposeEvent -= HandleHandleExposeEvent;
+
+            }
         }
 
         /// <summary>
@@ -231,17 +230,13 @@ namespace NoNoise.Visualization
 
         public void FinishedInit ()
         {
-            if (point_group == null)
-                return;
-            
-            lock (point_group) {
+            lock (view_lock) {
 
                 if (!point_group.Initialized)
                     return;
 
                 point_group.UpdateClipping ();
             }
-//            point_group
         }
 
         /// <summary>
@@ -273,18 +268,10 @@ namespace NoNoise.Visualization
                 analyzer = BansheeLibraryAnalyzer.Singleton;
 
             List<NoNoise.Data.DataEntry> data = analyzer.PcaCoordinates;
-//            info = new Dictionary<int, NoNoise.Data.TrackData> (data.Count);
-
-//            foreach (NoNoise.Data.DataEntry d in data)
-//                info.Add (d.ID, d.Value);
-
-            Hyena.Log.Debug ("Started waiting for point_group");
 
             Thread thread = new Thread (delegate () {
 
-                lock (point_group) {
-
-                    Hyena.Log.Debug ("Waiting for point_group finished");
+                lock (view_lock) {
 
                     Clutter.Threads.Enter ();
 
@@ -316,10 +303,7 @@ namespace NoNoise.Visualization
         /// </param>
         public void UpdateHiddenSongs (List<int> not_hidden)
         {
-            if (point_group == null || !point_group.Initialized)
-                return;
-
-            lock (point_group) {
+            lock (view_lock) {
                 point_group.UpdateHiddenSongs (not_hidden);
             }
         }

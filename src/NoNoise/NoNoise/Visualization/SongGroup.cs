@@ -173,10 +173,8 @@ namespace NoNoise.Visualization
             this.Initialized = false;
             this.stage = stage;
             actor_manager = new SongActorManager (num_of_actors);
-            point_manager = new SongPointManager (0, 0, 30000, 30000);
 
             InitSelectionActor ();
-            points_visible = new List<SongPoint> (num_of_actors);
 //            Init();
         }
 
@@ -404,6 +402,9 @@ namespace NoNoise.Visualization
             Hyena.Log.Debug ("Initializing Song Group.");
 
             Reactive = true;
+
+            point_manager = new SongPointManager (0,0,3000,3000);
+            points_visible = new List<SongPoint> (num_of_actors);
 
             background = new Rectangle (new Color (0,0,0,1.0));
             background.SetSize (30000,30000);
@@ -1226,6 +1227,7 @@ namespace NoNoise.Visualization
         {
             if (stage.Width <= 1)
                 return;
+
 
             selection.SetSize (stage.Width, stage.Height);
 
