@@ -62,20 +62,15 @@ namespace NoNoise.Visualization
 
                 lock (view_lock) {
 
-                    Clutter.Threads.Enter ();
                     Hyena.Log.Debug ("Thread Entered");
 
                     point_group.Init ();
 
                     InitHandler ();
-
-                    Clutter.Threads.Leave ();
                 }
             });
 
 //            gui.UpdateStatus ("Visualization initialized. Double click to play song.", false);
-
-            Clutter.Threads.Leave ();
 
             thread.Start ();
         }
@@ -129,9 +124,11 @@ namespace NoNoise.Visualization
         {
             lock (view_lock) {
 
+                if (point_group == null || !point_group.Initialized)
+                    return;
+
                 point_group.InitOnShow ();
                 this.ExposeEvent -= HandleHandleExposeEvent;
-
             }
         }
 
@@ -154,7 +151,6 @@ namespace NoNoise.Visualization
                 Banshee.Collection.TrackInfo track = analyzer.GetTrackInfoFor (i);
 
                 if (track == null) {
-//                if (!info.ContainsKey (i)) {
                     Hyena.Log.Debug ("Warning, track not found");
                     continue;
                 }
@@ -163,10 +159,7 @@ namespace NoNoise.Visualization
                                                             ? "Unknown Title" : track.TrackTitle));
                 artists.Add (String.Copy (track.ArtistName == "" || track.ArtistName == null
                                                             ? "Unknown Artist" : track.ArtistName));
-//                titles.Add (info[i].Title == "" ? "Unknown Title" : info[i].Title);
-//                artists.Add (info[i].Artist == "" ? "Unknown Artist" : info[i].Artist);
             }
-
         }
 
         /// <summary>
@@ -232,7 +225,7 @@ namespace NoNoise.Visualization
         {
             lock (view_lock) {
 
-                if (!point_group.Initialized)
+                if (point_group == null || !point_group.Initialized)
                     return;
 
                 point_group.UpdateClipping ();
@@ -273,13 +266,9 @@ namespace NoNoise.Visualization
 
                 lock (view_lock) {
 
-                    Clutter.Threads.Enter ();
-
                     point_group.LoadPcaData (data);
 
                     this.ExposeEvent += HandleHandleExposeEvent;
-
-                    Clutter.Threads.Leave ();
                 }
             });
 
