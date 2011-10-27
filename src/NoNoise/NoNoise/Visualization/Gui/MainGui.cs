@@ -51,6 +51,7 @@ namespace NoNoise.Visualization.Gui
 
         private Group toolbar;
         private StatusBox status_box;
+        private bool status_important = false;
 
         public MainGui (Stage stage) : base ()
         {
@@ -91,31 +92,6 @@ namespace NoNoise.Visualization.Gui
                 BorderSize = 1.0
             };
 
-//            StyleSheet (Color foreground, Color background, Color selection,
-//                           Font standard, Font highlighted, Font subtitle,
-//                           Color border, Color selection_boarder, double border_size)
-
-//            Font (String family, FontSlant slant, FontWeight weight, double font_size, Color color)
-//            StyleSheet style = new StyleSheet (new Cairo.Color (0.1, 0.1, 0.1,0.5),
-//                                               new Cairo.Color (1, 1, 1, 0.9),
-//                                               new Cairo.Color (1, 0, 0, 0.9),
-//                                               new Font ("Arial",
-//                                               Cairo.FontSlant.Normal,
-//                                               Cairo.FontWeight.Bold,
-//                                               12, new Cairo.Color (0.1, 0.1, 0.1)),
-//                                               new Font ("Arial",
-//                                               Cairo.FontSlant.Normal,
-//                                               Cairo.FontWeight.Bold,
-//                                               12, new Cairo.Color (0.1, 0.1, 0.1)),
-//                                               new Font ("Verdana",
-//                                               Cairo.FontSlant.Normal,
-//                                               Cairo.FontWeight.Normal,
-//                                               9, new Cairo.Color (0.1, 0.1, 0.1)),
-//                                               new Cairo.Color (1, 1, 1, 1),
-//                                               new Cairo.Color (1, 0, 0, 0),
-//                                               1.0
-//                                               );
-
             zoom_button_in = new ZoomButton (style, true);
 
             zoom_button_out = new ZoomButton (style, false);
@@ -126,7 +102,6 @@ namespace NoNoise.Visualization.Gui
 
 
             toolbar = new Group ();
-//            toolbar.SetSize (306,20);
             select_button = new ToolbarToggleButton ("select", "select", true, style,
                                                      ToolbarButton.Border.Left, 75,20);
             select_button.SetPosition (0,0);
@@ -315,7 +290,15 @@ namespace NoNoise.Visualization.Gui
 
         public void UpdateStatus (String text, bool waiting)
         {
-            status_box.Update (text, waiting);
+            UpdateStatus (text, waiting, 0);
+        }
+        
+        public void UpdateStatus (String text, bool waiting, int priority)
+        {
+            if (priority > 0 || !status_important)
+                status_box.Update (text, waiting);
+
+            status_important = priority == 2;
         }
 
         public void SetResetButton (bool clear)
