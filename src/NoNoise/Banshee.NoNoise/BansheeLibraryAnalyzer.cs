@@ -501,10 +501,11 @@ namespace Banshee.NoNoise
 
                 lock (db_synch) {
                     db.ClearPcaData ();
+                    coords = ana.Coordinates;
                     if (!db.InsertPcaCoordinates (ana.Coordinates))
                         Hyena.Log.Error ("NoNoise/BLA - PCA coord insert failed");
                     Hyena.Log.Debug ("NoNoise/BLA - PCA inserted into db");
-                    coords = db.GetPcaCoordinates ();
+//                    coords = db.GetPcaCoordinates ();
                 }
             } catch (DatabaseException e) {
                 Hyena.Log.Exception ("NoNoise/BLA - Database Problem", e);

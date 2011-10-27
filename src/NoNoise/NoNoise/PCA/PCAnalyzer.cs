@@ -272,6 +272,10 @@ namespace NoNoise.PCA
             if (num_columns == 0)
                 throw new Exception ("No features added!");
 
+            if (num_params > num_columns)
+                Log.Warning ("Cannot solve equation if number of samples is smaller than number of features");
+//                throw new Exception ("Cannot solve equation if number of samples is smaller than number of features");
+
             Log.Information ("NoNoise/PCA - performing PCA");
 
             // calc mean
@@ -279,29 +283,35 @@ namespace NoNoise.PCA
 
             differences = new List<Vector>(vector_map.Count);
 
-            Debug.Assert(differences.Count == vector_map.Count);
+            Debug.Assert (differences.Count == vector_map.Count);
 
-            // fill difference vectors
-            foreach (Vector v in vector_map.Values)
-                differences.Add(v.Subtract(mean));
+            if (num_params > num_columns) {
+                foreach (Vector v in vector_map.Values)
+                    differences.Add (TruncateVector (v.Subtract (mean), num_columns));
+            } else {
+                // fill difference vectors
+                foreach (Vector v in vector_map.Values)
+                    differences.Add (v.Subtract (mean));
+            }
 
-            matrices = new List<Matrix>(vector_map.Count);
+            matrices = new List<Matrix> (vector_map.Count);
 
-            Debug.Assert(differences.Count == matrices.Count);
+            Debug.Assert (differences.Count == matrices.Count);
 
             // fill matrices
             foreach (Vector d in differences)
-                matrices.Add(d.ToColumnMatrix().Multiply(d.ToRowMatrix()));
+                matrices.Add (d.ToColumnMatrix ().Multiply (d.ToRowMatrix ()));
 
             // build covariance matrix
             Matrix cov = matrices[0];
             for (int i = 1; i < matrices.Count; i++)
-                cov += matrices[i];
+                cov += matrices [i];
 
             cov.Multiply(1.0/(double)(num_columns - 1));
 
-//            Log.Debug("NoNoise/PCA - cov cols: " + cov.ColumnCount);
-//            Log.Debug("NoNoise/PCA - cov rows: " + cov.RowCount);
+            Log.Debug("NoNoise/PCA - cov cols: " + cov.ColumnCount);
+            Log.Debug("NoNoise/PCA - cov rows: " + cov.RowCount);
+//            Log.Debug ("NoNoise/PCA - covariance matrix:\n" + cov);
             EigenvalueDecomposition eigen = cov.EigenvalueDecomposition;
 
             Complex[] eigenValues = eigen.EigenValues;
@@ -355,6 +365,15 @@ namespace NoNoise.PCA
             Log.Debug ("NoNoise/PCA - pca complete. computing coordinates...");
 
             ComputeCoordinates ();
+        }
+
+        private Vector TruncateVector (Vector v, int new_length)
+        {
+            Vector ret = new Vector (new_length);
+            for (int i = 0; i < new_length && i < v.Length; i++) {
+                ret [i] = v [i];
+            }
+            return ret;
         }
 
         /// <summary>

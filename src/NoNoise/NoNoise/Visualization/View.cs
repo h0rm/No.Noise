@@ -230,6 +230,9 @@ namespace NoNoise.Visualization
 
         public void FinishedInit ()
         {
+            if (point_group == null)
+                return;
+            
             lock (lock_view) {
                 point_group.UpdateClipping ();
             }

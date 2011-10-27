@@ -66,7 +66,7 @@ namespace Banshee.NoNoise
 //
             if (pcadata) {
                 BansheeLibraryAnalyzer.Init (this, true);
-                view.GetPcaCoordinates ();
+//                view.GetPcaCoordinates ();
             } else
                 view.TestGenerateData();
 
