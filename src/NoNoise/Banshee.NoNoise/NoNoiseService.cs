@@ -56,6 +56,9 @@ namespace Banshee.NoNoise
         private InterfaceActionService action_service;
         private PreferenceService preference_service;
 
+        private uint ui_manager_id_menu;
+        private uint ui_manager_id_tool_menu;
+
 		private NoNoiseClutterSourceContents no_noise_contents;
         private bool scan_action_enabled = false;
 
@@ -210,7 +213,7 @@ namespace Banshee.NoNoise
                 });
 
                 action_service.AddActionGroup (no_noise_actions);
-                action_service.UIManager.AddUiFromString (menu_xml);
+                ui_manager_id_menu = action_service.UIManager.AddUiFromString (menu_xml);
             }
 
 
@@ -231,7 +234,7 @@ namespace Banshee.NoNoise
                 });
 
                 action_service.AddActionGroup (scan_actions);
-                action_service.UIManager.AddUiFromResource ("tool_menu.xml");
+                ui_manager_id_tool_menu = action_service.UIManager.AddUiFromResource ("tool_menu.xml");
             }
 
             NoNoiseAction.Activated += OnNoNoiseToggle;
@@ -335,18 +338,6 @@ namespace Banshee.NoNoise
             return new NoNoiseClutterSourceContents (true);
         }
 
-        public void Dispose ()
-        {
-
-//            Clutter.Threads.Enter ();
-            music_library.Properties.Remove ("Nereid.SourceContents");
-            no_noise_contents.Dispose ();
-//            Clutter.Threads.Leave ();
-
-            NoNoiseAction.Activated -= OnNoNoiseToggle;
-            source_manager.SourceAdded -= OnSourceAdded;
-        }
-
         /// <summary>
         /// Switches the enum value of NoNoiseSchemas.PcaMfcc and sets the PCA
         /// mode of BansheeLibraryAnalyzer accordingly.
@@ -432,6 +423,70 @@ namespace Banshee.NoNoise
             pb.DisplayWidget = cb;
             cb.Destroyed += HandleCbDestroyed;
         }
+
+        private bool disposed = false;
+        public void Dispose ()
+        {
+            if (disposed) {
+                return;
+            }
+            disposed = true;
+
+            ServiceManager.ServiceStarted -= OnServiceStarted;
+            source_manager.SourceAdded -= OnSourceAdded;
+
+            UninstallPreferences ();
+            RemoveNoNoise ();
+         }
+
+        private void UninstallPreferences ()
+        {
+            preference_service.Remove (preferences);
+            preferences = null;
+            debug = null;
+            pca = null;
+            pref_installed = false;
+        }
+
+        private void RemoveNoNoise ()
+        {
+            Clutter.Threads.Enter ();
+            music_library.Properties.Remove ("Nereid.SourceContents");
+            Clutter.Threads.Leave ();
+            no_noise_contents.Dispose ();
+            no_noise_contents = null;
+
+//            source_manager.ActiveSourceChanged -= HandleActiveSourceChanged;
+//            BrowserAction.Activated -= OnToggleBrowser;
+//            BrowserAction.Active = ClutterFlowSchemas.OldShowBrowser.Get ();
+//            CfBrowsAction.Activated -= OnToggleClutterFlow;
+//            CfBrowsAction.Visible = false;
+
+            action_service.RemoveActionGroup ("NoNoiseView");
+            action_service.UIManager.RemoveUi (ui_manager_id_menu);
+            action_service.UIManager.RemoveUi (ui_manager_id_tool_menu);
+//            clutterflow_actions = null;
+//            cfbrows_action = null;
+
+            preference_service = null;
+            source_manager = null;
+            music_library = null;
+            action_service = null;
+//            browser_action = null;
+//            cfbrows_action = null;
+        }
+
+//        public void Dispose ()
+//        {
+//
+////            Clutter.Threads.Enter ();
+//            music_library.Properties.Remove ("Nereid.SourceContents");
+//            no_noise_contents.Dispose ();
+////            Clutter.Threads.Leave ();
+//
+//            NoNoiseAction.Activated -= OnNoNoiseToggle;
+//            source_manager.SourceAdded -= OnSourceAdded;
+//        }
 
         /*
         private void PcaUseMeanHandler ()

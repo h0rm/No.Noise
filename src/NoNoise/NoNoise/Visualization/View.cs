@@ -252,9 +252,6 @@ namespace NoNoise.Visualization
         /// </summary>
         public void GetPcaCoordinates ()
         {
-            if (point_group == null || !point_group.Initialized)
-                return;
-            
             if (BansheeLibraryAnalyzer.Singleton == null)
                 analyzer = BansheeLibraryAnalyzer.Init (null);  // TODO this should not happen (missing callback)
             else
@@ -265,6 +262,9 @@ namespace NoNoise.Visualization
             Thread thread = new Thread (delegate () {
 
                 lock (view_lock) {
+                    Hyena.Log.Debug ("NoNoise - updating vis");
+                    if (point_group == null || !point_group.Initialized)
+                        return;
 
                     point_group.LoadPcaData (data);
 
