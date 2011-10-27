@@ -62,14 +62,11 @@ namespace NoNoise.Visualization
 
                 lock (view_lock) {
 
-                    Clutter.Threads.Enter ();
                     Hyena.Log.Debug ("Thread Entered");
 
                     point_group.Init ();
 
                     InitHandler ();
-
-                    Clutter.Threads.Leave ();
                 }
             });
 
@@ -269,13 +266,9 @@ namespace NoNoise.Visualization
 
                 lock (view_lock) {
 
-                    Clutter.Threads.Enter ();
-
                     point_group.LoadPcaData (data);
 
                     this.ExposeEvent += HandleHandleExposeEvent;
-
-                    Clutter.Threads.Leave ();
                 }
             });
 
