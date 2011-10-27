@@ -69,12 +69,6 @@ namespace NoNoise.Visualization
 
                     point_group.Init ();
 
-
-
-
-
-
-
                     InitHandler ();
 
                     Clutter.Threads.Leave ();

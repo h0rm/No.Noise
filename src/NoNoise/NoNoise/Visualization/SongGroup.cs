@@ -164,6 +164,7 @@ namespace NoNoise.Visualization
         {
             this.stage = stage;
             actor_manager = new SongActorManager (num_of_actors);
+            point_manager = new SongPointManager (0, 0, 30000, 30000);
 
             InitSelectionActor ();
 //            Init();
@@ -182,7 +183,6 @@ namespace NoNoise.Visualization
             if (initialized)
                 ClearView ();
 
-            point_manager = new SongPointManager (0, 0, 30000, 30000);
 
             foreach (DataEntry e in entries) {
                 point_manager.Add (e.X*30000, e.Y*30000, e.ID);
