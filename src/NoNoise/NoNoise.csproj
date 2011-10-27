@@ -81,6 +81,18 @@
     <Reference Include="System.Data" />
     <Reference Include="Mono.Data.SqliteClient" />
     <Reference Include="Mono.Data.Sqlite" />
+    <Reference Include="Hyena, Version=2.2.0.0, Culture=neutral, PublicKeyToken=null">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>\usr\lib\banshee\Hyena.dll</HintPath>
+    </Reference>
+    <Reference Include="clutter-gtk-sharp, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>\usr\lib\clutter-sharp\clutter-gtk-sharp.dll</HintPath>
+    </Reference>
+    <Reference Include="clutter-sharp, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>\usr\lib\clutter-sharp\clutter-sharp.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="NoNoise.addin.xml">
