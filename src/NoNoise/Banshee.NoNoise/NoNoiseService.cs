@@ -304,7 +304,7 @@ namespace Banshee.NoNoise
             if (music_library == null || action_service == null)// || music_library.TrackModel.Count == 0)
                 return false;
 
-            no_noise_contents = new NoNoiseClutterSourceContents (true);;
+            no_noise_contents = new NoNoiseClutterSourceContents (true);
             ScanAction.Sensitive = !BansheeLibraryAnalyzer.Singleton.IsLibraryScanned;
             SwitchPcaMfccOptions ();
 
@@ -427,16 +427,24 @@ namespace Banshee.NoNoise
         private bool disposed = false;
         public void Dispose ()
         {
-            if (disposed) {
+            if (disposed)
                 return;
-            }
             disposed = true;
 
             ServiceManager.ServiceStarted -= OnServiceStarted;
             source_manager.SourceAdded -= OnSourceAdded;
 
+            no_noise_contents.OnScanFinished -= ScanFinished;
+            no_noise_contents.OnToggleScannable -= ScannableChanged;
+
+            NoNoiseAction.Activated -= OnNoNoiseToggle;
+            ScanAction.Activated -= OnScanAction;
+            HelpAction.Activated -= OnHelpAction;
+
             UninstallPreferences ();
             RemoveNoNoise ();
+
+            BansheeLibraryAnalyzer.Singleton.Dispose ();
          }
 
         private void UninstallPreferences ()
@@ -446,6 +454,10 @@ namespace Banshee.NoNoise
             debug = null;
             pca = null;
             pref_installed = false;
+
+            cb.Changed -= PcaUseHandler;
+            cb.Destroyed -= HandleCbDestroyed;
+            cb = null;
         }
 
         private void RemoveNoNoise ()

@@ -207,6 +207,7 @@ namespace Banshee.NoNoise
         public void Dispose ()
         {
             Clutter.Threads.Enter ();
+            view.OnAddToPlaylist -= HandleViewOnAddToPlaylist;
             view = null;
             Clutter.Threads.Leave ();
 
@@ -219,7 +220,6 @@ namespace Banshee.NoNoise
 //                view.Dispose ();
 //                view = null;
 //            }
-
         }
         public void ResetSource () { }
         public Widget Widget { get { return view; } }

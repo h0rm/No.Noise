@@ -163,6 +163,15 @@ namespace Banshee.NoNoise
             ml.TracksDeleted += HandleTracksDeleted;
         }
 
+        public void Dispose ()
+        {
+            db = null;
+            ml.TracksAdded -= HandleTracksAdded;
+            ml.TracksDeleted -= HandleTracksDeleted;
+            bla.sc = null;
+            bla = null;
+        }
+
         /// <summary>
         /// Initializes the singleton instance of this class and starts PCA
         /// computations if the library has been scanned already. Also causes
