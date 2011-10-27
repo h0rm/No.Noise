@@ -35,14 +35,12 @@ namespace NoNoise.Visualization
     public class View : Clutter.Embed
     {
         private object view_lock = new Object ();
-
+        private Gtk.ThreadNotify finished;
         private SongGroup point_group;
         private MainGui gui;
         private BansheeLibraryAnalyzer analyzer;
-//        Dictionary<int, NoNoise.Data.TrackData> info;
 
-        object enter_counter_lock = new Object ();
-        int enter_counter = 0;
+        public enum ScanStatus {Finished, Started, Rescan};
 
         public View () : base ()
         {
@@ -262,6 +260,8 @@ namespace NoNoise.Visualization
 
             List<NoNoise.Data.DataEntry> data = analyzer.PcaCoordinates;
 
+            gui.UpdateStatus ("Songs loading.", true, 2);
+
             Thread thread = new Thread (delegate () {
 
                 lock (view_lock) {
@@ -269,8 +269,14 @@ namespace NoNoise.Visualization
                     point_group.LoadPcaData (data);
 
                     this.ExposeEvent += HandleHandleExposeEvent;
+                    finished.WakeupMain ();
                 }
             });
+
+            finished = new Gtk.ThreadNotify (new Gtk.ReadyEvent (delegate () {
+
+                gui.UpdateStatus ("Songs loaded. Double click to play.", false, 1);
+            }));
 
             thread.Start ();
         }
@@ -294,6 +300,23 @@ namespace NoNoise.Visualization
         {
             lock (view_lock) {
                 point_group.UpdateHiddenSongs (not_hidden);
+            }
+        }
+
+        public void UpdateStatus (ScanStatus status)
+        {
+            switch (status) {
+            case ScanStatus.Finished:
+                gui.UpdateStatus ("Scan finished.", false, 1);
+                break;
+
+            case ScanStatus.Rescan:
+                gui.UpdateStatus ("Library changed. Please rescan (Tools > NoNoise).", false, 2);
+                break;
+
+            case ScanStatus.Started:
+                gui.UpdateStatus ("Scanning library.", true, 2);
+                break;
             }
         }
 

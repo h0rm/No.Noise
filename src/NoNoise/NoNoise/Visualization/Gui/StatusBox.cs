@@ -89,8 +89,6 @@ namespace NoNoise.Visualization.Gui
         {
             lock (spinner) {
 
-                Threads.Enter ();
-
 //                Hyena.Log.Debug ("Timer " + frame);
                 frame = (++frame) %8;
 
@@ -98,7 +96,6 @@ namespace NoNoise.Visualization.Gui
                     a.Hide ();
 
                 spinner[frame].Show ();
-                Threads.Leave ();
             }
         }
 
@@ -124,8 +121,10 @@ namespace NoNoise.Visualization.Gui
 
                 GenerateBackground (waiting);
 
-                if (waiting)
+                if (waiting) {
+                    spinner[0].Show ();
                     spinner_timer.Start ();
+                }
             }
         }
 
