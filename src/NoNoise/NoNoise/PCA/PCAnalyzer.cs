@@ -286,13 +286,19 @@ namespace NoNoise.PCA
             Debug.Assert (differences.Count == vector_map.Count);
 
             if (num_params > num_columns) {
-                foreach (Vector v in vector_map.Values)
-                    differences.Add (TruncateVector (v.Subtract (mean), num_columns));
-            } else {
-                // fill difference vectors
-                foreach (Vector v in vector_map.Values)
-                    differences.Add (v.Subtract (mean));
+                List<int> keys = new List<int> (vector_map.Count);
+                foreach (int bid in vector_map.Keys)
+                    keys.Add (bid);
+                // truncate vectors in map
+                foreach (int bid in keys)
+                    vector_map [bid] = TruncateVector (vector_map [bid], num_columns);
+
+                mean = TruncateVector (mean, num_columns);
             }
+
+            // fill difference vectors
+            foreach (Vector v in vector_map.Values)
+                differences.Add (v.Subtract (mean));
 
             matrices = new List<Matrix> (vector_map.Count);
 
@@ -440,15 +446,18 @@ namespace NoNoise.PCA
         /// </returns>
         public DataEntry GetCoordinate (int key)
         {
-            Matrix m = new Matrix(2, num_params);
-            m.SetRowVector(base1, 0);
-            m.SetRowVector(base2, 1);
+            Matrix m = (num_params > num_columns) ?
+                new Matrix (2, num_columns) :
+                    new Matrix (2, num_params);
 
-            Matrix coord = m.Multiply(vector_map[key].ToColumnMatrix());
+            m.SetRowVector (base1, 0);
+            m.SetRowVector (base2, 1);
 
-            Debug.Assert(coord.RowCount == 2 && coord.ColumnCount == 1);
+            Matrix coord = m.Multiply (vector_map [key].ToColumnMatrix ());
 
-            return new DataEntry (key, coord[0,0], coord[1,0]);
+            Debug.Assert (coord.RowCount == 2 && coord.ColumnCount == 1);
+
+            return new DataEntry (key, coord [0, 0], coord [1, 0]);
         }
 
         /// <summary>
