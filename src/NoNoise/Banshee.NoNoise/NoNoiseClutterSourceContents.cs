@@ -59,49 +59,35 @@ namespace Banshee.NoNoise
             Clutter.Threads.Init();
             Clutter.Application.InitForToolkit ();
 
-            //cv = new ClutterView();
-            //cv.Init();
             Clutter.Threads.Enter ();
-            view = new View();
 
+            view = new View();
             BansheeLibraryAnalyzer.Init (this, true);
 
             Clutter.Threads.Leave ();
-            //GLib.Thread thread = new GLib.Thread(cv.Init);
 
             view.OnAddToPlaylist += HandleViewOnAddToPlaylist;
-
-            Banshee.ServiceStack.Application.ClientStarted += HandleClientStarted;
-//            Banshee.ServiceStack.Application.ClientStarted += delegate {
-//                Clutter.Threads.Enter ();
-//                view.FinishedInit ();
-//                Clutter.Threads.Leave ();
-//            };
-        }
-
-        private void HandleClientStarted (Banshee.ServiceStack.Client client)
-        {
-            Clutter.Threads.Enter ();
-            view.FinishedInit ();
-            Clutter.Threads.Leave ();
         }
 
         public void Scan (bool start)
         {
             Hyena.Log.Information ("NoNoise - Scan " + (start ? "started." : "paused."));
             BansheeLibraryAnalyzer.Singleton.Scan (start);
+            view.UpdateStatus (start ? View.ScanStatus.Started : View.ScanStatus.Rescan);
         }
 
         public void ScanFinished ()
         {
             Hyena.Log.Information ("NoNoise - Scan finished.");
             scan_event (this, new ScanFinishedEventArgs ("supi"));
+            view.UpdateStatus (View.ScanStatus.Finished);
         }
 
         public void ScannableChanged (bool scannable)
         {
             Hyena.Log.Debug ("NoNoise - Scannable changed to: " + scannable);
             scannable_event (this, new ToggleScannableEventArgs (scannable));
+            view.UpdateStatus (scannable ? View.ScanStatus.Rescan : View.ScanStatus.Finished);
         }
 
         public void PcaCoordinatesUpdated ()
@@ -215,18 +201,22 @@ namespace Banshee.NoNoise
 //        }
 
         private bool disposed = false;
+
         public void Dispose ()
         {
             if (disposed)
                 return;
             Hyena.Log.Debug ("NoNoise/Cont - Disposing NoNoise source contents...");
             disposed = true;
+
             Clutter.Threads.Enter ();
+
             view.OnAddToPlaylist -= HandleViewOnAddToPlaylist;
-            view = null;
+            view.MyDispose ();
+//            view = null;
             Clutter.Threads.Leave ();
 
-            Banshee.ServiceStack.Application.ClientStarted -= HandleClientStarted;
+
             this.source.TrackModel.Reloaded -= HandleSourceReloaded;
 
             if (playing != null)

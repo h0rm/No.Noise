@@ -34,8 +34,6 @@ namespace NoNoise.Visualization
 {
     public class View : Clutter.Embed
     {
-        private object view_lock = new Object ();
-        private Gtk.ThreadNotify finished;
         private SongGroup point_group;
         private MainGui gui;
         private BansheeLibraryAnalyzer analyzer;
@@ -54,23 +52,14 @@ namespace NoNoise.Visualization
             point_group = new SongGroup (Stage);
             Stage.Add (point_group);
             point_group.LowerBottom ();
+
             gui.UpdateStatus ("Initializing visualization.", true);
 
-            Thread thread = new Thread (delegate () {
+            point_group.Init ();
+            InitHandler ();
+            Hyena.Log.Debug ("Handler initialized.");
 
-                lock (view_lock) {
 
-                    Hyena.Log.Debug ("Thread Entered");
-
-                    point_group.Init ();
-
-                    InitHandler ();
-                }
-            });
-
-//            gui.UpdateStatus ("Visualization initialized. Double click to play song.", false);
-
-            thread.Start ();
         }
 
         /// <summary>
@@ -113,22 +102,13 @@ namespace NoNoise.Visualization
                 GeneratePlaylist (args.SongIDs, false);
             };
 
+            point_group.LoadPcaFinished += delegate {
+                gui.UpdateStatus ("Songs loaded. Double click to play.", false, 1);
+            };
+
             gui.DebugButtonPressedEvent += HandleGuiDebugButtonPressedEvent;
-
-//            this.ExposeEvent += HandleHandleExposeEvent;
         }
 
-        void HandleHandleExposeEvent (object o, Gtk.ExposeEventArgs args)
-        {
-            lock (view_lock) {
-
-                if (point_group == null || !point_group.Initialized)
-                    return;
-
-                point_group.InitOnShow ();
-                this.ExposeEvent -= HandleHandleExposeEvent;
-            }
-        }
 
         /// <summary>
         /// Returns the titles and artists to the given <see cref="SongInfoArgs"/>.
@@ -182,6 +162,7 @@ namespace NoNoise.Visualization
                 break;
 
             case MainGui.ButtonClickedArgs.Button.Select:
+                Hyena.Log.Warning ("Select button clicked");
                 point_group.ToggleSelection ();
                 break;
 
@@ -219,17 +200,6 @@ namespace NoNoise.Visualization
                     add_to_playlist_event (this, new AddToPlaylistEventArgs (list,persistant));
         }
 
-        public void FinishedInit ()
-        {
-            lock (view_lock) {
-
-                if (point_group == null || !point_group.Initialized)
-                    return;
-
-                point_group.UpdateClipping ();
-            }
-        }
-
         /// <summary>
         /// [Debug] Handler for debug button clicks.
         /// </summary>
@@ -242,7 +212,7 @@ namespace NoNoise.Visualization
         void HandleGuiDebugButtonPressedEvent  (object source, MainGui.DebugEventArgs args)
         {
 //            point_group.UpdateClipping ();
-            this.ExposeEvent += HandleHandleExposeEvent;
+            this.MyDispose ();
         }
 
         /// <summary>
@@ -250,6 +220,8 @@ namespace NoNoise.Visualization
         /// </summary>
         public void GetPcaCoordinates ()
         {
+            Hyena.Log.Debug ("NoNoise - updating vis");
+
             if (BansheeLibraryAnalyzer.Singleton == null)
                 analyzer = BansheeLibraryAnalyzer.Init (null);  // TODO this should not happen (missing callback)
             else
@@ -259,35 +231,11 @@ namespace NoNoise.Visualization
 
             gui.UpdateStatus ("Songs loading.", true, 2);
 
-            Thread thread = new Thread (delegate () {
 
-                lock (view_lock) {
-                    Hyena.Log.Debug ("NoNoise - updating vis");
-                    if (point_group == null || !point_group.Initialized)
-                        return;
+            if (point_group == null || !point_group.Initialized)
+                return;
 
-                    point_group.LoadPcaData (data);
-
-                    this.ExposeEvent += HandleHandleExposeEvent;
-                    finished.WakeupMain ();
-                }
-            });
-
-            finished = new Gtk.ThreadNotify (new Gtk.ReadyEvent (delegate () {
-
-                gui.UpdateStatus ("Songs loaded. Double click to play.", false, 1);
-            }));
-
-            thread.Start ();
-        }
-
-        /// <summary>
-        /// [Debug] Updates the visualization with test data containing airport location.
-        /// </summary>
-        public void TestGenerateData ()
-        {
-            //point_group.TestGenerateCircles(5000,5000,2000);
-            point_group.ParseTextFile ("../../airport_locations.tsv", 8000);
+            point_group.LoadPcaData (data);
         }
 
         /// <summary>
@@ -298,26 +246,29 @@ namespace NoNoise.Visualization
         /// </param>
         public void UpdateHiddenSongs (List<int> not_hidden)
         {
-            lock (view_lock) {
-                point_group.UpdateHiddenSongs (not_hidden);
-            }
+            Hyena.Log.Information ("Update hidden songs");
+
+            point_group.UpdateHiddenSongs (not_hidden);
         }
 
         public void UpdateStatus (ScanStatus status)
         {
-            switch (status) {
-            case ScanStatus.Finished:
-                gui.UpdateStatus ("Scan finished.", false, 1);
-                break;
+            Hyena.ThreadAssist.ProxyToMain (delegate() {
+                switch (status) {
+                    case ScanStatus.Finished:
+                        gui.UpdateStatus ("Scan finished.", false, 1);
+                        break;
+        
+                    case ScanStatus.Rescan:
+                        gui.UpdateStatus ("Library changed. Please rescan (Tools > NoNoise).", false, 2);
+                        break;
+        
+                    case ScanStatus.Started:
+                        gui.UpdateStatus ("Scanning library.", true, 2);
+                        break;
+                }
+            });
 
-            case ScanStatus.Rescan:
-                gui.UpdateStatus ("Library changed. Please rescan (Tools > NoNoise).", false, 2);
-                break;
-
-            case ScanStatus.Started:
-                gui.UpdateStatus ("Scanning library.", true, 2);
-                break;
-            }
         }
 
         /// <summary>
@@ -359,6 +310,27 @@ namespace NoNoise.Visualization
             public AddToPlaylistEventArgs (List<int> ids) : this (ids, false)
             {
             }
+        }
+
+        public void MyDispose ()
+        {
+            gui.Dispose ();
+        }
+        public override void Dispose ()
+        {
+            gui.Dispose ();
+//            gui.Destroy ();
+//            point_group.Destroy ();
+//            gui.Destroy ();
+
+//
+//            gui = null;
+
+//            base.Destroy ();
+            base.Dispose ();
+
+//            point_group = null;
+//            gui = null;
         }
     }
 }
