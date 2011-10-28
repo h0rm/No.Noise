@@ -7,7 +7,6 @@ SOURCES =  \
 	Banshee.NoNoise/NoNoiseHelpDialog.cs \
 	Banshee.NoNoise/NoNoiseSchemas.cs \
 	Banshee.NoNoise/NoNoiseService.cs \
-	Banshee.NoNoise/NoNoiseSource.cs \
 	Banshee.NoNoise/NoNoiseSourceContents.cs \
 	lastfm-sharp/Lib.cs \
 	lastfm-sharp/RequestParameters.cs \

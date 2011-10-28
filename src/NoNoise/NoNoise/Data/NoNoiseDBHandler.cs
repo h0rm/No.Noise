@@ -29,7 +29,6 @@ using System.Data;
 using System.Text;
 //using Mono.Data.SqliteClient;
 using Mono.Data.Sqlite;
-//using Mono.Data.Sqlite;
 using MathNet.Numerics.LinearAlgebra;
 using Hyena.Data.Sqlite;
 using Hyena;
@@ -158,7 +157,7 @@ namespace NoNoise.Data
                     if (vec != null)
                         ret.Add (bid, vec);
                     else {
-                        Log.Warning ("NoNoise/DBNull - Vector with id " + reader.GetInt32 (1) + " is null!");
+                        Log.WarningFormat ("NoNoise/DBNull - Vector with id {0} is null!", reader.GetInt32 (1));
                         Log.Debug (reader.GetString (0));
                     }
                 }
@@ -193,7 +192,7 @@ namespace NoNoise.Data
                     if (vec != null)
                         ret.Add (bid, vec);
                     else {
-                        Log.Warning ("NoNoise/DBNull - Vector with id " + reader.GetInt32 (1) + " is null!");
+                        Log.WarningFormat ("NoNoise/DBNull - Vector with id {0} is null!", reader.GetInt32 (1));
                         Log.Debug (reader.GetString (0));
                     }
                 }
@@ -228,7 +227,7 @@ namespace NoNoise.Data
                     if (vec != null)
                         ret.Add (bid, vec);
                     else {
-                        Log.Warning ("NoNoise/DBNull - Vector with id " + reader.GetInt32 (1) + " is null!");
+                        Log.WarningFormat ("NoNoise/DBNull - Vector with id {0} is null!", reader.GetInt32 (1));
                         Log.Debug (reader.GetString (0));
                     }
                 }
@@ -263,7 +262,7 @@ namespace NoNoise.Data
                     if (vec != null)
                         ret.Add (bid, vec);
                     else {
-                        Log.Warning ("NoNoise/DBNull - Vector with id " + reader.GetInt32 (1) + " is null!");
+                        Log.WarningFormat ("NoNoise/DBNull - Vector with id {0} is null!", reader.GetInt32 (1));
                         Log.Debug (reader.GetString (0));
                     }
                 }
@@ -298,7 +297,7 @@ namespace NoNoise.Data
                     if (vec != null)
                         ret.Add (bid, vec);
                     else {
-                        Log.Warning ("NoNoise/DBNull - Vector with id " + reader.GetInt32 (1) + " is null!");
+                        Log.WarningFormat ("NoNoise/DBNull - Vector with id {0} is null!", reader.GetInt32 (1));
                         Log.Debug (reader.GetString (0));
                     }
                 }
@@ -381,7 +380,7 @@ namespace NoNoise.Data
                 dbcmd.CommandText = string.Format ("SELECT id FROM MIRData WHERE banshee_id = '{0}'", bid);
                 return (dbcmd.ExecuteScalar () != null);
             } catch (Exception e) {
-                Log.Exception ("NoNoise/DB - Contains MIRData query failed for Banshee_id: " + bid, e);
+                Log.Exception (string.Format ("NoNoise/DB - Contains MIRData query failed for Banshee_id: {0}", bid), e);
                 return false;
             } finally {
                 if (dbcmd != null)
@@ -409,7 +408,7 @@ namespace NoNoise.Data
                 dbcmd.CommandText = string.Format ("DELETE FROM MIRData WHERE banshee_id = '{0}'", bid);
                 dbcmd.ExecuteNonQuery ();
             } catch (Exception e) {
-                Log.Warning ("NoNoise/DB - Remove MIRData query failed for Banshee_id: " + bid + "\n" + e.StackTrace);
+                Log.Exception (string.Format ("NoNoise/DB - Remove MIRData query failed for Banshee_id: {0}", bid), e);
             } finally {
                 if (dbcmd != null)
                     dbcmd.Dispose ();
@@ -487,7 +486,7 @@ namespace NoNoise.Data
 
                 dbcmd.ExecuteNonQuery ();
             } catch (Exception e) {
-                Log.Exception ("NoNoise/DB - DataEntry insert failed for DE: " + de, e);
+                Log.Exception (string.Format ("NoNoise/DB - DataEntry insert failed for DE: {0}", de), e);
                 return false;
             } finally {
                 if (dbcmd != null)
@@ -589,7 +588,7 @@ namespace NoNoise.Data
                 dbcmd.CommandText = string.Format ("DELETE FROM PCAData WHERE banshee_id = '{0}'", bid);
                 dbcmd.ExecuteNonQuery ();
             } catch (Exception e) {
-                Log.Warning ("NoNoise/DB - Remove PCAData query failed for Banshee_id: " + bid + "\n" + e.StackTrace);
+                Log.Exception (string.Format ("NoNoise/DB - Remove PCAData query failed for Banshee_id: {0}", bid), e);
             } finally {
                 if (dbcmd != null)
                     dbcmd.Dispose ();
@@ -642,7 +641,7 @@ namespace NoNoise.Data
 
                 dbcmd.ExecuteNonQuery ();
             } catch (Exception e) {
-                Log.Exception ("NoNoise/DB - TrackInfo insert failed for bid: " + bid, e);
+                Log.Exception (string.Format ("NoNoise/DB - TrackInfo insert failed for bid: {0}", bid), e);
                 return false;
             } finally {
                 if (dbcmd != null)
@@ -667,7 +666,7 @@ namespace NoNoise.Data
 
                 dbcmd.ExecuteNonQuery ();
             } catch (Exception e) {
-                Log.Exception ("NoNoise/DB - TrackInfo insert failed for bid: " + bid, e);
+                Log.Exception (string.Format ("NoNoise/DB - TrackInfo insert failed for bid: {0}", bid), e);
                 return false;
             } finally {
                 if (dbcmd != null)
@@ -700,7 +699,7 @@ namespace NoNoise.Data
                 dbcmd.CommandText = string.Format ("SELECT id FROM TrackData WHERE banshee_id = '{0}'", bid);
                 return (dbcmd.ExecuteScalar () != null);
             } catch (Exception e) {
-                Log.Exception ("NoNoise/DB - Contains TrackInfo query failed for banshee_id: " + bid, e);
+                Log.Exception (string.Format ("NoNoise/DB - Contains TrackInfo query failed for banshee_id: {0}", bid), e);
                 return false;
             } finally {
                 if (dbcmd != null)
@@ -764,7 +763,7 @@ namespace NoNoise.Data
                 dbcmd.CommandText = string.Format ("DELETE FROM TrackData WHERE banshee_id = '{0}'", bid);
                 dbcmd.ExecuteNonQuery ();
             } catch (Exception e) {
-                Log.Warning ("NoNoise/DB - Remove TrackData query failed for Banshee_id: " + bid + "\n" + e.StackTrace);
+                Log.Exception (string.Format ("NoNoise/DB - Remove TrackData query failed for Banshee_id: {0}", bid), e);
             } finally {
                 if (dbcmd != null)
                     dbcmd.Dispose ();
@@ -971,517 +970,6 @@ namespace NoNoise.Data
                     dbcon.Close ();
             }
         }
-        #endregion
-
-        #region To delete
-        #region Math.Matrix
-
-        /// <summary>
-        /// Inserts a Math.Matrix into the database.
-        /// </summary>
-        /// <param name="m">
-        /// The <see cref="Matrix"/> to be inserted
-        /// </param>
-        /// <param name="bid">
-        /// The banshee_id of the corresponding track
-        /// </param>
-        /// <returns>
-        /// True if the matrix was successfully inserted. False otherwise.
-        /// </returns>
-        public bool InsertMatrix (Matrix m, int bid)
-        {
-            IDbCommand dbcmd = null;
-            try {
-                dbcon.Open ();
-                dbcmd = dbcon.CreateCommand ();
-
-                dbcmd.CommandText = string.Format ("INSERT INTO MIRData (banshee_id, data) VALUES ('{0}', '{1}')",
-                                                  bid, DataParser.MatrixToString (m));
-                dbcmd.ExecuteNonQuery ();
-            } catch (Exception e) {
-                Log.Exception ("NoNoise/DB - Matrix insert failed", e);
-                return false;
-            } finally {
-                if (dbcmd != null)
-                    dbcmd.Dispose ();
-                dbcmd = null;
-                if (dbcon != null)
-                    dbcon.Close ();
-            }
-
-            return true;
-        }
-
-        /// <summary>
-        /// Inserts a Math.Matrix into the database with a given primary key.
-        /// Updates the matrix in the database if the key already exists.
-        /// </summary>
-        /// <param name="m">
-        /// The <see cref="Matrix"/> to be inserted
-        /// </param>
-        /// <param name="bid">
-        /// The banshee_id
-        /// </param>
-        /// <param name="primaryKey">
-        /// The primary key that should be used
-        /// </param>
-        /// <returns>
-        /// True if the matrix was successfully inserted. False otherwise.
-        /// </returns>
-        public bool InsertMatrixPK (Matrix m, int bid, int primaryKey)
-        {
-            IDbCommand dbcmd = null;
-            try {
-                dbcon.Open ();
-                dbcmd = dbcon.CreateCommand ();
-
-                dbcmd.CommandText = string.Format ("SELECT id FROM MIRData WHERE id = '{0}'", primaryKey);
-                if (dbcmd.ExecuteScalar () != null)
-                    return UpdateMatrix (m, bid, primaryKey, dbcmd);
-
-                dbcmd.CommandText = string.Format ("INSERT INTO MIRData (banshee_id, data, id) VALUES ('{0}', '{1}'," +
-                                                    " '{2}')", bid, DataParser.MatrixToString (m), primaryKey);
-                dbcmd.ExecuteNonQuery ();
-            } catch (Exception e) {
-                Log.Exception ("NoNoise/DB - Matrix insert failed for id: " + primaryKey, e);
-                return false;
-            } finally {
-                if (dbcmd != null)
-                    dbcmd.Dispose ();
-                dbcmd = null;
-                if (dbcon != null)
-                    dbcon.Close ();
-            }
-
-            return true;
-        }
-
-        /// <summary>
-        /// Updates a Math.Matrix for a given primary key. This method has to
-        /// be called within an open database connection.
-        /// </summary>
-        /// <param name="m">
-        /// The <see cref="Matrix"/> to be inserted
-        /// </param>
-        /// <param name="bid">
-        /// The banshee_id
-        /// </param>
-        /// <param name="primaryKey">
-        /// The primary key that should be used
-        /// </param>
-        /// <param name="dbcmd">
-        /// A <see cref="IDbCommand"/> of an open connection
-        /// </param>
-        /// <returns>
-        /// True if the matrix was successfully updated. False otherwise.
-        /// </returns>
-        private bool UpdateMatrix (Matrix m, int bid, int primaryKey, IDbCommand dbcmd)
-        {
-            Log.Debug ("NoNoise/DB - Updating id " + primaryKey);
-            dbcmd.CommandText = string.Format ("UPDATE MIRData SET data = '{0}', banshee_id = '{1}' WHERE id = '{2}'",
-                                              DataParser.MatrixToString (m), bid, primaryKey);
-            dbcmd.ExecuteNonQuery ();
-
-            return true;
-        }
-
-        /// <summary>
-        /// Parses Math.Matrix's from the database and returns them.
-        /// </summary>
-        /// <returns>
-        /// A <see cref="List<Matrix>"/> with all matrices in the database
-        /// </returns>
-        public List<Matrix> GetMatrices ()
-        {
-            List<Matrix> ret = new List<Matrix> ();
-
-            IDbCommand dbcmd = null;
-            try {
-                dbcon.Open ();
-                dbcmd = dbcon.CreateCommand ();
-
-                dbcmd.CommandText = "SELECT data FROM MIRData";
-                System.Data.IDataReader reader = dbcmd.ExecuteReader ();
-                while (reader.Read ()) {
-                    ret.Add (DataParser.ParseMatrix (reader.GetString (0)));
-                }
-
-                return ret;
-            } catch (Exception e) {
-                Log.Exception ("NoNoise/DB - Matrix read failed", e);
-                return null;
-            } finally {
-                if (dbcmd != null)
-                    dbcmd.Dispose ();
-                dbcmd = null;
-                if (dbcon != null)
-                    dbcon.Close ();
-            }
-        }
-        #endregion
-
-        /// <summary>
-        /// Inserts a Mirage.Matrix into the database.
-        /// </summary>
-        /// <param name="m">
-        /// The <see cref="Mirage.Matrix"/> to be inserted
-        /// </param>
-        /// <param name="bid">
-        /// The banshee_id of the corresponding track
-        /// </param>
-        /// <returns>
-        /// True if the matrix was successfully inserted. False otherwise.
-        /// </returns>
-        public bool InsertMatrix (Mirage.Matrix m, int bid)
-        {
-            IDbCommand dbcmd = null;
-            try {
-                dbcon.Open ();
-                dbcmd = dbcon.CreateCommand ();
-
-                dbcmd.CommandText = string.Format ("INSERT INTO MIRData (banshee_id, data) VALUES ('{0}', '{1}')",
-                                                  bid, DataParser.MirageMatrixToString(m));
-                dbcmd.ExecuteNonQuery ();
-            } catch (Exception e) {
-                Log.Exception ("NoNoise/DB - Mirage.Matrix insert failed", e);
-                return false;
-            } finally {
-                if (dbcmd != null)
-                    dbcmd.Dispose ();
-                dbcmd = null;
-                if (dbcon != null)
-                    dbcon.Close ();
-            }
-
-            return true;
-        }
-
-        /// <summary>
-        /// Inserts a Mirage.Vector into the database.
-        /// </summary>
-        /// <param name="v">
-        /// The <see cref="Mirage.Vector"/> to be inserted
-        /// </param>
-        /// <param name="bid">
-        /// The banshee_id of the corresponding track
-        /// </param>
-        /// <returns>
-        /// True if the vector was successfully inserted. False otherwise.
-        /// </returns>
-        public bool InsertVector (Mirage.Vector v, int bid)
-        {
-            IDbCommand dbcmd = null;
-            try {
-                dbcon.Open ();
-                dbcmd = dbcon.CreateCommand ();
-
-                dbcmd.CommandText = string.Format ("INSERT INTO MIRData (banshee_id, data) VALUES ('{0}', '{1}')",
-                                                  bid, DataParser.MirageVectorToString(v));
-                dbcmd.ExecuteNonQuery ();
-            } catch (Exception e) {
-                Log.Exception ("NoNoise/DB - Mirage.Vector insert failed", e);
-                return false;
-            } finally {
-                if (dbcmd != null)
-                    dbcmd.Dispose ();
-                dbcmd = null;
-                if (dbcon != null)
-                    dbcon.Close ();
-            }
-
-            return true;
-        }
-
-        /// <summary>
-        /// Parses Mirage.Matrix's from the database and returns them.
-        /// </summary>
-        /// <returns>
-        /// A <see cref="Dictionary<System.Int32, Mirage.Matrix>"/> containing
-        /// all matrices in the database mapped to their corresponding banshee_id.
-        /// </returns>
-        public Dictionary<int, Mirage.Matrix> GetMirageMatrices ()
-        {
-            Dictionary<int, Mirage.Matrix> ret = new Dictionary<int, Mirage.Matrix> ();
-
-            IDbCommand dbcmd = null;
-            try {
-                dbcon.Open ();
-                dbcmd = dbcon.CreateCommand ();
-
-                dbcmd.CommandText = "SELECT data, id, banshee_id FROM MIRData";
-                System.Data.IDataReader reader = dbcmd.ExecuteReader ();
-                while (reader.Read ()) {
-                    Mirage.Matrix mat = DataParser.ParseMirageMatrix (reader.GetString (0));
-                    int bid = reader.GetInt32 (2);
-                    if (mat != null)
-                        ret.Add (bid, mat);
-                    else {
-                        Log.Warning ("NoNoise/DBNull - Matrix with id " + reader.GetInt32 (1) + " is null!");
-                        Log.Debug (reader.GetString (0));
-                        CheckMatrix (reader.GetString (0));
-                    }
-                }
-
-                return ret;
-            } catch (Exception e) {
-                Log.Exception ("NoNoise/DB - Mirage.Matrix read failed", e);
-                return null;
-            } finally {
-                if (dbcmd != null)
-                    dbcmd.Dispose ();
-                dbcmd = null;
-                if (dbcon != null)
-                    dbcon.Close ();
-            }
-        }
-
-        /*
-        /// <summary>
-        /// Inserts one TrackData into the TrackData table.
-        /// </summary>
-        /// <param name="ti">
-        /// The <see cref="TrackData"/> to be inserted
-        /// </param>
-        /// <returns>
-        /// True if the TrackData was successfully inserted. False otherwise.
-        /// </returns>
-        public bool InsertTrackInfo (TrackData ti)
-        {
-            IDbCommand dbcmd = null;
-            try {
-                dbcon.Open ();
-                dbcmd = dbcon.CreateCommand ();
-
-                dbcmd.CommandText = "INSERT INTO TrackData (banshee_id, artist, title, album, duration)" +
-                                    " VALUES (@bid, @artist, @title, @album, @duration)";
-
-                SqliteParameter id = new SqliteParameter ("@bid", ti.ID);
-                SqliteParameter artist = new SqliteParameter ("@artist", ti.Artist);
-                SqliteParameter title = new SqliteParameter ("@title", ti.Title);
-                SqliteParameter album = new SqliteParameter ("@album", ti.Album);
-                SqliteParameter duration = new SqliteParameter ("@duration", ti.Duration);
-
-                dbcmd.Parameters.Add (id);
-                dbcmd.Parameters.Add (artist);
-                dbcmd.Parameters.Add (title);
-                dbcmd.Parameters.Add (album);
-                dbcmd.Parameters.Add (duration);
-    
-                dbcmd.Prepare ();
-
-                dbcmd.ExecuteNonQuery ();
-            } catch (Exception e) {
-                Log.Exception ("NoNoise/DB - TrackInfo insert failed for TI: " + ti, e);
-                return false;
-            } finally {
-                if (dbcmd != null)
-                    dbcmd.Dispose ();
-                dbcmd = null;
-                if (dbcon != null)
-                    dbcon.Close ();
-            }
-
-            return true;
-        }
-
-        /// <summary>
-        /// Updates the given TrackData in the TrackData table.
-        /// </summary>
-        /// <param name="td">
-        /// The <see cref="TrackData"/> to be updated
-        /// </param>
-        /// <returns>
-        /// True if the TrackData was successfully updated. False otherwise.
-        /// </returns>
-        public bool UpdateTrackData (TrackData td)
-        {
-            IDbCommand dbcmd = null;
-            try {
-                dbcon.Open ();
-                dbcmd = dbcon.CreateCommand ();
-
-                dbcmd.CommandText = "UPDATE TrackData SET artist = @artist, title = @title, " +
-                                    "album = @album, duration = @duration WHERE banshee_id = @bid";
-
-                SqliteParameter id = new SqliteParameter ("@bid", td.ID);
-                SqliteParameter artist = new SqliteParameter ("@artist", td.Artist);
-                SqliteParameter title = new SqliteParameter ("@title", td.Title);
-                SqliteParameter album = new SqliteParameter ("@album", td.Album);
-                SqliteParameter duration = new SqliteParameter ("@duration", td.Duration);
-
-                dbcmd.Parameters.Add (id);
-                dbcmd.Parameters.Add (artist);
-                dbcmd.Parameters.Add (title);
-                dbcmd.Parameters.Add (album);
-                dbcmd.Parameters.Add (duration);
-    
-                dbcmd.Prepare ();
-
-                dbcmd.ExecuteNonQuery ();
-            } catch (Exception e) {
-                Log.Exception ("NoNoise/DB - TrackData update failed for TD: " + td, e);
-                return false;
-            } finally {
-                if (dbcmd != null)
-                    dbcmd.Dispose ();
-                dbcmd = null;
-                if (dbcon != null)
-                    dbcon.Close ();
-            }
-
-            return true;
-        }
-
-        /// <summary>
-        /// Inserts the given TrackData if it is not already in the database.
-        /// Otherwise updates the TrackData in the database.
-        /// </summary>
-        /// <param name="td">
-        /// The <see cref="TrackData"/> to be inserted or updated
-        /// </param>
-        /// <returns>
-        /// True if the TrackData was successfully inserted or updated.
-        /// False otherwise.
-        /// </returns>
-        public bool InsertOrUpdateTrackData (TrackData td)
-        {
-            if (ContainsInfoForTrack (td.ID))
-                return UpdateTrackData (td);
-            else
-                return InsertTrackInfo (td);
-        }
-
-        /// <summary>
-        /// Gets a map with all track data stored in the database.
-        /// </summary>
-        /// <returns>
-        /// A <see cref="Dictionary<int, TrackData>"/> containing all track data
-        /// from the database mapped to their banshee_id.
-        /// </returns>
-        public Dictionary<int, TrackData> GetTrackDataDictionary ()
-        {
-            Dictionary<int, TrackData> ret = new Dictionary<int, TrackData> ();
-
-            IDbCommand dbcmd = null;
-            try {
-                dbcon.Open ();
-                dbcmd = dbcon.CreateCommand ();
-
-                dbcmd.CommandText = "SELECT banshee_id, artist, title, album, duration FROM TrackData";
-                System.Data.IDataReader reader = dbcmd.ExecuteReader ();
-                while (reader.Read ()) {
-                    try {
-                        int bid = reader.GetInt32 (0);
-                        string artist = (reader.GetValue (1) as string ?? "");
-                        string title = (reader.GetValue (2) as string ?? "");
-                        string album = (reader.GetValue (3) as string ?? "");
-                        int duration = reader.GetInt32 (4);
-                        TrackData td = new TrackData (bid, artist, title, album, duration);
-                        ret.Add (bid, td);
-                    } catch (Exception e) {
-                        Log.Exception ("Track data read error.", e);
-                    }
-                }
-
-                return ret;
-            } catch (Exception e) {
-                Log.Exception ("NoNoise/DB - Track data read failed", e);
-                return null;
-            } finally {
-                if (dbcmd != null)
-                    dbcmd.Dispose ();
-                dbcmd = null;
-                if (dbcon != null)
-                    dbcon.Close ();
-            }
-        }
-
-        /// <summary>
-        /// Gets a list with all track data stored in the database.
-        /// </summary>
-        /// <returns>
-        /// A <see cref="List<TrackData>"/> containing all track data
-        /// from the database.
-        /// </returns>
-        public List<TrackData> GetTrackData ()
-        {
-            List<TrackData> ret = new List<TrackData> ();
-
-            IDbCommand dbcmd = null;
-            try {
-                dbcon.Open ();
-                dbcmd = dbcon.CreateCommand ();
-
-                dbcmd.CommandText = "SELECT banshee_id, artist, title, album, duration FROM TrackData";
-                System.Data.IDataReader reader = dbcmd.ExecuteReader ();
-                while (reader.Read ()) {
-                    int bid = reader.GetInt32 (0);
-                    string artist = (reader.GetValue (1) as string ?? "");
-                    string title = (reader.GetValue (2) as string ?? "");
-                    string album = (reader.GetValue (3) as string ?? "");
-                    int duration = reader.GetInt32 (4);
-                    TrackData td = new TrackData (bid, artist, title, album, duration);
-                    ret.Add (td);
-                }
-
-                return ret;
-            } catch (Exception e) {
-                Log.Exception ("NoNoise/DB - Track data read failed", e);
-                return null;
-            } finally {
-                if (dbcmd != null)
-                    dbcmd.Dispose ();
-                dbcmd = null;
-                if (dbcon != null)
-                    dbcon.Close ();
-            }
-        }
-
-        /// <summary>
-        /// Gets the corresponding track data for the given banshee_id.
-        /// </summary>
-        /// <param name="bid">
-        /// The banshee_id
-        /// </param>
-        /// <returns>
-        /// The <see cref="TrackData"/> with the given banshee_id
-        /// </returns>
-        public TrackData GetTrackData (int bid)
-        {
-            TrackData td = null;
-            IDbCommand dbcmd = null;
-            try {
-                dbcon.Open ();
-                dbcmd = dbcon.CreateCommand ();
-
-                dbcmd.CommandText = string.Format ("SELECT banshee_id, artist, title, album, duration " +
-                                                    "FROM TrackData WHERE banshee_id = '{0}'", bid);
-                System.Data.IDataReader reader = dbcmd.ExecuteReader ();
-                if (reader.Read ()) {
-                    string artist = (reader.GetValue (1) as string ?? "");
-                    string title = (reader.GetValue (2) as string ?? "");
-                    string album = (reader.GetValue (3) as string ?? "");
-                    int duration = reader.GetInt32 (4);
-                    td = new TrackData (bid, artist, title, album, duration);
-                } else
-                    throw new Exception ("No track for given banshee_id.");
-
-                if (reader.Read ())
-                    Log.WarningFormat ("NoNoise/DB - More than one result for banshee_id {0}!", bid);
-
-                return td;
-            } catch (Exception e) {
-                Log.Exception ("NoNoise/DB - Track data read failed", e);
-                return null;
-            } finally {
-                if (dbcmd != null)
-                    dbcmd.Dispose ();
-                dbcmd = null;
-                if (dbcon != null)
-                    dbcon.Close ();
-            }
-        }
-        */
         #endregion
     }
 }

@@ -295,7 +295,6 @@
     <Compile Include="NoNoise\Data\DataParser.cs" />
     <Compile Include="NoNoise\Data\NoNoiseDBHandler.cs" />
     <Compile Include="NoNoise\PCA\PCAnalyzer.cs" />
-    <Compile Include="Banshee.NoNoise\NoNoiseSource.cs" />
     <Compile Include="Banshee.NoNoise\BansheeLibraryAnalyzer.cs" />
     <Compile Include="Banshee.NoNoise\NoNoiseService.cs" />
     <Compile Include="Banshee.NoNoise\NoNoiseClutterSourceContents.cs" />

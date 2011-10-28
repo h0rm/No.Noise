@@ -37,18 +37,11 @@ namespace Banshee.NoNoise
     {
         public enum PcaMfccOptions { Mean, SquaredMean, Median, Minimum, Maximum };
 
-        internal static readonly SchemaEntry<bool> Startup = new SchemaEntry<bool>(
-            "nonoise", "startup",
-            false,
-            "Enable No.Noise on startup (unused)",
-            "Enable or disable the No.Noise visualization on startup"
-        );
-
         internal static readonly SchemaEntry<bool> ShowNoNoise = new SchemaEntry<bool>(
             "nonoise", "show_nonoise",
             false,
-            "NoNoise Visualization",
-            "Enable or disable the NoNoise Visualization"
+            AddinManager.CurrentLocalizer.GetString ("NoNoise Visualization"),
+            AddinManager.CurrentLocalizer.GetString ("Enable or disable the NoNoise Visualization")
         );
         
         internal static readonly SchemaEntry<string> PcaMfcc = new SchemaEntry<string>(
@@ -61,8 +54,8 @@ namespace Banshee.NoNoise
         internal static readonly SchemaEntry<bool> PcaUseDuration = new SchemaEntry<bool>(
             "nonoise", "pca_duration",
             true,
-            "Song Duration",
-            "Use the song duration for the PCA"
+            AddinManager.CurrentLocalizer.GetString ("Song Duration"),
+            AddinManager.CurrentLocalizer.GetString ("Use the song duration for the PCA")
         );
     }
 }

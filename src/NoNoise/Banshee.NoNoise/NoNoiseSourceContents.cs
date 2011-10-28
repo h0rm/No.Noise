@@ -166,10 +166,6 @@ namespace Banshee.NoNoise
                 succ &= DBMatrixTest ();
                 succ &= DBMirageMatrixText ();
                 succ &= DBMirageVectorTest ();
-
-                PcaEigenvectorBasisTest ();
-//                    Hyena.Log.Debug ("Should be: (-0.458468469256572, -0.355876863389135, 0.814345332645707) and " +
-//                     "(0.675628099889615, -0.734859391159327, 0.0592312912613845)");
             } catch (Exception e) {
                 Hyena.Log.Exception ("NoNoise - Tests failed", e);
                 succ = false;
@@ -281,50 +277,6 @@ namespace Banshee.NoNoise
 
             return true;
         }
-
-        /// <summary>
-        /// Test method to (manually) check if the pca computations are correct.
-        /// Prints the base vectors computed with a mirage generated covariance
-        /// matrix and with the classical self-implemented covariance computation.
-        /// </summary>
-        private void PcaEigenvectorBasisTest ()
-        {
-            Mirage.Matrix m = new Mirage.Matrix (3, 5);
-            m.d [0, 0] = 0.2f;
-            m.d [1, 0] = 14.5f;
-            m.d [2, 0] = 166.0f;
-            m.d [0, 1] = 1.5f;
-            m.d [1, 1] = 20.5f;
-            m.d [2, 1] = 233.0f;
-            m.d [0, 2] = 0.8f;
-            m.d [1, 2] = 16.2f;
-            m.d [2, 2] = 189.0f;
-            m.d [0, 3] = 2.3f;
-            m.d [1, 3] = 11.7f;
-            m.d [2, 3] = 139.0f;
-            m.d [0, 4] = 1.7f;
-            m.d [1, 4] = 17.9f;
-            m.d [2, 4] = 206.0f;
-
-            PCAnalyzer pca = new PCAnalyzer (m.Covariance (m.Mean ()));
-            pca.PcaTest ();
-
-            int i = -1;
-            double[] data = { 0.2, 14.5, 166.0 };
-            PCAnalyzer ana = new PCAnalyzer ();
-            ana.AddEntry (i--, data);
-
-            data = new double[] { 1.5, 20.5, 233.0 };
-            ana.AddEntry (i--, data);
-            data = new double[] { 0.8, 16.2, 189.0 };
-            ana.AddEntry (i--, data);
-            data = new double[] { 2.3, 11.7, 139.0 };
-            ana.AddEntry (i--, data);
-            data = new double[] { 1.7, 17.9, 206.0 };
-            ana.AddEntry (i--, data);
-
-            ana.PerformPCA ();
-        }
         #endregion
 
         /// <summary>
@@ -339,123 +291,6 @@ namespace Banshee.NoNoise
             Hyena.Log.Debug("Rows: " + mfcc.rows);
             Hyena.Log.Debug("Mean length: " + mfcc.Mean().rows);
             mfcc.Mean().Print();
-        }
-
-        /// <summary>
-        /// Checks for each track in the music library if there is already
-        /// MIR data in the database. If not, computes the MFCC matrix and
-        /// stores it in the database.
-        /// </summary>
-        private void PcaForMusicLibrary ()
-        {
-            PCAnalyzer ana = new PCAnalyzer();
-
-//                if (gatherMIRdata) {
-            Banshee.Library.MusicLibrarySource ml = ServiceManager.SourceManager.MusicLibrary;
-            Mirage.Matrix mfcc;
-            Dictionary<int, Mirage.Matrix> mfccMap = db.GetMirageMatrices ();
-
-            for (int i = 0; i < ml.TrackModel.Count; i++) {
-                try {
-                    TrackInfo ti = ml.TrackModel [i];
-                    string absPath = ti.Uri.AbsolutePath;
-                    int bid = ml.GetTrackIdForUri (ti.Uri);
-
-                    // WARN: A bid could theoretically be inserted/deleted between GetMirageMatrices ()
-                    // and CointainsMirDataForTrack () such that if and else fail
-                    if (!db.ContainsMirDataForTrack (bid)) {
-                        mfcc = Mirage.Analyzer.AnalyzeMFCC (absPath);
-
-                        if (!db.InsertMatrix (mfcc, bid))
-                            Hyena.Log.Error ("NoNoise - Matrix insert failed");
-                    } else
-                        mfcc = mfccMap[bid];
-
-                    if (!ana.AddEntry (bid, ConvertMfccMean (mfcc.Mean ())))
-                        throw new Exception("AddEntry failed!");
-//                        if (!ana.AddEntry (bid, ConvertMfccMean(mfcc.Mean()), ti.Duration.TotalSeconds))
-//                            throw new Exception("AddEntry failed!");
-//                        if (!ana.AddEntry (bid, null, ti.Bpm, ti.Duration.TotalSeconds))
-//                            throw new Exception("AddEntry failed!");
-                } catch (Exception e) {
-                    Hyena.Log.Exception("NoNoise - MFCC/DB Problem", e);
-                }
-            }
-//                } else {
-//                    Dictionary<int, Matrix> mfccMap = db.GetMirageMatrices ();
-//
-//                    foreach (int key in mfccMap.Keys) {
-//                        try {
-//                            if (!ana.AddEntry (key, ConvertMfccMean (mfccMap[key].Mean ())))
-//                                throw new Exception ("AddEntry failed!");
-//                        } catch (Exception e) {
-//                            Hyena.Log.Exception ("NoNoise - PCA Problem", e);
-//                        }
-//                    }
-//                }
-
-            try {
-                ana.PerformPCA ();
-//                    Hyena.Log.Debug(ana.GetCoordinateStrings ());
-                List<DataEntry> coords = ana.Coordinates;
-                db.ClearPcaData ();
-                if (!db.InsertPcaCoordinates (coords))
-                    Hyena.Log.Error ("NoNoise - PCA coord insert failed");
-            } catch (Exception e) {
-                Hyena.Log.Exception("PCA Problem", e);
-            }
-        }
-
-        /// <summary>
-        /// Converts a Mirage.Vector to an array of doubles.
-        /// </summary>
-        /// <param name="mean">
-        /// The <see cref="Mirage.Vector"/> to be converted
-        /// </param>
-        /// <returns>
-        /// The <see cref="System.Double[]"/> representation of the vector
-        /// </returns>
-        private double[] ConvertMfccMean (Mirage.Vector mean)
-        {
-            double[] data = new double[mean.d.Length];
-
-            for (int i = 0; i < mean.d.Length; i++) {
-                data[i] = mean.d[i, 0];
-            }
-
-            return data;
-        }
-
-        /// <summary>
-        /// Checks for each track in the music library if it is already in the
-        /// database. If not, inserts it.
-        /// </summary>
-        private void WriteTrackInfosToDB ()
-        {
-            Banshee.Library.MusicLibrarySource ml = ServiceManager.SourceManager.MusicLibrary;
-//                try {
-//                    TrackInfo dti = ml.TrackModel[154];
-//                    Hyena.Log.Debug ("NoNoise - DBTrackInfo, id 154, artist: " + dti.ArtistName);
-//                } catch (Exception e) {
-//                    Hyena.Log.Exception ("NoNoise - no ti with id 154", e);
-//                }
-
-            for (int i = 0; i < ml.TrackModel.Count; i++) {
-                try {
-                    TrackInfo ti = ml.TrackModel [i];
-                    int bid = ml.GetTrackIdForUri (ti.Uri);
-
-                    if (!db.ContainsInfoForTrack (bid)) {
-                        if (!db.InsertTrackID (bid))
-//                        if (!db.InsertTrackInfo (new TrackData (
-//                                                   bid, ti.ArtistName, ti.TrackTitle,
-//                                                   ti.AlbumTitle, (int)ti.Duration.TotalSeconds)))
-                            Hyena.Log.Error ("NoNoise - TrackInfo insert failed");
-                    }
-                } catch (Exception e) {
-                    Hyena.Log.Exception("NoNoise - DB Problem", e);
-                }
-            }
         }
 
         /// <summary>

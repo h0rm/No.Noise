@@ -30,9 +30,68 @@ using Hyena;
 
 namespace NoNoise.Data
 {
+    /// <summary>
+    /// Helper class for parsing matrices and vectors.
+    /// </summary>
     public class DataParser
     {
         #region to string
+
+        /// <summary>
+        /// Converts a Mirage.Vector to a string representation with semicolons
+        /// instead of commas.
+        /// </summary>
+        /// <param name="v">
+        /// The <see cref="Mirage.Vector"/> to be converted
+        /// </param>
+        /// <returns>
+        /// A <see cref="System.String"/> representation of the vector
+        /// </returns>
+        public static string MirageVectorToString (Mirage.Vector v)
+        {
+            StringBuilder sb = new StringBuilder();
+            sb.Append ("[");
+
+            for (int i = 0; i < v.rows; i++) {
+                if (i != 0)
+                    sb.Append (";");
+                sb.Append (v.d [i, 0].ToString (System.Globalization.CultureInfo.InvariantCulture));
+            }
+            sb.Append ("]");
+            return sb.ToString ();
+        }
+        #endregion
+
+        #region from string
+
+        /// <summary>
+        /// Parses a Mirage.Vector from a string.
+        /// </summary>
+        /// <param name="input">
+        /// A <see cref="System.String"/> representation of a vector
+        /// </param>
+        /// <returns>
+        /// A <see cref="Mirage.Vector"/>
+        /// </returns>
+        public static Mirage.Vector ParseMirageVector (string input)
+        {
+            input = input.Substring (1, input.Length - 2);
+            string[] rows = input.Split(';');
+            Mirage.Vector v = new Mirage.Vector (rows.Length);
+
+            try {
+                for (int i = 0; i < rows.Length; i++) {
+                    v.d [i, 0] = float.Parse(rows [i], System.Globalization.CultureInfo.InvariantCulture);
+                }
+            } catch (Exception e) {
+                Log.Exception("NoNoise/DB - Mirage.Vector parse exception", e);
+                return null;
+            }
+            return v;
+        }
+        #endregion
+
+        #region unused
 
         /// <summary>
         /// Converts a Math.Matrix to a string representation with semicolons
@@ -107,33 +166,6 @@ namespace NoNoise.Data
         }
 
         /// <summary>
-        /// Converts a Mirage.Vector to a string representation with semicolons
-        /// instead of commas.
-        /// </summary>
-        /// <param name="v">
-        /// The <see cref="Mirage.Vector"/> to be converted
-        /// </param>
-        /// <returns>
-        /// A <see cref="System.String"/> representation of the vector
-        /// </returns>
-        public static string MirageVectorToString (Mirage.Vector v)
-        {
-            StringBuilder sb = new StringBuilder();
-            sb.Append ("[");
-
-            for (int i = 0; i < v.rows; i++) {
-                if (i != 0)
-                    sb.Append (";");
-                sb.Append (v.d [i, 0].ToString (System.Globalization.CultureInfo.InvariantCulture));
-            }
-            sb.Append ("]");
-            return sb.ToString ();
-        }
-        #endregion
-
-        #region from string
-
-        /// <summary>
         /// Parses a Math.Matrix from a string.
         /// </summary>
         /// <param name="input">
@@ -196,31 +228,6 @@ namespace NoNoise.Data
                 return null;
             }
             return m;
-        }
-        /// <summary>
-        /// Parses a Mirage.Vector from a string.
-        /// </summary>
-        /// <param name="input">
-        /// A <see cref="System.String"/> representation of a vector
-        /// </param>
-        /// <returns>
-        /// A <see cref="Mirage.Vector"/>
-        /// </returns>
-        public static Mirage.Vector ParseMirageVector (string input)
-        {
-            input = input.Substring (1, input.Length - 2);
-            string[] rows = input.Split(';');
-            Mirage.Vector v = new Mirage.Vector (rows.Length);
-
-            try {
-                for (int i = 0; i < rows.Length; i++) {
-                    v.d [i, 0] = float.Parse(rows [i], System.Globalization.CultureInfo.InvariantCulture);
-                }
-            } catch (Exception e) {
-                Log.Exception("NoNoise/DB - Mirage.Vector parse exception", e);
-                return null;
-            }
-            return v;
         }
         #endregion
     }

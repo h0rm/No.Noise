@@ -4,15 +4,26 @@ using System.Collections.Generic;
 namespace NoNoise.Data
 {
     /// <summary>
-    /// This class encapsulates the PCA coordinates of a track with its banshee_id
-    /// and additional data.
+    /// This class encapsulates the PCA coordinates of a track with its banshee_id.
     /// </summary>
 	public class DataEntry
     {
-		private int id;			//unique id for each track
-		private double pca_x;	//between 0...1
-		private double pca_y;	//between 0...1
-		
+		private int id;			// banshee id for each track
+		private double pca_x;	// between 0...1
+		private double pca_y;	// between 0...1
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="NoNoise.Data.DataEntry"/> class.
+        /// </summary>
+        /// <param name='id'>
+        /// The banshee id.
+        /// </param>
+        /// <param name='pca_x'>
+        /// The X value of the PCA. Has to be in [0..1].
+        /// </param>
+        /// <param name='pca_y'>
+        /// The Y value of the PCA. Has to be in [0..1].
+        /// </param>
 		public DataEntry (int id, double pca_x, double pca_y)
 		{
 			this.id = id;
@@ -21,7 +32,7 @@ namespace NoNoise.Data
 		}
 		
 		/// <summary>
-		/// unique id for each track
+		/// banshee id for each track
 		/// </summary>
 		public int ID {
 			get { return id; }

@@ -50,7 +50,7 @@ namespace Banshee.NoNoise
         public delegate void ToggleScannableEvent (object source, ToggleScannableEventArgs args);
         private ToggleScannableEvent scannable_event;
 
-        public NoNoiseClutterSourceContents (bool pcadata)
+        public NoNoiseClutterSourceContents ()
         {
             //Gtk.Box box = new Gtk.HBox(true,0);
             if (!GLib.Thread.Supported)
@@ -63,12 +63,8 @@ namespace Banshee.NoNoise
             //cv.Init();
             Clutter.Threads.Enter ();
             view = new View();
-//
-            if (pcadata) {
-                BansheeLibraryAnalyzer.Init (this, true);
-//                view.GetPcaCoordinates ();
-            } else
-                view.TestGenerateData();
+
+            BansheeLibraryAnalyzer.Init (this, true);
 
             Clutter.Threads.Leave ();
             //GLib.Thread thread = new GLib.Thread(cv.Init);

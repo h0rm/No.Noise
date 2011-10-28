@@ -64,6 +64,7 @@ namespace Banshee.NoNoise
 
         private bool pref_installed = false;
         private bool source_contents_set_up = false;
+        private bool disposed = false;
 
         private Gtk.Action scan_action;
         protected Gtk.Action ScanAction {
@@ -105,7 +106,6 @@ namespace Banshee.NoNoise
         ";
 
         private Page preferences;
-        private Section debug;
         private Section pca;
         private PreferenceBase pb;
         private ComboBox cb;
@@ -145,14 +145,14 @@ namespace Banshee.NoNoise
                 source_manager.SourceAdded += OnSourceAdded;
         }
 
-        void InstallPreferences ()
+        /// <summary>
+        /// Installs the NoNoise preferences dialog.
+        /// </summary>
+        private void InstallPreferences ()
         {
             if (!pref_installed) {
                 preferences = preference_service.Add (new Page ("nonoise", Catalog.GetString ("No.Noise"), 20));
-        
-                debug = preferences.Add (new Section ("debug", Catalog.GetString ("Debug"), 1));
-                debug.Add (new SchemaPreference<bool> (NoNoiseSchemas.Startup, NoNoiseSchemas.Startup.ShortDescription,
-                                                       NoNoiseSchemas.Startup.LongDescription));
+
                 pca = preferences.Add (new Section ("pca", "PCA", 2));
                 pb = new SchemaPreference<string> (NoNoiseSchemas.PcaMfcc, NoNoiseSchemas.PcaMfcc.ShortDescription,
                                                        NoNoiseSchemas.PcaMfcc.LongDescription);
@@ -200,6 +200,12 @@ namespace Banshee.NoNoise
             }
         }
 
+        /// <summary>
+        /// Sets up the interface actions (i.e. menu entries) and adds handlers.
+        /// </summary>
+        /// <returns>
+        /// True.
+        /// </returns>
         private bool SetupInterfaceActions ()
         {
             if (action_service.FindActionGroup ("NoNoiseView") == null) {
@@ -244,7 +250,8 @@ namespace Banshee.NoNoise
             return true;
         }
 
-        void OnScanAction (object sender, EventArgs e)
+        #region Menu action handlers
+        private void OnScanAction (object sender, EventArgs e)
         {
             Hyena.Log.Information ("Scan action activated");
             if (scan_action_enabled) {
@@ -266,7 +273,7 @@ namespace Banshee.NoNoise
             new NoNoiseHelpDialog ();
         }
 
-        void OnNoNoiseToggle (object sender, EventArgs e)
+        private void OnNoNoiseToggle (object sender, EventArgs e)
         {
             if (NoNoiseAction.Active) {
                 NoNoiseSchemas.ShowNoNoise.Set (true);
@@ -282,7 +289,9 @@ namespace Banshee.NoNoise
                  Hyena.Log.Information ("No.Noise disabled");
             }
         }
+        #endregion
 
+        #region Callbacks
         private void ScanFinished (object source, NoNoiseClutterSourceContents.ScanFinishedEventArgs args)
         {
             scan_action_enabled = false;
@@ -294,7 +303,14 @@ namespace Banshee.NoNoise
         {
             ScanAction.Sensitive = args.Scannable;
         }
+        #endregion
 
+        /// <summary>
+        /// Initializes the <see cref="NoNoiseClutterSourceContente"/>.
+        /// </summary>
+        /// <returns>
+        /// True if the contents have been set up.
+        /// </returns>
         private bool SetupSourceContents ()
         {
             if (source_contents_set_up)
@@ -304,7 +320,7 @@ namespace Banshee.NoNoise
             if (music_library == null || action_service == null)// || music_library.TrackModel.Count == 0)
                 return false;
 
-            no_noise_contents = new NoNoiseClutterSourceContents (true);
+            no_noise_contents = new NoNoiseClutterSourceContents ();
             ScanAction.Sensitive = !BansheeLibraryAnalyzer.Singleton.IsLibraryScanned;
             SwitchPcaMfccOptions ();
 
@@ -331,11 +347,6 @@ namespace Banshee.NoNoise
 //                                   + "\nmusic_library " + (music_library == null ? "Null" : "OK")
 //                                   + "\npreference_service " + (preference_service == null ? "Null" : "OK"));
             return true;
-        }
-
-        private NoNoiseClutterSourceContents GetSourceContents ()
-        {
-            return new NoNoiseClutterSourceContents (true);
         }
 
         /// <summary>
@@ -424,7 +435,7 @@ namespace Banshee.NoNoise
             cb.Destroyed += HandleCbDestroyed;
         }
 
-        private bool disposed = false;
+        #region Dispose
         public void Dispose ()
         {
             if (disposed)
@@ -441,6 +452,9 @@ namespace Banshee.NoNoise
             NoNoiseAction.Activated -= OnNoNoiseToggle;
             ScanAction.Activated -= OnScanAction;
             HelpAction.Activated -= OnHelpAction;
+            no_noise_action = null;
+            scan_action = null;
+            help_action = null;
 
             UninstallPreferences ();
             RemoveNoNoise ();
@@ -453,7 +467,6 @@ namespace Banshee.NoNoise
             Hyena.Log.Debug ("NoNoise/Serv - Uninstalling NoNoise preference page...");
             preference_service.Remove (preferences);
             preferences = null;
-            debug = null;
             pca = null;
             pref_installed = false;
 
@@ -471,169 +484,18 @@ namespace Banshee.NoNoise
             no_noise_contents.Dispose ();
             no_noise_contents = null;
 
-//            source_manager.ActiveSourceChanged -= HandleActiveSourceChanged;
-//            BrowserAction.Activated -= OnToggleBrowser;
-//            BrowserAction.Active = ClutterFlowSchemas.OldShowBrowser.Get ();
-//            CfBrowsAction.Activated -= OnToggleClutterFlow;
-//            CfBrowsAction.Visible = false;
-
             Hyena.Log.Debug ("NoNoise/Serv - Removing NoNoise actions...");
             action_service.RemoveActionGroup ("NoNoiseView");
             action_service.RemoveActionGroup ("NoNoiseScan");
             action_service.UIManager.RemoveUi (ui_manager_id_menu);
             action_service.UIManager.RemoveUi (ui_manager_id_tool_menu);
-//            clutterflow_actions = null;
-//            cfbrows_action = null;
 
             preference_service = null;
             source_manager = null;
             music_library = null;
             action_service = null;
-//            browser_action = null;
-//            cfbrows_action = null;
         }
-
-//        public void Dispose ()
-//        {
-//
-////            Clutter.Threads.Enter ();
-//            music_library.Properties.Remove ("Nereid.SourceContents");
-//            no_noise_contents.Dispose ();
-////            Clutter.Threads.Leave ();
-//
-//            NoNoiseAction.Activated -= OnNoNoiseToggle;
-//            source_manager.SourceAdded -= OnSourceAdded;
-//        }
-
-        /*
-        private void PcaUseMeanHandler ()
-        {
-            Hyena.Log.Debug ("NoNoise/Serv - update handler called - mean");
-            if (NoNoiseSchemas.PcaUseMean.Get ()) {
-                if (NoNoiseSchemas.PcaUseDuration.Get ())
-                    BansheeLibraryAnalyzer.Singleton.PcaMode = BansheeLibraryAnalyzer.PCA_MEAN_DUR;
-                else
-                    BansheeLibraryAnalyzer.Singleton.PcaMode = BansheeLibraryAnalyzer.PCA_MEAN;
-//                SetOthersFalse (NoNoiseSchemas.PcaUseMean);
-            }
-
-        }
-
-        private void PcaUseSquaredMeanHandler ()
-        {
-            Hyena.Log.Debug ("NoNoise/Serv - update handler called - sqr mean");
-            if (NoNoiseSchemas.PcaUseSquaredMean.Get ()) {
-                if (NoNoiseSchemas.PcaUseDuration.Get ())
-                    BansheeLibraryAnalyzer.Singleton.PcaMode = BansheeLibraryAnalyzer.PCA_SQR_MEAN_DUR;
-                else
-                    BansheeLibraryAnalyzer.Singleton.PcaMode = BansheeLibraryAnalyzer.PCA_SQR_MEAN;
-//                SetOthersFalse (NoNoiseSchemas.PcaUseSquaredMean);
-            }
-        }
-
-        private void PcaUseMedianHandler ()
-        {
-            Hyena.Log.Debug ("NoNoise/Serv - update handler called - med");
-            if (NoNoiseSchemas.PcaUseMedian.Get ()) {
-                if (NoNoiseSchemas.PcaUseDuration.Get ())
-                    BansheeLibraryAnalyzer.Singleton.PcaMode = BansheeLibraryAnalyzer.PCA_MED_DUR;
-                else
-                    BansheeLibraryAnalyzer.Singleton.PcaMode = BansheeLibraryAnalyzer.PCA_MED;
-//                SetOthersFalse (NoNoiseSchemas.PcaUseMedian);
-            }
-        }
-
-        private void PcaUseMinimumHandler ()
-        {
-            Hyena.Log.Debug ("NoNoise/Serv - update handler called - min");
-            if (NoNoiseSchemas.PcaUseMinimum.Get ()) {
-                if (NoNoiseSchemas.PcaUseDuration.Get ())
-                    BansheeLibraryAnalyzer.Singleton.PcaMode = BansheeLibraryAnalyzer.PCA_MIN_DUR;
-                else
-                    BansheeLibraryAnalyzer.Singleton.PcaMode = BansheeLibraryAnalyzer.PCA_MIN;
-//                SetOthersFalse (NoNoiseSchemas.PcaUseMinimum);
-            }
-        }
-
-        private void PcaUseMaximumHandler ()
-        {
-            Hyena.Log.Debug ("NoNoise/Serv - update handler called - max");
-            if (NoNoiseSchemas.PcaUseMaximum.Get ()) {
-                if (NoNoiseSchemas.PcaUseDuration.Get ())
-                    BansheeLibraryAnalyzer.Singleton.PcaMode = BansheeLibraryAnalyzer.PCA_MAX_DUR;
-                else
-                    BansheeLibraryAnalyzer.Singleton.PcaMode = BansheeLibraryAnalyzer.PCA_MAX;
-//                SetOthersFalse (NoNoiseSchemas.PcaUseMaximum);
-            }
-        }
-
-        private void PcaUseDurationHandler ()
-        {
-            Hyena.Log.Debug ("NoNoise/Serv - update handler called - dur");
-            if (NoNoiseSchemas.PcaUseDuration.Get ()) {
-                switch (BansheeLibraryAnalyzer.Singleton.PcaMode) {
-                case BansheeLibraryAnalyzer.PCA_MAX:
-                    BansheeLibraryAnalyzer.Singleton.PcaMode = BansheeLibraryAnalyzer.PCA_MAX_DUR;
-                    break;
-
-                case BansheeLibraryAnalyzer.PCA_MEAN:
-                    BansheeLibraryAnalyzer.Singleton.PcaMode = BansheeLibraryAnalyzer.PCA_MEAN_DUR;
-                    break;
-
-                case BansheeLibraryAnalyzer.PCA_MED:
-                    BansheeLibraryAnalyzer.Singleton.PcaMode = BansheeLibraryAnalyzer.PCA_MED_DUR;
-                    break;
-
-                case BansheeLibraryAnalyzer.PCA_MIN:
-                    BansheeLibraryAnalyzer.Singleton.PcaMode = BansheeLibraryAnalyzer.PCA_MIN_DUR;
-                    break;
-
-                case BansheeLibraryAnalyzer.PCA_SQR_MEAN:
-                    BansheeLibraryAnalyzer.Singleton.PcaMode = BansheeLibraryAnalyzer.PCA_SQR_MEAN_DUR;
-                    break;
-
-                default:
-                    break;
-                }
-            } else {
-                switch (BansheeLibraryAnalyzer.Singleton.PcaMode) {
-                case BansheeLibraryAnalyzer.PCA_MAX_DUR:
-                    BansheeLibraryAnalyzer.Singleton.PcaMode = BansheeLibraryAnalyzer.PCA_MAX;
-                    break;
-
-                case BansheeLibraryAnalyzer.PCA_MEAN_DUR:
-                    BansheeLibraryAnalyzer.Singleton.PcaMode = BansheeLibraryAnalyzer.PCA_MEAN;
-                    break;
-
-                case BansheeLibraryAnalyzer.PCA_MED_DUR:
-                    BansheeLibraryAnalyzer.Singleton.PcaMode = BansheeLibraryAnalyzer.PCA_MED;
-                    break;
-
-                case BansheeLibraryAnalyzer.PCA_MIN_DUR:
-                    BansheeLibraryAnalyzer.Singleton.PcaMode = BansheeLibraryAnalyzer.PCA_MIN;
-                    break;
-
-                case BansheeLibraryAnalyzer.PCA_SQR_MEAN_DUR:
-                    BansheeLibraryAnalyzer.Singleton.PcaMode = BansheeLibraryAnalyzer.PCA_SQR_MEAN;
-                    break;
-
-                default:
-                    break;
-                }
-            }
-        }
-        */
-
-//        public static class Schemas {
-//            internal static readonly SchemaEntry<bool> Startup = new SchemaEntry<bool>(
-//                "nonoise", "startup",
-//                false,
-//                Catalog.GetString ("Enable No.Noise on startup"),
-//                Catalog.GetString ("Enable or disable the No.Noise visualization on startup")
-//            );
-//        }
-
-
+        #endregion
     }
 }
 
