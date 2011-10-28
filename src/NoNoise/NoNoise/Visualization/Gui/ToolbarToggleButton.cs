@@ -32,7 +32,7 @@ namespace NoNoise.Visualization.Gui
     /// <summary>
     /// Gui toolbar button element which can be toggled
     /// </summary>
-    public class ToolbarToggleButton : ToolbarButton
+    public class ToolbarToggleButton : ToolbarButton, IDisposable
     {
         public enum State {On, Off};
 
@@ -83,6 +83,7 @@ namespace NoNoise.Visualization.Gui
         /// </summary>
         private void InitializeHandlers ()
         {
+            Hyena.Log.Debug ("Init Button handler "+ Text);
             ButtonPressEvent += HandleButtonPressEvent;
         }
 
@@ -97,6 +98,7 @@ namespace NoNoise.Visualization.Gui
         /// </param>
         private void HandleButtonPressEvent (object o, ButtonPressEventArgs args)
         {
+            Hyena.Log.Debug ("Button handler "+ Text);
             if (toggle)
                 ToggleState ();
         }
@@ -135,6 +137,12 @@ namespace NoNoise.Visualization.Gui
         {
             state = on ? State.On : State.Off;
             OnStateChanged ();
+        }
+
+        public void Dispose ()
+        {
+            Hyena.Log.Warning ("Dispose button " + Text);
+            ButtonPressEvent -= HandleButtonPressEvent;
         }
 
     }

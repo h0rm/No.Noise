@@ -29,7 +29,7 @@ using System.Collections.Generic;
 
 namespace NoNoise.Visualization.Gui
 {
-    public class MainGui: Clutter.Group
+    public class MainGui: Clutter.Group, IDisposable
     {
 //        private Clutter.Rectangle zoom_in;
 //        private Clutter.Rectangle zoom_out;
@@ -44,7 +44,7 @@ namespace NoNoise.Visualization.Gui
         private ZoomButton zoom_button_in;
         private ZoomButton zoom_button_out;
 
-        private Button select_button;
+        private ToolbarToggleButton select_button;
         private ToolbarToggleButton reset_button;
         private Button remove_button;
         private Button playlist_button;
@@ -150,66 +150,71 @@ namespace NoNoise.Visualization.Gui
             InitHandler ();
         }
 
+        private void DisposeHandler ()
+        {
+            stage.AllocationChanged -= HandleWindowSizeChanged;
+            select_button.ButtonPressEvent -= HandleSelect_buttonButtonPressEvent;
+            remove_button.ButtonPressEvent -= HandleRemove_buttonButtonPressEvent;
+            reset_button.ButtonPressEvent -= HandleReset_buttonButtonPressEvent;
+            playlist_button.ButtonPressEvent -= HandlePlaylist_buttonButtonPressEvent;
+            zoom_button_out.ButtonPressEvent -= HandleZoom_button_outButtonPressEvent;
+            zoom_button_in.ButtonPressEvent -= HandleZoom_button_inButtonPressEvent;
+        }
+
+
         /// <summary>
         /// Initializes all handlers needed for gui interaction.
         /// </summary>
         private void InitHandler ()
         {
             stage.AllocationChanged += HandleWindowSizeChanged;
+            select_button.ButtonPressEvent += HandleSelect_buttonButtonPressEvent;
+            remove_button.ButtonPressEvent += HandleRemove_buttonButtonPressEvent;
+            reset_button.ButtonPressEvent += HandleReset_buttonButtonPressEvent;
+            playlist_button.ButtonPressEvent += HandlePlaylist_buttonButtonPressEvent;
+            zoom_button_out.ButtonPressEvent += HandleZoom_button_outButtonPressEvent;
+            zoom_button_in.ButtonPressEvent += HandleZoom_button_inButtonPressEvent;
+        }
 
-            select_button.ButtonPressEvent += delegate {
-                if (button_clicked != null)
-                    button_clicked (this, new ButtonClickedArgs (ButtonClickedArgs.Button.Select));
-            };
+        void HandleZoom_button_outButtonPressEvent (object o, ButtonPressEventArgs args)
+        {
+            if (button_clicked != null)
+                    button_clicked (this, new ButtonClickedArgs (ButtonClickedArgs.Button.ZoomOut));
+        }
 
-            remove_button.ButtonPressEvent += delegate {
-                if (button_clicked != null)
-                    button_clicked (this, new ButtonClickedArgs (ButtonClickedArgs.Button.Remove));
-            };
+        void HandleZoom_button_inButtonPressEvent (object o, ButtonPressEventArgs args)
+        {
+            if (button_clicked != null)
+                    button_clicked (this, new ButtonClickedArgs (ButtonClickedArgs.Button.ZoomIn));
+        }
 
-            reset_button.ButtonPressEvent += delegate {
-                if (button_clicked != null){
+        void HandlePlaylist_buttonButtonPressEvent (object o, ButtonPressEventArgs args)
+        {
+            if (button_clicked != null)
+                    button_clicked (this, new ButtonClickedArgs (ButtonClickedArgs.Button.Playlist));
+        }
+
+        void HandleReset_buttonButtonPressEvent (object o, ButtonPressEventArgs args)
+        {
+            if (button_clicked != null){
 
                     if (reset_button.IsOn)
                         button_clicked (this, new ButtonClickedArgs (ButtonClickedArgs.Button.Clear));
                     else
                         button_clicked (this, new ButtonClickedArgs (ButtonClickedArgs.Button.Reset));
-                }
+            }
+        }
 
-            };
+        void HandleRemove_buttonButtonPressEvent (object o, ButtonPressEventArgs args)
+        {
+            if (button_clicked != null)
+                    button_clicked (this, new ButtonClickedArgs (ButtonClickedArgs.Button.Remove));
+        }
 
-            playlist_button.ButtonPressEvent += delegate {
-                if (button_clicked != null)
-                    button_clicked (this, new ButtonClickedArgs (ButtonClickedArgs.Button.Playlist));
-            };
-
-            zoom_button_in.ButtonPressEvent += delegate(object o, ButtonPressEventArgs args) {
-
-                if (button_clicked != null)
-                    button_clicked (this, new ButtonClickedArgs (ButtonClickedArgs.Button.ZoomIn));
-            };
-
-            zoom_button_out.ButtonPressEvent += delegate(object o, ButtonPressEventArgs args) {
-
-                if (button_clicked != null)
-                    button_clicked (this, new ButtonClickedArgs (ButtonClickedArgs.Button.ZoomOut));
-            };
-
-//            infobox.ButtonPressEvent += delegate {
-//
-//                infobox.Mode = infobox.Mode == InfoBox.Size.Expanded
-//                    ? InfoBox.Size.Collapsed : InfoBox.Size.Expanded;
-//
-////                selection_info.Mode = infobox.Mode == InfoBox.Size.Expanded
-////                    ? InfoBox.Size.Collapsed : InfoBox.Size.Expanded;
-//
-////                selection_info.Update ();
-//                infobox.Update ();
-//            };
-
-
-//            infobox.AllocationChanged += HandleInfoboxAllocationChanged;
-
+        void HandleSelect_buttonButtonPressEvent (object o, ButtonPressEventArgs args)
+        {
+            if (button_clicked != null)
+                    button_clicked (this, new ButtonClickedArgs (ButtonClickedArgs.Button.Select));
         }
 
         /// <summary>
@@ -479,6 +484,20 @@ namespace NoNoise.Visualization.Gui
         public event DebugEvent DebugButtonPressedEvent {
             add { debug_event += value; }
             remove { debug_event -= value; }
+        }
+
+        public void Dispose ()
+        {
+            Hyena.Log.Warning ("Dispose gui");
+
+            select_button.Dispose ();
+            reset_button.Dispose ();
+//            status_box.Dispose ();
+
+            DisposeHandler ();
+
+            select_button.Destroy ();
+//            select_button = null;
         }
         #endregion
     }

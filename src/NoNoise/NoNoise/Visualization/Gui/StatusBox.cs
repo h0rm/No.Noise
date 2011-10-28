@@ -31,7 +31,7 @@ using System.Timers;
 
 namespace NoNoise.Visualization.Gui
 {
-    public class StatusBox : Group
+    public class StatusBox : Group, IDisposable
     {
         private CairoTexture texture;
         private List<CairoTexture> spinner;
@@ -194,6 +194,11 @@ namespace NoNoise.Visualization.Gui
         }
 
 
+        public void Dispose ()
+        {
+            spinner_timer.Stop ();
+            spinner_timer = null;
+        }
     }
 }
 
