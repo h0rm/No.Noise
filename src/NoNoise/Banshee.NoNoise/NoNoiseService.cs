@@ -429,6 +429,7 @@ namespace Banshee.NoNoise
         {
             if (disposed)
                 return;
+            Hyena.Log.Debug ("NoNoise/Serv - Disposing NoNoise services...");
             disposed = true;
 
             ServiceManager.ServiceStarted -= OnServiceStarted;
@@ -449,6 +450,7 @@ namespace Banshee.NoNoise
 
         private void UninstallPreferences ()
         {
+            Hyena.Log.Debug ("NoNoise/Serv - Uninstalling NoNoise preference page...");
             preference_service.Remove (preferences);
             preferences = null;
             debug = null;
@@ -462,6 +464,7 @@ namespace Banshee.NoNoise
 
         private void RemoveNoNoise ()
         {
+            Hyena.Log.Debug ("NoNoise/Serv - Removing NoNoise view...");
             Clutter.Threads.Enter ();
             music_library.Properties.Remove ("Nereid.SourceContents");
             Clutter.Threads.Leave ();
@@ -474,7 +477,9 @@ namespace Banshee.NoNoise
 //            CfBrowsAction.Activated -= OnToggleClutterFlow;
 //            CfBrowsAction.Visible = false;
 
+            Hyena.Log.Debug ("NoNoise/Serv - Removing NoNoise actions...");
             action_service.RemoveActionGroup ("NoNoiseView");
+            action_service.RemoveActionGroup ("NoNoiseScan");
             action_service.UIManager.RemoveUi (ui_manager_id_menu);
             action_service.UIManager.RemoveUi (ui_manager_id_tool_menu);
 //            clutterflow_actions = null;

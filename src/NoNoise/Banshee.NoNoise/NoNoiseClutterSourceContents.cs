@@ -75,11 +75,19 @@ namespace Banshee.NoNoise
 
             view.OnAddToPlaylist += HandleViewOnAddToPlaylist;
 
-            Banshee.ServiceStack.Application.ClientStarted += delegate {
-                Clutter.Threads.Enter ();
-                view.FinishedInit ();
-                Clutter.Threads.Leave ();
-            };
+            Banshee.ServiceStack.Application.ClientStarted += HandleClientStarted;
+//            Banshee.ServiceStack.Application.ClientStarted += delegate {
+//                Clutter.Threads.Enter ();
+//                view.FinishedInit ();
+//                Clutter.Threads.Leave ();
+//            };
+        }
+
+        private void HandleClientStarted (Banshee.ServiceStack.Client client)
+        {
+            Clutter.Threads.Enter ();
+            view.FinishedInit ();
+            Clutter.Threads.Leave ();
         }
 
         public void Scan (bool start)
@@ -122,7 +130,7 @@ namespace Banshee.NoNoise
 
             PlaylistSource playlist;
 
-            if (args.Persistant) {
+            if (args.Persistent) {
                 playlist = new PlaylistSource (Catalog.GetString ("NoNoise"), source);
 
                 playlist.Save ();
@@ -167,13 +175,14 @@ namespace Banshee.NoNoise
 
             this.source = source as MusicLibrarySource;
 
-            this.source.TrackModel.Reloaded += delegate {
-                UpdateView ();
-            };
+            this.source.TrackModel.Reloaded += HandleSourceReloaded;
+//            this.source.TrackModel.Reloaded += delegate {
+//                UpdateView ();
+//            };
             return true;
         }
 
-        void UpdateView ()
+        private void UpdateView ()
         {
             ITrackModelSource trackmodel = (ITrackModelSource)source;
 
@@ -194,22 +203,35 @@ namespace Banshee.NoNoise
             view.UpdateHiddenSongs (lst);
         }
 
-        void HandleSourcehandleTracksDeleted (Source sender, TrackEventArgs args)
+        private void HandleSourceReloaded (object sender, EventArgs args)
         {
             UpdateView ();
         }
 
-        void HandleSourcehandleTracksAdded (Source sender, TrackEventArgs args)
-        {
-            UpdateView ();
-        }
+//        private void HandleSourcehandleTracksDeleted (Source sender, TrackEventArgs args)
+//        {
+//            UpdateView ();
+//        }
+//
+//        private void HandleSourcehandleTracksAdded (Source sender, TrackEventArgs args)
+//        {
+//            UpdateView ();
+//        }
 
+        private bool disposed = false;
         public void Dispose ()
         {
+            if (disposed)
+                return;
+            Hyena.Log.Debug ("NoNoise/Cont - Disposing NoNoise source contents...");
+            disposed = true;
             Clutter.Threads.Enter ();
             view.OnAddToPlaylist -= HandleViewOnAddToPlaylist;
             view = null;
             Clutter.Threads.Leave ();
+
+            Banshee.ServiceStack.Application.ClientStarted -= HandleClientStarted;
+            this.source.TrackModel.Reloaded -= HandleSourceReloaded;
 
             if (playing != null)
                 playing.Unmap ();

@@ -342,7 +342,7 @@ namespace NoNoise.Visualization
                 private set;
             }
 
-            public bool Persistant {
+            public bool Persistent {
                 get;
                 private set;
             }
@@ -353,7 +353,7 @@ namespace NoNoise.Visualization
                 foreach (int id in ids)
                     SongIDs.Add (id, id);
 
-                Persistant = persistent;
+                Persistent = persistent;
             }
 
             public AddToPlaylistEventArgs (List<int> ids) : this (ids, false)
