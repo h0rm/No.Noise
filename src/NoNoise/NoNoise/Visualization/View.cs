@@ -220,7 +220,7 @@ namespace NoNoise.Visualization
             Hyena.Log.Debug ("NoNoise - updating vis");
 
             if (BansheeLibraryAnalyzer.Singleton == null)
-                analyzer = BansheeLibraryAnalyzer.Init (null);  // TODO this should not happen (missing callback)
+                analyzer = BansheeLibraryAnalyzer.Init (null);  // this should not happen (missing callback)
             else
                 analyzer = BansheeLibraryAnalyzer.Singleton;
 

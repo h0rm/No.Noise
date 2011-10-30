@@ -837,6 +837,10 @@ namespace Banshee.NoNoise
             if (!CheckDataUpToDate () && !updating_db) {
                 try {
                     RemoveDeletedTracks ();
+                    if (lib_scanned) {
+                        GetPcaData ();
+                        Hyena.ThreadAssist.ProxyToMain (sc.PcaCoordinatesUpdated);
+                    }
                 } catch (Exception e) {
                     Hyena.Log.Exception ("NoNoise/BLA - tracks deleted handler exception", e);
                 }
