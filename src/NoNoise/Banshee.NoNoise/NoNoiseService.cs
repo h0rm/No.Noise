@@ -191,10 +191,10 @@ namespace Banshee.NoNoise
                 music_library = args.Source as MusicLibrarySource;
             }
 
-            // TODO coincidence or real solution?
+            // coincidence or real solution?
             if (args.Source is VideoLibrarySource) {
-                Hyena.Log.Debug ("NoNoise/Serv - src added, type: " + args.Source.GetType ().ToString ());
-                Hyena.Log.Debug ("NoNoise/Serv - vl added, cnt: " + music_library.TrackModel.Count);
+//                Hyena.Log.Debug ("NoNoise/Serv - src added, type: " + args.Source.GetType ().ToString ());
+//                Hyena.Log.Debug ("NoNoise/Serv - vl added, cnt: " + music_library.TrackModel.Count);
 
                 SetupSourceContents ();
             }
@@ -294,14 +294,18 @@ namespace Banshee.NoNoise
         #region Callbacks
         private void ScanFinished (object source, NoNoiseClutterSourceContents.ScanFinishedEventArgs args)
         {
-            scan_action_enabled = false;
-            ScanAction.Label = "Start no.Noise scan";
-            ScanAction.Sensitive = false;
+            Hyena.ThreadAssist.ProxyToMain (delegate () {
+                scan_action_enabled = false;
+                ScanAction.Label = "Start no.Noise scan";
+                ScanAction.Sensitive = false;
+            });
         }
 
         private void ScannableChanged (object source, NoNoiseClutterSourceContents.ToggleScannableEventArgs args)
         {
-            ScanAction.Sensitive = args.Scannable;
+            Hyena.ThreadAssist.ProxyToMain (delegate () {
+                ScanAction.Sensitive = args.Scannable;
+            });
         }
         #endregion
 
@@ -316,8 +320,7 @@ namespace Banshee.NoNoise
             if (source_contents_set_up)
                 return true;
 
-            // TODO handle real empty libraries...done.
-            if (music_library == null || action_service == null)// || music_library.TrackModel.Count == 0)
+            if (music_library == null || action_service == null)
                 return false;
 
             no_noise_contents = new NoNoiseClutterSourceContents ();
@@ -339,7 +342,7 @@ namespace Banshee.NoNoise
 
             source_manager.SourceAdded -= OnSourceAdded;
 
-            Hyena.Log.Debug ("NoNoise/Serv - tm cnt: " + music_library.TrackModel.Count);
+//            Hyena.Log.Debug ("NoNoise/Serv - tm cnt: " + music_library.TrackModel.Count);
 
 //            Hyena.Log.Information ("Service Foo Initialized: "
 //                                   + "\naction_service " + (action_service == null ? "Null" : "OK")

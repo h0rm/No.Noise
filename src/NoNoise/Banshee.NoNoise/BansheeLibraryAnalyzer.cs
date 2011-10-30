@@ -522,6 +522,7 @@ namespace Banshee.NoNoise
 
             if (!lib_scanned) {
                 Hyena.Log.Information ("NoNoise/BLA - No mirage data available for pca - aborting.");
+                sc.ScannableChanged (true);
                 return;
             }
 
