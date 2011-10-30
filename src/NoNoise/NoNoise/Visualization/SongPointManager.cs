@@ -34,7 +34,8 @@ namespace NoNoise.Visualization
     /// </summary>
     public class SongPointManager
     {
-        private int max_clustering_level = 8;
+        private const int MAX_LEVEL = 8;
+        private int max_clustering_level = 0;
         private List<QuadTree<SongPoint>> tree_list;
         private const int min_points = 8;
         private int level = 0;
@@ -116,7 +117,7 @@ namespace NoNoise.Visualization
             double w,h;
 
             Hyena.Log.Debug ("NoNoise/Vis -[0] Clustering points " + tree_list[0].Count);
-            for (i = 0; i < max_clustering_level; i++) {
+            for (i = 0; i < MAX_LEVEL; i++) {
 //                tree = tree_list[i].GetClusteredTree (Width * Math.Sqrt (2) / ((double)(max_clustering_level - i -1)));
 //                tree = tree_list[i].GetAdvancedClusteredTree (double.MaxValue);
 //                tree = tree_list[i].GetClusteredTree (double.MaxValue);

@@ -95,12 +95,12 @@ namespace NoNoise.Visualization
                 gui.SetResetButton (false);
             };
 
-            point_group.SongStartPlaying += delegate(object source, SongInfoArgs args) {
+            point_group.SongStartPlaying += delegate (object source, SongInfoArgs args) {
                 GeneratePlaylist (args.SongIDs, false);
             };
 
             point_group.LoadPcaFinished += delegate {
-                gui.UpdateStatus ("Songs loaded. Double click to play.", false, 1);
+                gui.UpdateStatus ("Songs loaded. Double click to play.", false, 0);
             };
 
             gui.DebugButtonPressedEvent += HandleGuiDebugButtonPressedEvent;
@@ -121,7 +121,7 @@ namespace NoNoise.Visualization
         /// </param>
         private void GetSongLists (SongInfoArgs args, ref List<String> titles, ref List<String> artists)
         {
-            foreach (int i in args.SongIDs) {   // TODO change back to GetTrackInfoFor, ...
+            foreach (int i in args.SongIDs) {
 
                 Banshee.Collection.TrackInfo track = analyzer.GetTrackInfoFor (i);
 
@@ -159,7 +159,6 @@ namespace NoNoise.Visualization
                 break;
 
             case MainGui.ButtonClickedArgs.Button.Select:
-                Hyena.Log.Warning ("Select button clicked");
                 point_group.ToggleSelection ();
                 break;
 
@@ -226,7 +225,7 @@ namespace NoNoise.Visualization
 
             List<NoNoise.Data.DataEntry> data = analyzer.PcaCoordinates;
 
-            gui.UpdateStatus ("Songs loading.", true, 2);
+            gui.UpdateStatus ("Songs loading.", true, 0);
 
 
             if (point_group == null || !point_group.Initialized)
@@ -250,17 +249,17 @@ namespace NoNoise.Visualization
         {
             Hyena.ThreadAssist.ProxyToMain (delegate() {
                 switch (status) {
-                    case ScanStatus.Finished:
-                        gui.UpdateStatus ("Scan finished.", false, 1);
-                        break;
-        
-                    case ScanStatus.Rescan:
-                        gui.UpdateStatus ("Library changed. Please rescan (Tools > NoNoise).", false, 2);
-                        break;
-        
-                    case ScanStatus.Started:
-                        gui.UpdateStatus ("Scanning library.", true, 2);
-                        break;
+                case ScanStatus.Finished:
+                    gui.UpdateStatus ("Scan finished.", false, 1);
+                    break;
+    
+                case ScanStatus.Rescan:
+                    gui.UpdateStatus ("Library changed. Please rescan (Tools > NoNoise).", false, 2);
+                    break;
+    
+                case ScanStatus.Started:
+                    gui.UpdateStatus ("Scanning library.", true, 2);
+                    break;
                 }
             });
 

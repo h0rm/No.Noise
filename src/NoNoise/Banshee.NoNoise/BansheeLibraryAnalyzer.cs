@@ -523,6 +523,8 @@ namespace Banshee.NoNoise
             if (!lib_scanned) {
                 Hyena.Log.Information ("NoNoise/BLA - No mirage data available for pca - aborting.");
                 sc.ScannableChanged (true);
+                GetPcaData ();
+                Hyena.ThreadAssist.ProxyToMain (sc.PcaCoordinatesUpdated);
                 return;
             }
 
@@ -837,10 +839,8 @@ namespace Banshee.NoNoise
             if (!CheckDataUpToDate () && !updating_db) {
                 try {
                     RemoveDeletedTracks ();
-                    if (lib_scanned) {
-                        GetPcaData ();
-                        Hyena.ThreadAssist.ProxyToMain (sc.PcaCoordinatesUpdated);
-                    }
+                    GetPcaData ();
+                    Hyena.ThreadAssist.ProxyToMain (sc.PcaCoordinatesUpdated);
                 } catch (Exception e) {
                     Hyena.Log.Exception ("NoNoise/BLA - tracks deleted handler exception", e);
                 }

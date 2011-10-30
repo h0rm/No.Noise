@@ -300,10 +300,12 @@ namespace NoNoise.Visualization.Gui
         
         public void UpdateStatus (String text, bool waiting, int priority)
         {
-            if (priority > 0 || !status_important)
+            if (priority > 0 || !status_important) {
+                Hyena.Log.DebugFormat ("NoNoise/GUI - updating status with '{0}', priority: {1}", text, priority);
                 status_box.Update (text, waiting);
 
-            status_important = priority == 2;
+                status_important = priority == 2;
+            }
         }
 
         public void SetResetButton (bool clear)

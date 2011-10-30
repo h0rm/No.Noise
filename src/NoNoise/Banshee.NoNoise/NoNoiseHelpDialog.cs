@@ -32,12 +32,26 @@ namespace Banshee.NoNoise
 {
     public class NoNoiseHelpDialog : Gtk.Dialog
     {
-        private readonly string general_help =
-@"Help text!
-
-This is going to be the help text!
-NoNoise general help text. NoNoise general help text. NoNoise general help text. NoNoise general help text.
-";
+        private readonly string getting_started = "While the NoNoise plug-in is activated, you can start the " +
+            "NoNoise view via View > NoNoise Visualization. This will show a visualization of your music library " +
+            "instead of the normal browser view.\n\nBefore you can start using the visualization, you have to scan " +
+            "your library via Tools > NoNoise > Start NoNoise scan. Depending on the size of your library, this will " +
+            "take some time (approximately 2.5s per song).\nYou can pause/resume the scan at any time using the same " +
+            "menu entry.\n\nOnce your library has been completely scanned, you will see a point cloud which represents " +
+            "your music library.\n";
+        private readonly string general_help = "Once your library has been scanned, you can use the NoNoise plug-in " +
+            "to create playlists.\n\nQuick Guide:\n* press the 'select' button\n* select tracks using the left mouse " +
+            "button\n(* remove selected tracks from the visualization using the 'remove' button)\n* create a playlist " +
+            "with the selected tracks by pressing the 'playlist' button\n\nUser Interface:\nIn the upper left corner " +
+            "you have two buttons to zoom in and out. In the middle of the upper part of the view you have the panel " +
+            "with all the other buttons. When you hover over a point in the visualization you see an info box in the " +
+            "upper right corner showing information about the point. When you select (a) point(s) you see a similar " +
+            "box in the lower right corner showing information about the selected point(s). In the bottom left corner " +
+            "you see the status bar which tells you when you have to rescan the library and other useful information.\n\n" +
+            "buttons...\n\n" +
+            "mouse move/double click\n\n" +
+            "search function\n\n" +
+            "colors (+background area)\n";
         private readonly string settings_help = "While the NoNoise plug-in is activated, you " +
             "can access its settings via Edit > Preferences and switching to the NoNoise tab.\n\n\nPCA:\n" +
             "In this section you can adjust the features for the Principal Component Analysis (PCA). If you are not " +
@@ -52,7 +66,9 @@ NoNoise general help text. NoNoise general help text. NoNoise general help text.
             "* Minimum: A vector containing the smallest value of each row of the matrix\n" +
             "* Maximum: A vector containing the largest value of each row of the matrix\n\n" +
             "Song Duration:\nIf this is checked, the song duration is also taken as feature for the PCA.\n";
-        private readonly string credits = "NoNoise uses the following libraries/pieces of code:\n\n" +
+        private readonly string credits = "This plug-in was to a large extent inspired by Anita Lillie's " +
+            "Masters thesis 'MusicBox'.\nhttp://thesis.flyingpudding.com/\n\n\n" +
+            "NoNoise uses the following libraries/pieces of code:\n\n" +
             "Math.NET Iridium, part of the Math.NET Project\n" +
             "http://mathnet.opensourcedotnet.info\n" +
             "Copyright (c) 2002-2008, Christoph Rüegg,  http://christoph.ruegg.name\n" +
@@ -69,6 +85,7 @@ NoNoise general help text. NoNoise general help text. NoNoise general help text.
         {
             Notebook notebook = new Notebook ();
 
+            AddHelpPage (notebook, "Getting started", getting_started);
             AddHelpPage (notebook, "General", general_help);
             AddHelpPage (notebook, "Settings", settings_help);
             AddHelpPage (notebook, "Credits", credits);
