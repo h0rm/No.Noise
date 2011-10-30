@@ -57,9 +57,6 @@ namespace NoNoise.Visualization
 
             point_group.Init ();
             InitHandler ();
-            Hyena.Log.Debug ("Handler initialized.");
-
-
         }
 
         /// <summary>
@@ -129,7 +126,7 @@ namespace NoNoise.Visualization
                 Banshee.Collection.TrackInfo track = analyzer.GetTrackInfoFor (i);
 
                 if (track == null) {
-                    Hyena.Log.Debug ("Warning, track not found");
+                    Hyena.Log.Debug ("NoNoise/Vis - Warning, track not found");
                     continue;
                 }
 
@@ -212,7 +209,7 @@ namespace NoNoise.Visualization
         void HandleGuiDebugButtonPressedEvent  (object source, MainGui.DebugEventArgs args)
         {
 //            point_group.UpdateClipping ();
-            this.MyDispose ();
+//            this.MyDispose ();
         }
 
         /// <summary>
@@ -246,8 +243,6 @@ namespace NoNoise.Visualization
         /// </param>
         public void UpdateHiddenSongs (List<int> not_hidden)
         {
-            Hyena.Log.Information ("Update hidden songs");
-
             point_group.UpdateHiddenSongs (not_hidden);
         }
 
@@ -312,25 +307,19 @@ namespace NoNoise.Visualization
             }
         }
 
-        public void MyDispose ()
-        {
-            gui.Dispose ();
-        }
         public override void Dispose ()
         {
+            Stage.RemoveAll ();
+
             gui.Dispose ();
-//            gui.Destroy ();
-//            point_group.Destroy ();
-//            gui.Destroy ();
+            point_group.Dispose ();
+            gui.Destroy ();
+            point_group.Destroy ();
 
-//
-//            gui = null;
-
-//            base.Destroy ();
             base.Dispose ();
 
-//            point_group = null;
-//            gui = null;
+            point_group = null;
+            gui = null;
         }
     }
 }

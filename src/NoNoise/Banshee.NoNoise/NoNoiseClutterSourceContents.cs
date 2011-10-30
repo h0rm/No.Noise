@@ -53,20 +53,18 @@ namespace Banshee.NoNoise
         public NoNoiseClutterSourceContents ()
         {
             //Gtk.Box box = new Gtk.HBox(true,0);
-            if (!GLib.Thread.Supported)
-                GLib.Thread.Init();
+
 
             Clutter.Threads.Init();
             Clutter.Application.InitForToolkit ();
 
             Clutter.Threads.Enter ();
-
             view = new View();
             BansheeLibraryAnalyzer.Init (this, true);
 
-            Clutter.Threads.Leave ();
-
             view.OnAddToPlaylist += HandleViewOnAddToPlaylist;
+
+            Clutter.Threads.Leave ();
         }
 
         public void Scan (bool start)
@@ -212,8 +210,8 @@ namespace Banshee.NoNoise
             Clutter.Threads.Enter ();
 
             view.OnAddToPlaylist -= HandleViewOnAddToPlaylist;
-            view.MyDispose ();
-//            view = null;
+            view.Dispose ();
+            view = null;
             Clutter.Threads.Leave ();
 
 

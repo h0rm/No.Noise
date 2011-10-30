@@ -182,9 +182,6 @@ namespace NoNoise.Visualization
 
         public SongGroup (Stage stage) : base ()
         {
-            Hyena.Log.Information ("Zoom mult = " + zoom_level_mult);
-            Hyena.Log.Information ("Init zoom = " + zoom_level);
-
             this.Initialized = false;
             this.stage = stage;
             actor_manager = new SongActorManager (num_of_actors);
@@ -277,9 +274,6 @@ namespace NoNoise.Visualization
         private void InitSelectionActor ()
         {
             selection = new SelectionActor (1000,1000, new Cairo.Color (1,0,0,0.9));
-//            selection.SetPosition (0,0);
-//            stage.Add (selection);
-//            selection = new SelectionManager (1000, 1000, new Cairo.Color (1, 0, 0, 0.9));
             selection.SetPosition (0,0);
             stage.Add (selection);
         }
@@ -297,7 +291,6 @@ namespace NoNoise.Visualization
             clustering_animation_timeline = new Timeline (clutter_animation_time);
             clustering_animation_alpha = new Alpha (clustering_animation_timeline, (ulong)AnimationMode.EaseInOutSine);
             clustering_animation_behave = new BehaviourOpacity (clustering_animation_alpha, 255, 0);
-//            clustering_animation_timeline.Completed += HandleClusteringTimelineCompleted;
             clustering_animation_timeline.Completed += HandleClusteringTimelineCompleted;
 
             clustering_reverse_behave = new BehaviourOpacity (clustering_animation_alpha, 0, 255);
@@ -315,27 +308,40 @@ namespace NoNoise.Visualization
             stage.ButtonReleaseEvent += HandleStageButtonReleaseEvent;
             stage.MotionEvent += HandleMotionEvent;
             stage.AllocationChanged += HandleWindowSizeChanged;
-            stage.Activate += delegate {
-                Hyena.Log.Debug ("Stage activated");
-            };
-            int count = 0;
+
             foreach (SongActor a in actor_manager.Actors) {
-                a.EnterEvent += delegate(object o, EnterEventArgs args) {
-                    SongActor sender = o as SongActor;
-                    if (sender.Owner != null)
-                        FireSongEnter (new SongInfoArgs (sender.Owner.GetAllIDs ()));
-                    else
-                        Hyena.Log.Information ("No owner ");
-                };
-
-
-                a.LeaveEvent += delegate(object o, LeaveEventArgs args) {
-                    SongActor sender = o as SongActor;
-                    if (sender.Owner != null)
-                        FireSongLeave ();
-                };
-                count ++;
+                a.EnterEvent += HandleSongEnterEvent;
+                a.LeaveEvent += HandleSongLeaveEvent;
             }
+        }
+
+        private void DisposeHandlers ()
+        {
+            stage.ButtonPressEvent -= HandleStageButtonPressEvent;
+            stage.ButtonReleaseEvent -= HandleStageButtonReleaseEvent;
+            stage.MotionEvent -= HandleMotionEvent;
+            stage.AllocationChanged -= HandleWindowSizeChanged;
+
+            foreach (SongActor a in actor_manager.Actors) {
+                a.EnterEvent -= HandleSongEnterEvent;
+                a.LeaveEvent -= HandleSongLeaveEvent;
+            }
+        }
+
+        void HandleSongLeaveEvent (object o, LeaveEventArgs args)
+        {
+            SongActor sender = o as SongActor;
+            if (sender.Owner != null)
+                FireSongLeave ();
+        }
+
+        void HandleSongEnterEvent (object o, EnterEventArgs args)
+        {
+            SongActor sender = o as SongActor;
+            if (sender.Owner != null)
+                FireSongEnter (new SongInfoArgs (sender.Owner.GetAllIDs ()));
+            else
+                Hyena.Log.Warning ("NoNoise/Vis - No owner ");
         }
 
         /// <summary>
@@ -346,7 +352,7 @@ namespace NoNoise.Visualization
             int i = 0;
             zoom_level = 1;
             point_manager.GetWindowDimensions (0, 1500, out cluster_w, out cluster_h);
-//            Hyena.Log.Debug ("Window dimensions " + cluster_w + "x" + cluster_h);
+
             // as long as window size is too small zoom out
             while (cluster_w < point_manager.Width) {
                 cluster_w *= zoom_level_mult;
@@ -356,22 +362,11 @@ namespace NoNoise.Visualization
             point_manager.Level = i;
             diff_zoom_clustering = i - point_manager.Level;
 
-            Hyena.Log.Debug ("Zoom initialized with \nscale="+
-                                   stage.Width / point_manager.Width + " level="+ point_manager.Level +
-                                   " diff=" + diff_zoom_clustering);
-
             double width = stage.Width / point_manager.Width;
             double height = stage.Height / point_manager.Height;
 
 
             this.SetZoomLevel (width);
-
-            Hyena.Log.Information ("Zoom mult = " + zoom_level_mult);
-            Hyena.Log.Information ("Init zoom = " + zoom_level);
-
-//            Hyena.Log.Information (String.Format ("Zoom position {0},{1}",
-//                                                  0, stage.Height / 2f - (float)point_manager.Height*(float)zoom_level/2f));
-//            this.SetPosition (0, stage.Height / 2f - (float)point_manager.Height*(float)zoom_level/2f);
         }
 
         /// <summary>
@@ -396,8 +391,6 @@ namespace NoNoise.Visualization
         /// </summary>
         public void Init ()
         {
-            Hyena.Log.Debug ("Initializing Song Group.");
-
             Reactive = true;
 
             point_manager = new SongPointManager (0,0,3000,3000);
@@ -413,8 +406,6 @@ namespace NoNoise.Visualization
 
             // Initialized -> ready to go
             this.Initialized =  true;
-
-            Hyena.Log.Debug ("Initializing Song Group Finished.");
         }
         #endregion
 
@@ -1055,7 +1046,7 @@ namespace NoNoise.Visualization
             for (int i = 0; i < points.Count; i++)
             {
                 if (!actor_manager.HasFree) {
-                    Hyena.Log.Warning ("No free Actor left");
+                    Hyena.Log.Warning ("NoNoise/Vis - No free Actor left");
                     break;
                 }
 
@@ -1431,6 +1422,12 @@ namespace NoNoise.Visualization
         }
 
         #endregion
+
+        public override void Dispose ()
+        {
+            StopAllAnimations ();
+            DisposeHandlers ();
+        }
     }
 }
 

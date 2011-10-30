@@ -54,7 +54,6 @@ namespace NoNoise.Visualization
 //            if (prototype_list.Count > 0)
 //                return;
 
-            Hyena.Log.Information ("Generate prototypes");
             prototype_list.Clear ();
 
             for (int i=0; i < max_prototypes; i++)

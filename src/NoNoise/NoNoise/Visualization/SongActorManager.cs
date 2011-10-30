@@ -150,6 +150,7 @@ namespace NoNoise.Visualization
         public bool HasFree {
             get { return free_actors.Count > 0; }
         }
+
     }
 }
 

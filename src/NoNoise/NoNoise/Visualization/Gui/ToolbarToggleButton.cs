@@ -83,7 +83,6 @@ namespace NoNoise.Visualization.Gui
         /// </summary>
         private void InitializeHandlers ()
         {
-            Hyena.Log.Debug ("Init Button handler "+ Text);
             ButtonPressEvent += HandleButtonPressEvent;
         }
 
@@ -98,7 +97,6 @@ namespace NoNoise.Visualization.Gui
         /// </param>
         private void HandleButtonPressEvent (object o, ButtonPressEventArgs args)
         {
-            Hyena.Log.Debug ("Button handler "+ Text);
             if (toggle)
                 ToggleState ();
         }
@@ -141,8 +139,13 @@ namespace NoNoise.Visualization.Gui
 
         public void Dispose ()
         {
-            Hyena.Log.Warning ("Dispose button " + Text);
             ButtonPressEvent -= HandleButtonPressEvent;
+            RemoveAll ();
+            for (int i = 0; i < textures.Count; i++) {
+                textures[i] = null;
+            }
+
+            textures = null;
         }
 
     }

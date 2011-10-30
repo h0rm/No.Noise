@@ -62,8 +62,8 @@ namespace NoNoise.Visualization.Gui
         //Initializes the Gui Buttons - i.e. zoom in/out
         private void Init ()
         {
-            Hyena.Log.Debug ("GUI init");
-//
+            Hyena.Log.Debug ("NoNoise/Vis - GUI init");
+
             Font standard = new Font () {
                 Family = "Arial",
                 Slant = Cairo.FontSlant.Normal,
@@ -145,7 +145,7 @@ namespace NoNoise.Visualization.Gui
             status_box.AnchorPointFromGravity = Gravity.SouthWest;
             this.Add (status_box);
 
-            InitDebug ();
+//            InitDebug ();
             this.Reactive = false;
             InitHandler ();
         }
@@ -488,16 +488,11 @@ namespace NoNoise.Visualization.Gui
 
         public void Dispose ()
         {
-            Hyena.Log.Warning ("Dispose gui");
-
             select_button.Dispose ();
             reset_button.Dispose ();
-//            status_box.Dispose ();
+            status_box.Dispose ();
 
             DisposeHandler ();
-
-            select_button.Destroy ();
-//            select_button = null;
         }
         #endregion
     }
