@@ -89,10 +89,9 @@ namespace Banshee.NoNoise
             "Copyright (c) 2002-2008, Christoph Rüegg,  http://christoph.ruegg.name\n" +
             "\t\t\t\t\tJoannes Vermorel, http://www.vermorel.com\n" +
             "GNU Lesser General Public License\nVersion 2.1, February 1999\n\n" +
-            "Mirage, Banshee plug-in\n" +
+            "Mirage\n" +
             "http://hop.at/mirage\n" +
             "Dominik Schnitzer <dominik@schnitzer.at>\n" +
-            "Bertrand Lorentz <bertrand.lorentz@gmail.com>\n" +
             "GPL License Version 2\n\n" +
             "\n";
 

@@ -40,7 +40,6 @@ namespace NoNoise.PCA
     /// </summary>
     public class PCAnalyzer
     {
-        private Matrix m = null;
         private Vector mean = null;
         private List<Vector> differences = null;
         private List<Matrix> matrices = null;
