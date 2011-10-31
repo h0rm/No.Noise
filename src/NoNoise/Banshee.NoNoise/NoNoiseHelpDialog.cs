@@ -48,10 +48,25 @@ namespace Banshee.NoNoise
             "upper right corner showing information about the point. When you select (a) point(s) you see a similar " +
             "box in the lower right corner showing information about the selected point(s). In the bottom left corner " +
             "you see the status bar which tells you when you have to rescan the library and other useful information.\n\n" +
-            "buttons...\n\n" +
-            "mouse move/double click\n\n" +
-            "search function\n\n" +
-            "colors (+background area)\n";
+            "Buttons:\n* '+'/'-': The plus and minus buttons can be used to zoom in and out. Depending on the number of " +
+            "songs in your library and the current zoom level this will also change the clustering level, i.e. clusters " +
+            "will be split up when you zoom in and merged together when you zoom out. By hovering over the points you " +
+            "see the current cluster size in the info box.\n" +
+            "* 'select': This button toggles the selection mode. While in selection mode you can mark points by pressing " +
+            "the left mouse button and drawing a line around the area you want to select. The endpoint of the line is " +
+            "automatically connected to its starting point. Selected points remain selected if you leave the selection mode " +
+            "so you can move the view and select more points. Selected points are shown in light red while semi-selected " +
+            "points (i.e. clusters where some songs are selected but not all) are dark red.\n" +
+            "* 'reset'/'clear': Pressing the reset button restores previously removed points. When points are selected " +
+            "this button can be used to unselect the points again.\n" +
+            "* 'remove': This button removes the selected points from the visualization.\n" +
+            "* 'playlist': This button creates a new playlist with all selected songs.\n\n" +
+            "Navigation:\n* move view: While not in selection mode you can move the view by holding the left mouse button.\n" +
+            "* double click: A double click on a point will start playing the song(s) contained in this point.\n" +
+            "* search function: Typing something into the search field, in the upper right corner, will filter the " +
+            "visualization in the same way as it filters the normal music browser.\n\n" +
+            "Colors:\n* points: Unselected points are white, selected points are light red and semi-selected points are dark " +
+            "red.\n* background: The area which contains the points is black, the surrounding area is shown in gray.\n";
         private readonly string settings_help = "While the NoNoise plug-in is activated, you " +
             "can access its settings via Edit > Preferences and switching to the NoNoise tab.\n\n\nPCA:\n" +
             "In this section you can adjust the features for the Principal Component Analysis (PCA). If you are not " +
