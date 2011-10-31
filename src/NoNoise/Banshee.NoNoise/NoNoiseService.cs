@@ -31,6 +31,8 @@ using Banshee.Base;
 using Banshee.Sources;
 using Banshee.Sources.Gui;
 
+using Mono.Addins;
+
 // Other namespaces you might want:
 using Banshee.ServiceStack;
 using Banshee.Preferences;
@@ -40,7 +42,6 @@ using Banshee.PlaybackController;
 using Banshee.Library;
 using Clutter;
 using Gtk;
-using Banshee.I18n;
 using Banshee.Configuration;
 
 namespace Banshee.NoNoise
@@ -151,7 +152,7 @@ namespace Banshee.NoNoise
         private void InstallPreferences ()
         {
             if (!pref_installed) {
-                preferences = preference_service.Add (new Page ("nonoise", Catalog.GetString ("No.Noise"), 20));
+                preferences = preference_service.Add (new Page ("nonoise", AddinManager.CurrentLocalizer.GetString ("NoNoise"), 20));
 
                 pca = preferences.Add (new Section ("pca", "PCA", 2));
                 pb = new SchemaPreference<string> (NoNoiseSchemas.PcaMfcc, NoNoiseSchemas.PcaMfcc.ShortDescription,
@@ -213,8 +214,8 @@ namespace Banshee.NoNoise
 
                 no_noise_actions.Add (new ToggleActionEntry [] {
                     new ToggleActionEntry ("NoNoiseVisibleAction", null,
-                    Catalog.GetString ("No.Noise Visualization"), null,
-                    Catalog.GetString ("Enable or disable the No.Noise visualization"),
+                    AddinManager.CurrentLocalizer.GetString ("NoNoise Visualization"), null,
+                    AddinManager.CurrentLocalizer.GetString ("Enable or disable the NoNoise visualization"),
                     null, NoNoiseSchemas.ShowNoNoise.Get ())
                 });
 
@@ -230,12 +231,12 @@ namespace Banshee.NoNoise
                     new ActionEntry ("NoNoiseMenuAction", null, "NoNoise", null,
                                      null, null),
                     new ActionEntry ("NoNoiseScanAction", null,
-                    Catalog.GetString ("Start No.Noise scan"), null,
-                    Catalog.GetString ("Start or pause the No.Noise scan"),
+                    AddinManager.CurrentLocalizer.GetString ("Start NoNoise scan"), null,
+                    AddinManager.CurrentLocalizer.GetString ("Start or pause the NoNoise scan"),
                     null),
                     new ActionEntry ("NoNoiseHelpAction", null,
-                    Catalog.GetString ("Help"), null,
-                    Catalog.GetString ("Show the help dialog for the NoNoise plug-in"),
+                    AddinManager.CurrentLocalizer.GetString ("Help"), null,
+                    AddinManager.CurrentLocalizer.GetString ("Show the help dialog for the NoNoise plug-in"),
                     null)
                 });
 
@@ -255,11 +256,11 @@ namespace Banshee.NoNoise
         {
             Hyena.Log.Information ("Scan action activated");
             if (scan_action_enabled) {
-                ScanAction.Label = "Start no.Noise scan";
+                ScanAction.Label = AddinManager.CurrentLocalizer.GetString ("Start NoNoise scan");
 
                 no_noise_contents.Scan (false);
             } else {
-                ScanAction.Label = "Pause no.Noise scan";
+                ScanAction.Label = AddinManager.CurrentLocalizer.GetString ("Pause NoNoise scan");
 
                 no_noise_contents.Scan (true);
             }
@@ -280,13 +281,13 @@ namespace Banshee.NoNoise
                 Clutter.Threads.Enter ();
                 music_library.Properties.Set<ISourceContents> ("Nereid.SourceContents", no_noise_contents);
                 Clutter.Threads.Leave ();
-                Hyena.Log.Information ("No.Noise enabled");
+                Hyena.Log.Information ("NoNoise enabled");
             } else {
                 NoNoiseSchemas.ShowNoNoise.Set (false);
                 Clutter.Threads.Enter ();
                 music_library.Properties.Remove("Nereid.SourceContents");
                 Clutter.Threads.Leave ();
-                 Hyena.Log.Information ("No.Noise disabled");
+                 Hyena.Log.Information ("NoNoise disabled");
             }
         }
         #endregion
@@ -296,7 +297,7 @@ namespace Banshee.NoNoise
         {
             Hyena.ThreadAssist.ProxyToMain (delegate () {
                 scan_action_enabled = false;
-                ScanAction.Label = "Start no.Noise scan";
+                ScanAction.Label = AddinManager.CurrentLocalizer.GetString ("Start NoNoise scan");
                 ScanAction.Sensitive = false;
             });
         }
