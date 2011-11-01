@@ -26,11 +26,7 @@
 using System;
 using System.Collections.Generic;
 using System.Data;
-using System.Text;
-//using Mono.Data.SqliteClient;
 using Mono.Data.Sqlite;
-using MathNet.Numerics.LinearAlgebra;
-using Hyena.Data.Sqlite;
 using Hyena;
 
 namespace NoNoise.Data

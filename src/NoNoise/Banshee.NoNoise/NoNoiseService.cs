@@ -36,13 +36,9 @@ using Mono.Addins;
 // Other namespaces you might want:
 using Banshee.ServiceStack;
 using Banshee.Preferences;
-using Banshee.Preferences.Gui;
-using Banshee.MediaEngine;
-using Banshee.PlaybackController;
 using Banshee.Library;
 using Clutter;
 using Gtk;
-using Banshee.Configuration;
 
 namespace Banshee.NoNoise
 {

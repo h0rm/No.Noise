@@ -29,7 +29,6 @@ using System.Threading;
 
 using Banshee.Collection;
 using Banshee.Collection.Database;
-using Banshee.MediaEngine;
 using Banshee.ServiceStack;
 using Banshee.Sources;
 
@@ -479,7 +478,7 @@ namespace Banshee.NoNoise
         /// </summary>
         private void Finished ()
         {
-            if (added_while_scanning) {     // TODO test this
+            if (added_while_scanning) {
                 lock (scan_synch) {
                     added_while_scanning = false;
                 }
@@ -548,7 +547,6 @@ namespace Banshee.NoNoise
                     if (!db.InsertPcaCoordinates (ana.Coordinates))
                         Hyena.Log.Error ("NoNoise/BLA - PCA coord insert failed");
                     Hyena.Log.Debug ("NoNoise/BLA - PCA inserted into db");
-//                    coords = db.GetPcaCoordinates ();
                 }
             } catch (DatabaseException e) {
                 Hyena.Log.Exception ("NoNoise/BLA - Database Problem", e);
