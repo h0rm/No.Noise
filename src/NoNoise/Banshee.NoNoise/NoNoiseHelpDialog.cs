@@ -26,6 +26,8 @@
 
 using System;
 
+using Mono.Addins;
+
 using Gtk;
 
 namespace Banshee.NoNoise
@@ -124,14 +126,14 @@ namespace Banshee.NoNoise
             tv.Editable = false;
             tv.CursorVisible = false;
             TextBuffer tb = new TextBuffer (new TextTagTable ());
-            tb.Text = text;
+            tb.Text = AddinManager.CurrentLocalizer.GetString (text);
             tv.Buffer = tb;
             tv.WrapMode = WrapMode.Word;
             ScrolledWindow sw = new ScrolledWindow ();
             sw.AddWithViewport (tv);
             sw.SetSizeRequest (520, 380);
             box.PackStart (sw, true, true, 5);
-            notebook.AppendPage (box, new Label (title));
+            notebook.AppendPage (box, new Label (AddinManager.CurrentLocalizer.GetString (title)));
         }
 
         private void OnCloseButtonClicked (object sender, EventArgs e)
