@@ -232,6 +232,12 @@ namespace NoNoise.Visualization
             pca_finished = new Gtk.ThreadNotify (new Gtk.ReadyEvent (ClusteringFinished));
 
             lock (cluster_thread_lock) {
+                // check again for running thread if it was started after the check above
+                if (clustering_thread != null && clustering_thread.IsAlive) {
+                        clustering_thread.Abort ();
+                        clustering_thread.Join ();
+                }
+
                 clustering_thread = new Thread (ClusterBackground);
                 clustering_thread.Start (entries);  // TODO entries unused in thread?
             }
