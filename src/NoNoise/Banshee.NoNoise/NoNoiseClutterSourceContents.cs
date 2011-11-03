@@ -77,15 +77,19 @@ namespace Banshee.NoNoise
         public void ScanFinished ()
         {
             Hyena.Log.Information ("NoNoise - Scan finished.");
-            scan_event (this, new ScanFinishedEventArgs ("supi"));
-            view.UpdateStatus (View.ScanStatus.Finished);
+            if (scan_event != null) {
+                scan_event (this, new ScanFinishedEventArgs ("supi"));
+                view.UpdateStatus (View.ScanStatus.Finished);
+            }
         }
 
         public void ScannableChanged (bool scannable)
         {
             Hyena.Log.Debug ("NoNoise - Scannable changed to: " + scannable);
-            scannable_event (this, new ToggleScannableEventArgs (scannable));
-            view.UpdateStatus (scannable ? View.ScanStatus.Rescan : View.ScanStatus.Finished);
+            if (scannable_event != null) {
+                scannable_event (this, new ToggleScannableEventArgs (scannable));
+                view.UpdateStatus (scannable ? View.ScanStatus.Rescan : View.ScanStatus.Finished);
+            }
         }
 
         public void PcaCoordinatesUpdated ()

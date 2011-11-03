@@ -321,13 +321,13 @@ namespace Banshee.NoNoise
                 return false;
 
             no_noise_contents = new NoNoiseClutterSourceContents ();
+            no_noise_contents.OnScanFinished += ScanFinished;
+            no_noise_contents.OnToggleScannable += ScannableChanged;
+
             ScanAction.Sensitive = !BansheeLibraryAnalyzer.Singleton.IsLibraryScanned;
             SwitchPcaMfccOptions ();
 
             source_contents_set_up = true;
-
-            no_noise_contents.OnScanFinished += ScanFinished;
-            no_noise_contents.OnToggleScannable += ScannableChanged;
 
             no_noise_contents.SetSource(music_library);
 

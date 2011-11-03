@@ -38,9 +38,9 @@ namespace Banshee.NoNoise
             "NoNoise view via View > NoNoise Visualization. This will show a visualization of your music library " +
             "instead of the normal browser view.\n\nBefore you can start using the visualization, you have to scan " +
             "your library via Tools > NoNoise > Start NoNoise scan. Depending on the size of your library, this will " +
-            "take some time (approximately 2.5s per song).\nYou can pause/resume the scan at any time using the same " +
-            "menu entry.\n\nOnce your library has been completely scanned, you will see a point cloud which represents " +
-            "your music library.\n";
+            "take some time (approximately 2.5s per song or 1500 songs per hour).\nYou can pause/resume the scan at " +
+            "any time using the same menu entry.\n\nOnce your library has been completely scanned, you will see a " +
+            "point cloud which represents your music library.\n";
         private readonly string general_help = "Once your library has been scanned, you can use the NoNoise plug-in " +
             "to create playlists.\n\nQuick Guide:\n* press the 'select' button\n* select tracks using the left mouse " +
             "button\n(* remove selected tracks from the visualization using the 'remove' button)\n* create a playlist " +
@@ -84,7 +84,9 @@ namespace Banshee.NoNoise
             "* Maximum: A vector containing the largest value of each row of the matrix\n\n" +
             "Song Duration:\nIf this is checked, the song duration is also taken as feature for the PCA.\n";
         private readonly string credits = "This plug-in was to a large extent inspired by Anita Lillie's " +
-            "Masters thesis 'MusicBox'.\nhttp://thesis.flyingpudding.com/\n\n\n" +
+            "Masters thesis 'MusicBox'.\nhttp://thesis.flyingpudding.com/\n\n" +
+            "ClutterFlow\nHelpful to see how to write Banshee plug-ins with clutter integration\n" +
+            "Mathijs Dumon <mathijsken@hotmail.com>\n\n\n" +
             "NoNoise uses the following libraries/pieces of code:\n\n" +
             "Math.NET Iridium, part of the Math.NET Project\n" +
             "http://mathnet.opensourcedotnet.info\n" +
@@ -95,6 +97,10 @@ namespace Banshee.NoNoise
             "http://hop.at/mirage\n" +
             "Dominik Schnitzer <dominik@schnitzer.at>\n" +
             "GPL License Version 2\n\n" +
+            "Quadtree Datastructure\nModified version of http://quadtree.svn.sourceforge.net/\n" +
+            "John McDonald\nGary Texmo\n\n" +
+            "Selection Algorithm (Winding number)\nhttp://softsurfer.com/Archive/algorithm_0103/algorithm_0103.htm\n" +
+            "Dan Sunday" +
             "\n";
 
         public NoNoiseHelpDialog ()
