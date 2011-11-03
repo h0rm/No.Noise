@@ -213,6 +213,13 @@ namespace NoNoise.Visualization
 //            if (initialized)
 //                ClearView ();
 
+            lock (cluster_thread_lock) {
+                if (clustering_thread != null && clustering_thread.IsAlive) {
+                        clustering_thread.Abort ();
+                        clustering_thread.Join ();
+                }
+            }
+
             lock (new_point_manager_lock) {
 
                 new_point_manager = new SongPointManager (0, 0, 30000, 30000);
@@ -225,11 +232,6 @@ namespace NoNoise.Visualization
             pca_finished = new Gtk.ThreadNotify (new Gtk.ReadyEvent (ClusteringFinished));
 
             lock (cluster_thread_lock) {
-                if (clustering_thread != null && clustering_thread.IsAlive) {
-                        clustering_thread.Abort ();
-                        clustering_thread.Join ();
-                }
-
                 clustering_thread = new Thread (ClusterBackground);
                 clustering_thread.Start (entries);  // TODO entries unused in thread?
             }
