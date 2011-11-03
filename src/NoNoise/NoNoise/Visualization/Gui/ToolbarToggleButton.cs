@@ -137,7 +137,7 @@ namespace NoNoise.Visualization.Gui
             OnStateChanged ();
         }
 
-        public void Dispose ()
+        public override void Dispose ()
         {
             ButtonPressEvent -= HandleButtonPressEvent;
             RemoveAll ();

@@ -449,6 +449,7 @@ namespace Banshee.NoNoise
 
                     if (!keyList.ContainsKey (bid)) {
                         mfcc = Mirage.Analyzer.AnalyzeMFCC (absPath);
+//                        Hyena.Log.DebugFormat ("NoNoise/BLA - mfcc cols: {0}, rows: {1}", mfcc.columns, mfcc.rows);
 
                         lock (db_synch) {
                             if (!db.InsertVectors (mfcc.Mean (), ConvertMfccToSqrMean (mfcc), ConvertMfccToMedian (mfcc),

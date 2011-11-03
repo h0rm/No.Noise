@@ -416,7 +416,6 @@ namespace NoNoise.Visualization.Gui
             {
                 Hyena.Log.Debug ("Debug two");
 
-                //Call event Handler - TODO level allways 0
 //                if (this.debug_event != null)
 //                    debug_event (this,new DebugEventArgs (-1,"Debug two"));
                 status_box.Update ("no spinner", false);
@@ -440,7 +439,6 @@ namespace NoNoise.Visualization.Gui
             {
                 Hyena.Log.Debug ("Debug one");
 
-                //Call event Handler - TODO level allways 0
 //                if (this.debug_event != null)
 //                    debug_event (this,new DebugEventArgs (1,"Debug one"));
                 status_box.Update ("new text", true);
@@ -488,7 +486,7 @@ namespace NoNoise.Visualization.Gui
             remove { debug_event -= value; }
         }
 
-        public void Dispose ()
+        public override void Dispose ()
         {
             select_button.Dispose ();
             reset_button.Dispose ();

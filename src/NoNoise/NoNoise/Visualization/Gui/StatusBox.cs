@@ -38,7 +38,7 @@ namespace NoNoise.Visualization.Gui
         private Group spinner_actor;
 
         private StyleSheet style;
-        private uint width, height;
+        private uint height;
         private Timer spinner_timer;
 
         private int frame = 0;
@@ -50,7 +50,6 @@ namespace NoNoise.Visualization.Gui
         public StatusBox (StyleSheet style, uint width, uint height)
         {
             this.style = style;
-            this.width = width;
             this.height = height;
 
             Text = "test";
@@ -194,7 +193,7 @@ namespace NoNoise.Visualization.Gui
         }
 
 
-        public void Dispose ()
+        public override void Dispose ()
         {
             spinner_timer.Stop ();
             spinner_timer = null;

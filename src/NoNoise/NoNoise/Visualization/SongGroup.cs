@@ -107,6 +107,8 @@ namespace NoNoise.Visualization
 
         private SongPointManager new_point_manager;
         private Object new_point_manager_lock = new Object ();
+        private Object point_manager_lock = new Object ();
+
         private SongActorManager actor_manager;
 
         private Alpha clustering_animation_alpha;
@@ -128,6 +130,8 @@ namespace NoNoise.Visualization
         private bool mouse_button_locked = false;
 
         private Gtk.ThreadNotify pca_finished;
+
+        private Thread clustering_thread;
         #endregion
 
         #region Getter + Setter
@@ -203,10 +207,14 @@ namespace NoNoise.Visualization
         /// </param>
         public void LoadPcaData (List<DataEntry> entries)
         {
-            bool initialized = point_manager != null;
+//            bool initialized = point_manager != null;
 
-            if (initialized)
-                ClearView ();
+//            if (initialized)
+//                ClearView ();
+            if (clustering_thread != null && clustering_thread.IsAlive) {
+                clustering_thread.Abort ();
+                clustering_thread.Join ();
+            }
 
             lock (new_point_manager_lock) {
 
@@ -217,21 +225,24 @@ namespace NoNoise.Visualization
                 }
             }
 
-            Thread clustering = new Thread (ClusterBackground);
+            clustering_thread = new Thread (ClusterBackground);
             pca_finished = new Gtk.ThreadNotify (new Gtk.ReadyEvent (ClusteringFinished));
-            clustering.Start (entries);
+            clustering_thread.Start (entries);
         }
 
         private void ClusteringFinished ()
         {
             // Change point manager
-            lock (point_manager) {
+            lock (point_manager_lock) {
+                point_manager = null;
                 point_manager = new_point_manager;
             }
 
             lock (new_point_manager_lock) {
                 new_point_manager = null;
             }
+
+            ClearView ();
 
             points_visible = new List<SongPoint> (num_of_actors);
 
@@ -245,11 +256,20 @@ namespace NoNoise.Visualization
 
         private void ClusterBackground (Object obj)
         {
-            lock (new_point_manager_lock) {
-                new_point_manager.Cluster ();
-            }
+            try {
+                lock (new_point_manager_lock) {
+                    new_point_manager.Cluster ();
+                }
 
-            pca_finished.WakeupMain ();
+                pca_finished.WakeupMain ();
+
+            } catch (ThreadAbortException ex) {
+                Hyena.Log.Debug ("NoNoise/Vis - Clustering aborted");
+
+                lock (new_point_manager_lock) {
+                    new_point_manager = null;
+                }
+            }
         }
 
         #region Initialzation
@@ -363,8 +383,7 @@ namespace NoNoise.Visualization
             diff_zoom_clustering = i - point_manager.Level;
 
             double width = stage.Width / point_manager.Width;
-            double height = stage.Height / point_manager.Height;
-
+//            double height = stage.Height / point_manager.Height;
 
             this.SetZoomLevel (width);
         }
@@ -451,7 +470,7 @@ namespace NoNoise.Visualization
         {
             mouse_button_locked = true;
 
-            lock (point_manager) {
+            lock (point_manager_lock) {
                 point_manager.RemoveSelection ();
             }
 
@@ -465,7 +484,7 @@ namespace NoNoise.Visualization
         public void ResetRemovedPoints ()
         {
             mouse_button_locked = true;
-            lock (point_manager) {
+            lock (point_manager_lock) {
                 point_manager.ShowRemoved ();
             }
 
@@ -503,7 +522,7 @@ namespace NoNoise.Visualization
         /// </param>
         public void UpdateHiddenSongs (List<int> not_hidden)
         {
-            lock (point_manager) {
+            lock (point_manager_lock) {
                 point_manager.MarkHidded (not_hidden);
             }
             UpdateShownSelection ();
@@ -760,7 +779,7 @@ namespace NoNoise.Visualization
 
             //back -> back or back
             if (!forward && (!playing || dir != TimelineDirection.Forward)) {
-                lock (point_manager) {
+                lock (point_manager_lock) {
                     point_manager.DecreaseLevel ();
                 }
                 UpdateView ();
@@ -873,12 +892,12 @@ namespace NoNoise.Visualization
         {
             // Clustering completed, set to new level
             if (clustering_animation == ClusteringAnimation.Forward) {
-                lock (point_manager) {
+                lock (point_manager_lock) {
                  point_manager.IncreaseLevel ();
                 }
             }
             else {
-                lock (point_manager) {
+                lock (point_manager_lock) {
                     point_manager.DecreaseLevel ();
                 }
             }
@@ -900,7 +919,7 @@ namespace NoNoise.Visualization
         private void HandleClusteringTimelineCompletedOld (object sender, EventArgs e)
         {
             if (clustering_animation_timeline.Direction == TimelineDirection.Forward) {
-                lock (point_manager) {
+                lock (point_manager_lock) {
                     point_manager.IncreaseLevel ();
                 }
             }
@@ -1094,7 +1113,7 @@ namespace NoNoise.Visualization
         private void ClearSelection ()
         {
 
-            lock (point_manager) {
+            lock (point_manager_lock) {
                 point_manager.ClearSelection ();
             }
 
@@ -1374,6 +1393,9 @@ namespace NoNoise.Visualization
         /// </param>
         private void FireSongEnter (SongInfoArgs args)
         {
+            if (mouse_down)
+                return;
+
             if (song_enter != null)
                 song_enter (this, args);
         }

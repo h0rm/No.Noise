@@ -37,7 +37,6 @@ namespace NoNoise.Visualization.Gui
     /// </summary>
     public class InfoBox : Clutter.Group
     {
-        private List<String> info_strings;
         private CairoTexture texture;
         private StyleSheet style;
         private bool selection_info;
@@ -69,7 +68,6 @@ namespace NoNoise.Visualization.Gui
             selection_info = selection;
             size_mode = InfoBox.Size.Expanded;
             this.style = style;
-            info_strings = new List<string> ();
             texture = new CairoTexture (width, height);
             texture.SetSize (width, height);
 //            GenerateBackground ();
@@ -245,8 +243,6 @@ namespace NoNoise.Visualization.Gui
             cr.SelectFontFace (style.Highlighted.Family, style.Highlighted.Slant, style.Highlighted.Weight);
             cr.SetFontSize (style.Highlighted.Size);
             TextExtents te_title;
-
-            TextExtents te_subtitle;
 
             for (int i = 0; i < titles.Count; i++) {
 

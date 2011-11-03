@@ -34,7 +34,7 @@ namespace NoNoise.Data
     public class NoNoiseDBHandler
     {
         #region Constants
-        // TODO change connection string to final db
+        // change connection string to final db !?
         private readonly string CONNECTION_STRING = "Data Source=nonoise.db,version=3";
 
         private readonly string CREATE_TABLE_MIRDATA =
