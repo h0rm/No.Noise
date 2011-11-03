@@ -108,6 +108,7 @@ namespace NoNoise.Visualization
         private SongPointManager new_point_manager;
         private Object new_point_manager_lock = new Object ();
         private Object point_manager_lock = new Object ();
+        private object cluster_thread_lock = new object ();
 
         private SongActorManager actor_manager;
 
@@ -211,10 +212,6 @@ namespace NoNoise.Visualization
 
 //            if (initialized)
 //                ClearView ();
-            if (clustering_thread != null && clustering_thread.IsAlive) {
-                clustering_thread.Abort ();
-                clustering_thread.Join ();
-            }
 
             lock (new_point_manager_lock) {
 
@@ -225,9 +222,17 @@ namespace NoNoise.Visualization
                 }
             }
 
-            clustering_thread = new Thread (ClusterBackground);
             pca_finished = new Gtk.ThreadNotify (new Gtk.ReadyEvent (ClusteringFinished));
-            clustering_thread.Start (entries);
+
+            lock (cluster_thread_lock) {
+                if (clustering_thread != null && clustering_thread.IsAlive) {
+                        clustering_thread.Abort ();
+                        clustering_thread.Join ();
+                }
+
+                clustering_thread = new Thread (ClusterBackground);
+                clustering_thread.Start (entries);  // TODO entries unused in thread?
+            }
         }
 
         private void ClusteringFinished ()
