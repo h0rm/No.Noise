@@ -121,7 +121,8 @@ namespace NoNoise.Visualization
 //                tree = tree_list[i].GetClusteredTree (Width * Math.Sqrt (2) / ((double)(max_clustering_level - i -1)));
 //                tree = tree_list[i].GetAdvancedClusteredTree (double.MaxValue);
 //                tree = tree_list[i].GetClusteredTree (double.MaxValue);
-                tree = tree_list[i].GetFastClusteredTree (double.MaxValue);
+//                tree = tree_list[i].GetFastClusteredTree (double.MaxValue);
+                tree = tree_list[i].GetFastClusteredTree (Width * Math.Sqrt (2) / ((double)(MAX_LEVEL - i -1)));
 
                 Hyena.Log.Debug ("NoNoise/Vis -["+(i+1)+"] Clustering points " + tree.Count);
 
