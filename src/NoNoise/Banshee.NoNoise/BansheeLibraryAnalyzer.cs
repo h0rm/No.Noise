@@ -737,48 +737,48 @@ namespace Banshee.NoNoise
                 updating_db = true;
 //            }
 
-            SortedList<int, int> ids = new SortedList<int, int> ();
-            foreach (DatabaseTrackInfo dti in DatabaseTrackInfo.Provider.FetchAll ()) {
-                int bid = dti.TrackId;
-                ids.Add (bid, bid);
-            }
-
-            // make one table the reference and let db synch the rest
-            SortedList<int, int> keyList = null;
-
-            // get data from db
-            lock (db_synch) {
-                keyList = db.GetTrackDataKeyList ();
-            }
-
-            int diff = keyList.Count - ids.Count;
-            bool big = false;
-            if (diff > 10) {
-                big = true;
-                Hyena.Log.DebugFormat ("NoNoise/BLA - removing {0} tracks from database...", diff);
-            }
-
-            // remove deleted TrackData
-            foreach (int id in keyList.Keys) {
-                if (!ids.ContainsKey (id)) {
-                    if (!big)
-                        Hyena.Log.DebugFormat ("NoNoise/BLA - removing bid {0} from TrackData...", id);
-                    try {
-                        lock (db_synch) {
-                            // remove from TrackData
-                            db.RemoveTrackDataForTrack (id);
+                SortedList<int, int> ids = new SortedList<int, int> ();
+                foreach (DatabaseTrackInfo dti in DatabaseTrackInfo.Provider.FetchAll ()) {
+                    int bid = dti.TrackId;
+                    ids.Add (bid, bid);
+                }
+    
+                // make one table the reference and let db synch the rest
+                SortedList<int, int> keyList = null;
+    
+                // get data from db
+                lock (db_synch) {
+                    keyList = db.GetTrackDataKeyList ();
+                }
+    
+                int diff = keyList.Count - ids.Count;
+                bool big = false;
+                if (diff > 10) {
+                    big = true;
+                    Hyena.Log.DebugFormat ("NoNoise/BLA - removing {0} tracks from database...", diff);
+                }
+    
+                // remove deleted TrackData
+                foreach (int id in keyList.Keys) {
+                    if (!ids.ContainsKey (id)) {
+                        if (!big)
+                            Hyena.Log.DebugFormat ("NoNoise/BLA - removing bid {0} from TrackData...", id);
+                        try {
+                            lock (db_synch) {
+                                // remove from TrackData
+                                db.RemoveTrackDataForTrack (id);
+                            }
+                        } catch (Exception e) {
+                            Hyena.Log.Exception("NoNoise/BLA - DB remove problem", e);
                         }
-                    } catch (Exception e) {
-                        Hyena.Log.Exception("NoNoise/BLA - DB remove problem", e);
                     }
                 }
-            }
-
-            // update other tables
-            Hyena.Log.Debug ("NoNoise/BLA - updating other tables...");
-            lock (db_synch) {
-                db.SynchTablesWithTrackData ();
-            }
+    
+                // update other tables
+                Hyena.Log.Debug ("NoNoise/BLA - updating other tables...");
+                lock (db_synch) {
+                    db.SynchTablesWithTrackData ();
+                }
 
 //            lock (update_synch) {
                 updating_db = false;
@@ -839,8 +839,9 @@ namespace Banshee.NoNoise
             if (!CheckDataUpToDate () && !updating_db) {
                 try {
                     RemoveDeletedTracks ();
-                    GetPcaData ();
-                    Hyena.ThreadAssist.ProxyToMain (sc.PcaCoordinatesUpdated);
+                    PcaForMusicLibrary ();
+//                    GetPcaData ();
+//                    Hyena.ThreadAssist.ProxyToMain (sc.PcaCoordinatesUpdated);
                 } catch (Exception e) {
                     Hyena.Log.Exception ("NoNoise/BLA - tracks deleted handler exception", e);
                 }
