@@ -462,7 +462,8 @@ namespace Banshee.NoNoise
                     if ((DateTime.Now - dt).TotalSeconds > 20.0) {
                         int perc = (int)((double)db_cnt / (double)ml_cnt * 100.0);
                         if (perc <= 100)
-                            Hyena.Log.InformationFormat ("NoNoise/Scan - {0}% finished.", perc);
+                            sc.UpdateScanProgress (perc);
+//                            Hyena.Log.InformationFormat ("NoNoise/Scan - {0}% finished.", perc);
                         dt = DateTime.Now;
                     }
                 } catch (Exception e) {

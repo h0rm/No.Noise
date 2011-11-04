@@ -92,6 +92,11 @@ namespace Banshee.NoNoise
             }
         }
 
+        public void UpdateScanProgress (int percent)
+        {
+            view.UpdateScanProgress (percent);
+        }
+
         public void PcaCoordinatesUpdated ()
         {
             Clutter.Threads.Enter ();

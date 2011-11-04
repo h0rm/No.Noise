@@ -265,6 +265,13 @@ namespace NoNoise.Visualization
 
         }
 
+        public void UpdateScanProgress (int percent)
+        {
+            Hyena.ThreadAssist.ProxyToMain (delegate() {
+                gui.UpdateStatus (string.Format ("Scanning library. {0}% done...", percent), true, 2);
+            });
+        }
+
         /// <summary>
         /// Event fired when a new playlist is created.
         /// </summary>
