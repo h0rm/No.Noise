@@ -239,7 +239,7 @@ namespace NoNoise.Visualization
                 }
 
                 clustering_thread = new Thread (ClusterBackground);
-                clustering_thread.Start (entries);  // TODO entries unused in thread?
+                clustering_thread.Start ();
             }
         }
 
@@ -267,7 +267,7 @@ namespace NoNoise.Visualization
                 pca_load_finished_event (this);
         }
 
-        private void ClusterBackground (Object obj)
+        private void ClusterBackground ()
         {
             try {
                 lock (new_point_manager_lock) {

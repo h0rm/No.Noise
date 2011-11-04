@@ -735,7 +735,7 @@ namespace Banshee.NoNoise
         {
             lock (update_synch) {
                 updating_db = true;
-            }
+//            }
 
             SortedList<int, int> ids = new SortedList<int, int> ();
             foreach (DatabaseTrackInfo dti in DatabaseTrackInfo.Provider.FetchAll ()) {
@@ -780,7 +780,7 @@ namespace Banshee.NoNoise
                 db.SynchTablesWithTrackData ();
             }
 
-            lock (update_synch) {
+//            lock (update_synch) {
                 updating_db = false;
             }
         }
@@ -846,10 +846,6 @@ namespace Banshee.NoNoise
                 }
             }
         }
-        #endregion
-
-        #region To delete
-
         #endregion
 
         #region PCA variants
