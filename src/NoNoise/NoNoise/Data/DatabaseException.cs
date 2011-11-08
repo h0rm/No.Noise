@@ -2,9 +2,10 @@
 // DatabaseException.cs
 // 
 // Author:
-//   thomas <${AuthorEmail}>
+//   Manuel Keglevic <manuel.keglevic@gmail.com>
+//   Thomas Schulz <tjom@gmx.at>
 // 
-// Copyright (c) 2011 thomas
+// Copyright (c) 2011 Manuel Keglevic, Thomas Schulz
 // 
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal

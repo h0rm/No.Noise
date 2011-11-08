@@ -115,11 +115,9 @@
     <Compile Include="NoNoise\Visualization\SongGroup.cs" />
     <Compile Include="NoNoise\Visualization\SongPoint.cs" />
     <Compile Include="NoNoise\Visualization\SongPointManager.cs" />
-    <Compile Include="NoNoise\Visualization\Util\ClutterHelper.cs" />
     <Compile Include="NoNoise\Visualization\Util\Point.cs" />
     <Compile Include="NoNoise\Visualization\Util\QuadTree.cs" />
     <Compile Include="NoNoise\Visualization\View.cs" />
-    <Compile Include="Banshee.NoNoise\Bpm\BpmDetectJob.cs" />
     <Compile Include="MathLib\Collection.cs" />
     <Compile Include="MathLib\Combinatorics.cs" />
     <Compile Include="MathLib\Complex.cs" />
