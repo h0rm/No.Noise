@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2011-10-26 15:58+0200\n"
+"POT-Creation-Date: 2011-11-11 13:30+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -1376,4 +1376,228 @@ msgstr ""
 
 #: ../src/Telepathy/Banshee.Telepathy/Banshee.Telepathy.Gui/TransferManagerUi.cs:131
 msgid "Initializing"
+msgstr ""
+
+#: ../src/NoNoise/Banshee.NoNoise/Bpm/BpmDetectJob.cs:64
+msgid "Detecting BPM"
+msgstr ""
+
+#: ../src/NoNoise/Banshee.NoNoise/NoNoiseClutterSourceContents.cs:123
+#: ../src/NoNoise/Banshee.NoNoise/NoNoiseService.cs:151
+msgid "NoNoise"
+msgstr ""
+
+#: ../src/NoNoise/Banshee.NoNoise/NoNoiseClutterSourceContents.cs:136
+msgid "playing NoNoise"
+msgstr ""
+
+#: ../src/NoNoise/Banshee.NoNoise/NoNoiseSchemas.cs:43
+#: ../src/NoNoise/Banshee.NoNoise/NoNoiseService.cs:213
+msgid "NoNoise Visualization"
+msgstr ""
+
+#: ../src/NoNoise/Banshee.NoNoise/NoNoiseSchemas.cs:44
+msgid "Enable or disable the NoNoise Visualization"
+msgstr ""
+
+#: ../src/NoNoise/Banshee.NoNoise/NoNoiseSchemas.cs:50
+msgid "MFCC vector used"
+msgstr ""
+
+#: ../src/NoNoise/Banshee.NoNoise/NoNoiseSchemas.cs:51
+msgid "Selects which vector of the MFCC matrix should be used for the PCA"
+msgstr ""
+
+#: ../src/NoNoise/Banshee.NoNoise/NoNoiseSchemas.cs:57
+msgid "Song Duration"
+msgstr ""
+
+#: ../src/NoNoise/Banshee.NoNoise/NoNoiseSchemas.cs:58
+msgid "Use the song duration for the PCA"
+msgstr ""
+
+#: ../src/NoNoise/Banshee.NoNoise/NoNoiseService.cs:214
+msgid "Enable or disable the NoNoise visualization"
+msgstr ""
+
+#: ../src/NoNoise/Banshee.NoNoise/NoNoiseService.cs:230
+#: ../src/NoNoise/Banshee.NoNoise/NoNoiseService.cs:255
+#: ../src/NoNoise/Banshee.NoNoise/NoNoiseService.cs:296
+msgid "Start NoNoise scan"
+msgstr ""
+
+#: ../src/NoNoise/Banshee.NoNoise/NoNoiseService.cs:231
+msgid "Start or pause the NoNoise scan"
+msgstr ""
+
+#: ../src/NoNoise/Banshee.NoNoise/NoNoiseService.cs:234
+msgid "Help"
+msgstr ""
+
+#: ../src/NoNoise/Banshee.NoNoise/NoNoiseService.cs:235
+msgid "Show the help dialog for the NoNoise plug-in"
+msgstr ""
+
+#: ../src/NoNoise/Banshee.NoNoise/NoNoiseService.cs:259
+msgid "Pause NoNoise scan"
+msgstr ""
+
+#: ../src/NoNoise/MathLib/Properties/Resources.Designer.cs:68
+msgid "ArgumentHistogramContainsNot"
+msgstr ""
+
+#: ../src/NoNoise/MathLib/Properties/Resources.Designer.cs:77
+msgid "ArgumentInIntervalXYInclusive"
+msgstr ""
+
+#: ../src/NoNoise/MathLib/Properties/Resources.Designer.cs:86
+msgid "ArgumentMatrixIndexOutOfRange"
+msgstr ""
+
+#: ../src/NoNoise/MathLib/Properties/Resources.Designer.cs:95
+msgid "ArgumentMatrixNotRankDeficient"
+msgstr ""
+
+#: ../src/NoNoise/MathLib/Properties/Resources.Designer.cs:104
+msgid "ArgumentMatrixNotSingular"
+msgstr ""
+
+#: ../src/NoNoise/MathLib/Properties/Resources.Designer.cs:113
+msgid "ArgumentMatrixSameColumnDimension"
+msgstr ""
+
+#: ../src/NoNoise/MathLib/Properties/Resources.Designer.cs:122
+msgid "ArgumentMatrixSameDimensions"
+msgstr ""
+
+#: ../src/NoNoise/MathLib/Properties/Resources.Designer.cs:131
+msgid "ArgumentMatrixSameRowDimension"
+msgstr ""
+
+#: ../src/NoNoise/MathLib/Properties/Resources.Designer.cs:140
+msgid "ArgumentMatrixSingleColumn"
+msgstr ""
+
+#: ../src/NoNoise/MathLib/Properties/Resources.Designer.cs:149
+msgid "ArgumentMatrixSingleColumnRow"
+msgstr ""
+
+#: ../src/NoNoise/MathLib/Properties/Resources.Designer.cs:158
+msgid "ArgumentMatrixSingleRow"
+msgstr ""
+
+#: ../src/NoNoise/MathLib/Properties/Resources.Designer.cs:167
+msgid "ArgumentMatrixSquare"
+msgstr ""
+
+#: ../src/NoNoise/MathLib/Properties/Resources.Designer.cs:176
+msgid "ArgumentMatrixSymmetric"
+msgstr ""
+
+#: ../src/NoNoise/MathLib/Properties/Resources.Designer.cs:185
+msgid "ArgumentMatrixSymmetricPositiveDefinite"
+msgstr ""
+
+#: ../src/NoNoise/MathLib/Properties/Resources.Designer.cs:194
+msgid "ArgumentNotInfinityNaN"
+msgstr ""
+
+#: ../src/NoNoise/MathLib/Properties/Resources.Designer.cs:203
+msgid "ArgumentNotNegative"
+msgstr ""
+
+#: ../src/NoNoise/MathLib/Properties/Resources.Designer.cs:212
+msgid "ArgumentNull"
+msgstr ""
+
+#: ../src/NoNoise/MathLib/Properties/Resources.Designer.cs:221
+msgid "ArgumentOutOfRangeGreater"
+msgstr ""
+
+#: ../src/NoNoise/MathLib/Properties/Resources.Designer.cs:230
+msgid "ArgumentOutOfRangeGreaterEqual"
+msgstr ""
+
+#: ../src/NoNoise/MathLib/Properties/Resources.Designer.cs:239
+msgid "ArgumentParameterSetInvalid"
+msgstr ""
+
+#: ../src/NoNoise/MathLib/Properties/Resources.Designer.cs:248
+msgid "ArgumentParseComplexNumber"
+msgstr ""
+
+#: ../src/NoNoise/MathLib/Properties/Resources.Designer.cs:257
+msgid "ArgumentPositive"
+msgstr ""
+
+#: ../src/NoNoise/MathLib/Properties/Resources.Designer.cs:266
+msgid "ArgumentPowerOfTwo"
+msgstr ""
+
+#: ../src/NoNoise/MathLib/Properties/Resources.Designer.cs:275
+msgid "ArgumentPowerOfTwoEveryDimension"
+msgstr ""
+
+#: ../src/NoNoise/MathLib/Properties/Resources.Designer.cs:284
+msgid "ArgumentRangeLessEqual"
+msgstr ""
+
+#: ../src/NoNoise/MathLib/Properties/Resources.Designer.cs:293
+msgid "ArgumentSingleDimensionArray"
+msgstr ""
+
+#: ../src/NoNoise/MathLib/Properties/Resources.Designer.cs:302
+msgid "ArgumentTooLarge"
+msgstr ""
+
+#: ../src/NoNoise/MathLib/Properties/Resources.Designer.cs:311
+msgid "ArgumentTooLargeForIterationLimit"
+msgstr ""
+
+#: ../src/NoNoise/MathLib/Properties/Resources.Designer.cs:320
+msgid "ArgumentTypeMismatch"
+msgstr ""
+
+#: ../src/NoNoise/MathLib/Properties/Resources.Designer.cs:329
+msgid "ArgumentVectorLengthsMultipleOf"
+msgstr ""
+
+#: ../src/NoNoise/MathLib/Properties/Resources.Designer.cs:338
+msgid "ArgumentVectorsSameLengths"
+msgstr ""
+
+#: ../src/NoNoise/MathLib/Properties/Resources.Designer.cs:347
+msgid "ArgumentVectorThreeDimensional"
+msgstr ""
+
+#: ../src/NoNoise/MathLib/Properties/Resources.Designer.cs:356
+msgid "FeaturePlannedButNotImplementedYet"
+msgstr ""
+
+#: ../src/NoNoise/MathLib/Properties/Resources.Designer.cs:365
+msgid "InvalidLeftBoundaryCondition"
+msgstr ""
+
+#: ../src/NoNoise/MathLib/Properties/Resources.Designer.cs:374
+msgid "InvalidOperationAccumulatorEmpty"
+msgstr ""
+
+#: ../src/NoNoise/MathLib/Properties/Resources.Designer.cs:383
+msgid "InvalidOperationHistogramEmpty"
+msgstr ""
+
+#: ../src/NoNoise/MathLib/Properties/Resources.Designer.cs:392
+msgid "InvalidOperationHistogramNotEnoughPoints"
+msgstr ""
+
+#: ../src/NoNoise/MathLib/Properties/Resources.Designer.cs:401
+msgid "InvalidOperationNoSamplesProvided"
+msgstr ""
+
+#: ../src/NoNoise/MathLib/Properties/Resources.Designer.cs:410
+msgid "InvalidRightBoundaryCondition"
+msgstr ""
+
+#: ../src/NoNoise/MathLib/Properties/Resources.Designer.cs:419
+msgid "SpecialCasePlannedButNotImplementedYet"
 msgstr ""

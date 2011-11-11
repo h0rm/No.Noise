@@ -70,3 +70,9 @@ src/Telepathy/Banshee.Telepathy/Banshee.Telepathy.Gui/DownloadManagerUi.cs
 src/Telepathy/Banshee.Telepathy/Banshee.Telepathy.Gui/TelepathyActions.cs
 src/Telepathy/Banshee.Telepathy/Banshee.Telepathy.Gui/TelepathyNotification.cs
 src/Telepathy/Banshee.Telepathy/Banshee.Telepathy.Gui/TransferManagerUi.cs
+src/NoNoise/Banshee.NoNoise/Bpm/BpmDetectJob.cs
+src/NoNoise/Banshee.NoNoise/NoNoiseClutterSourceContents.cs
+src/NoNoise/Banshee.NoNoise/NoNoiseSchemas.cs
+src/NoNoise/Banshee.NoNoise/NoNoiseService.cs
+src/NoNoise/MathLib/Properties/Resources.Designer.cs
+

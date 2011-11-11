@@ -1451,7 +1451,7 @@ namespace NoNoise.Visualization
         /// </param>
         private void FireSongStartPlaying (SongInfoArgs args)
         {
-            Hyena.Log.Information ("Fire function");
+//            Hyena.Log.Information ("Fire function");
             if (song_start_playing != null)
                 song_start_playing (this, args);
         }
