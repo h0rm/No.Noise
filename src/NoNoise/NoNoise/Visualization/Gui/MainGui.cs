@@ -261,7 +261,9 @@ namespace NoNoise.Visualization.Gui
         /// </param>
         public void UpdateInfoText (List<String> titles, List<String> subtitles)
         {
-            infobox.Update (titles, subtitles);
+            Hyena.ThreadAssist.ProxyToMain (delegate() {
+                infobox.Update (titles, subtitles);
+            });
         }
 
         /// <summary>
@@ -275,7 +277,9 @@ namespace NoNoise.Visualization.Gui
         /// </param>
         public void UpdateSelection (List<String> titles, List<String> subtitles)
         {
-            selection_info.Update (titles, subtitles);
+            Hyena.ThreadAssist.ProxyToMain (delegate() {
+                selection_info.Update (titles, subtitles);
+            });
         }
 
         /// <summary>
@@ -283,7 +287,9 @@ namespace NoNoise.Visualization.Gui
         /// </summary>
         public void ClearInfoText ()
         {
-            infobox.Clear ();
+            Hyena.ThreadAssist.ProxyToMain (delegate() {
+                infobox.Clear ();
+            });
         }
 
         /// <summary>
@@ -291,7 +297,9 @@ namespace NoNoise.Visualization.Gui
         /// </summary>
         public void ClearInfoSelection ()
         {
-            selection_info.Clear ();
+            Hyena.ThreadAssist.ProxyToMain (delegate() {
+                selection_info.Clear ();
+            });
         }
 
         public void UpdateStatus (String text, bool waiting)
@@ -301,12 +309,14 @@ namespace NoNoise.Visualization.Gui
         
         public void UpdateStatus (String text, bool waiting, int priority)
         {
-            if (priority > 0 || !status_important) {
-//                Hyena.Log.DebugFormat ("NoNoise/GUI - updating status with '{0}', priority: {1}", text, priority);
-                status_box.Update (text, waiting);
-
-                status_important = priority == 2;
-            }
+            Hyena.ThreadAssist.ProxyToMain (delegate() {
+                if (priority > 0 || !status_important) {
+    //                Hyena.Log.DebugFormat ("NoNoise/GUI - updating status with '{0}', priority: {1}", text, priority);
+                    status_box.Update (text, waiting);
+    
+                    status_important = priority == 2;
+                }
+            });
         }
 
         public void SetResetButton (bool clear)

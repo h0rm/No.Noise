@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2011-11-11 13:30+0100\n"
+"POT-Creation-Date: 2011-11-11 14:35+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -1378,67 +1378,63 @@ msgstr ""
 msgid "Initializing"
 msgstr ""
 
-#: ../src/NoNoise/Banshee.NoNoise/Bpm/BpmDetectJob.cs:64
-msgid "Detecting BPM"
-msgstr ""
-
-#: ../src/NoNoise/Banshee.NoNoise/NoNoiseClutterSourceContents.cs:123
-#: ../src/NoNoise/Banshee.NoNoise/NoNoiseService.cs:151
+#: ../src/NoNoise/Banshee.NoNoise/NoNoiseClutterSourceContents.cs:124
+#: ../src/NoNoise/Banshee.NoNoise/NoNoiseService.cs:152
 msgid "NoNoise"
 msgstr ""
 
-#: ../src/NoNoise/Banshee.NoNoise/NoNoiseClutterSourceContents.cs:136
+#: ../src/NoNoise/Banshee.NoNoise/NoNoiseClutterSourceContents.cs:137
 msgid "playing NoNoise"
 msgstr ""
 
-#: ../src/NoNoise/Banshee.NoNoise/NoNoiseSchemas.cs:43
-#: ../src/NoNoise/Banshee.NoNoise/NoNoiseService.cs:213
+#: ../src/NoNoise/Banshee.NoNoise/NoNoiseSchemas.cs:44
+#: ../src/NoNoise/Banshee.NoNoise/NoNoiseService.cs:214
 msgid "NoNoise Visualization"
 msgstr ""
 
-#: ../src/NoNoise/Banshee.NoNoise/NoNoiseSchemas.cs:44
+#: ../src/NoNoise/Banshee.NoNoise/NoNoiseSchemas.cs:45
 msgid "Enable or disable the NoNoise Visualization"
 msgstr ""
 
-#: ../src/NoNoise/Banshee.NoNoise/NoNoiseSchemas.cs:50
+#: ../src/NoNoise/Banshee.NoNoise/NoNoiseSchemas.cs:51
 msgid "MFCC vector used"
 msgstr ""
 
-#: ../src/NoNoise/Banshee.NoNoise/NoNoiseSchemas.cs:51
+#: ../src/NoNoise/Banshee.NoNoise/NoNoiseSchemas.cs:52
 msgid "Selects which vector of the MFCC matrix should be used for the PCA"
 msgstr ""
 
-#: ../src/NoNoise/Banshee.NoNoise/NoNoiseSchemas.cs:57
+#: ../src/NoNoise/Banshee.NoNoise/NoNoiseSchemas.cs:58
 msgid "Song Duration"
 msgstr ""
 
-#: ../src/NoNoise/Banshee.NoNoise/NoNoiseSchemas.cs:58
+#: ../src/NoNoise/Banshee.NoNoise/NoNoiseSchemas.cs:59
 msgid "Use the song duration for the PCA"
 msgstr ""
 
-#: ../src/NoNoise/Banshee.NoNoise/NoNoiseService.cs:214
+#: ../src/NoNoise/Banshee.NoNoise/NoNoiseService.cs:215
 msgid "Enable or disable the NoNoise visualization"
 msgstr ""
 
-#: ../src/NoNoise/Banshee.NoNoise/NoNoiseService.cs:230
-#: ../src/NoNoise/Banshee.NoNoise/NoNoiseService.cs:255
-#: ../src/NoNoise/Banshee.NoNoise/NoNoiseService.cs:296
+#: ../src/NoNoise/Banshee.NoNoise/NoNoiseService.cs:231
+#: ../src/NoNoise/Banshee.NoNoise/NoNoiseService.cs:256
+#: ../src/NoNoise/Banshee.NoNoise/NoNoiseService.cs:297
 msgid "Start NoNoise scan"
 msgstr ""
 
-#: ../src/NoNoise/Banshee.NoNoise/NoNoiseService.cs:231
+#: ../src/NoNoise/Banshee.NoNoise/NoNoiseService.cs:232
 msgid "Start or pause the NoNoise scan"
 msgstr ""
 
-#: ../src/NoNoise/Banshee.NoNoise/NoNoiseService.cs:234
+#: ../src/NoNoise/Banshee.NoNoise/NoNoiseService.cs:235
 msgid "Help"
 msgstr ""
 
-#: ../src/NoNoise/Banshee.NoNoise/NoNoiseService.cs:235
+#: ../src/NoNoise/Banshee.NoNoise/NoNoiseService.cs:236
 msgid "Show the help dialog for the NoNoise plug-in"
 msgstr ""
 
-#: ../src/NoNoise/Banshee.NoNoise/NoNoiseService.cs:259
+#: ../src/NoNoise/Banshee.NoNoise/NoNoiseService.cs:260
 msgid "Pause NoNoise scan"
 msgstr ""
 

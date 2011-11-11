@@ -243,7 +243,9 @@ namespace NoNoise.Visualization
         /// </param>
         public void UpdateHiddenSongs (List<int> not_hidden)
         {
-            point_group.UpdateHiddenSongs (not_hidden);
+            Hyena.ThreadAssist.ProxyToMain (delegate() {
+                point_group.UpdateHiddenSongs (not_hidden);
+            });
         }
 
         public void UpdateStatus (ScanStatus status)

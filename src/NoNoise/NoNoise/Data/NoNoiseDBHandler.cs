@@ -35,8 +35,9 @@ namespace NoNoise.Data
     public class NoNoiseDBHandler
     {
         #region Constants
-        // change connection string to final db !?
-        private readonly string CONNECTION_STRING = "Data Source=nonoise.db,version=3";
+        private readonly string CONNECTION_STRING = "Data Source=" +
+            Paths.Combine (XdgBaseDirectorySpec.GetUserDirectory ("XDG_CACHE_HOME", ".cache"),
+                "banshee-nonoise.db") + ",version=3";
 
         private readonly string CREATE_TABLE_MIRDATA =
             "CREATE TABLE IF NOT EXISTS MIRData (banshee_id INTEGER NOT NULL, mean CLOB NOT NULL, sqrmean CLOB NOT NULL, " +

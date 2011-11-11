@@ -185,19 +185,21 @@ namespace NoNoise.Visualization
         /// </param>
         private void DrawLine (double x, double y)
         {
-            Cairo.Context context = texture.Create();
-            context.LineWidth = 5;
-            context.Color = new Cairo.Color (1,0,0,0.7);
-
-            context.MoveTo (old_x, old_y);
-            context.LineTo (x, y);
-            context.Stroke ();
-
-            ((IDisposable) context.Target).Dispose ();
-            ((IDisposable) context).Dispose ();
-
-            old_x = x;
-            old_y = y;
+            Hyena.ThreadAssist.ProxyToMain (delegate() {
+                Cairo.Context context = texture.Create();
+                context.LineWidth = 5;
+                context.Color = new Cairo.Color (1,0,0,0.7);
+    
+                context.MoveTo (old_x, old_y);
+                context.LineTo (x, y);
+                context.Stroke ();
+    
+                ((IDisposable) context.Target).Dispose ();
+                ((IDisposable) context).Dispose ();
+    
+                old_x = x;
+                old_y = y;
+            });
         }
 
         /// <summary>
