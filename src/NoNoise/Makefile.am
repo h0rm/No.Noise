@@ -2,7 +2,6 @@ GMCS_FLAGS = -unsafe
 
 SOURCES =  \
 	Banshee.NoNoise/BansheeLibraryAnalyzer.cs \
-	Banshee.NoNoise/Bpm/BpmDetectJob.cs \
 	Banshee.NoNoise/NoNoiseClutterSourceContents.cs \
 	Banshee.NoNoise/NoNoiseHelpDialog.cs \
 	Banshee.NoNoise/NoNoiseSchemas.cs \
@@ -107,7 +106,6 @@ SOURCES =  \
 	NoNoise/Visualization/SongGroup.cs \
 	NoNoise/Visualization/SongPoint.cs \
 	NoNoise/Visualization/SongPointManager.cs \
-	NoNoise/Visualization/Util/ClutterHelper.cs \
 	NoNoise/Visualization/Util/Point.cs \
 	NoNoise/Visualization/Util/QuadTree.cs \
 	NoNoise/Visualization/View.cs
