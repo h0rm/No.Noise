@@ -180,22 +180,14 @@ namespace Banshee.NoNoise
         /// </remarks>
         public void Dispose ()
         {
-            db = null;
+            Hyena.Log.Debug ("NoNoise/BLA - Disposing library analyzer...");
+            lock (scan_synch) {
+                stop_scan = true;
+            }
+
             ml.TracksAdded -= HandleTracksAdded;
             ml.TracksDeleted -= HandleTracksDeleted;
             sc = null;
-            ml = null;
-
-            scan_synch = null;
-            pca_synch = null;
-            update_synch = null;
-            db_synch = null;
-
-            pca_adder = null;
-            coords = null;
-            finished = null;
-            thr = null;
-
             bla = null;
         }
 
