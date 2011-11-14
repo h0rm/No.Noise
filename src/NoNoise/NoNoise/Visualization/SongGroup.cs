@@ -215,29 +215,23 @@ namespace NoNoise.Visualization
 //                ClearView ();
 
             lock (cluster_thread_lock) {
+
                 if (clustering_thread != null && clustering_thread.IsAlive) {
                         clustering_thread.Abort ();
                         clustering_thread.Join ();
                 }
-            }
 
-            lock (new_point_manager_lock) {
-
-                new_point_manager = new SongPointManager (0, 0, 30000, 30000);
-
-                foreach (DataEntry e in entries) {
-                    new_point_manager.Add (e.X*30000, e.Y*30000, e.ID);
+                lock (new_point_manager_lock) {
+    
+                    new_point_manager = new SongPointManager (0, 0, 30000, 30000);
+    
+                    foreach (DataEntry e in entries) {
+                        new_point_manager.Add (e.X*30000, e.Y*30000, e.ID);
+                    }
                 }
-            }
 
-            pca_finished = new Gtk.ThreadNotify (new Gtk.ReadyEvent (ClusteringFinished));
+                pca_finished = new Gtk.ThreadNotify (new Gtk.ReadyEvent (ClusteringFinished));
 
-            lock (cluster_thread_lock) {
-                // check again for running thread if it was started after the check above
-                if (clustering_thread != null && clustering_thread.IsAlive) {
-                        clustering_thread.Abort ();
-                        clustering_thread.Join ();
-                }
 
                 clustering_thread = new Thread (ClusterBackground);
                 clustering_thread.Start ();
@@ -246,9 +240,15 @@ namespace NoNoise.Visualization
 
         private void ClusteringFinished ()
         {
+            Hyena.Log.Debug ("NoNoise/Vis - Clustering finished");
+            
             // Change point manager
             lock (point_manager_lock) {
                 point_manager = null;
+
+                if (new_point_manager == null)
+                        return;
+    
                 point_manager = new_point_manager;
             }
 
